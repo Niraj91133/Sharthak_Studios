@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
@@ -30,6 +32,7 @@ body {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -78,6 +81,7 @@ body {
   left: 0;
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
 }
+
 .imgmarquee::after {
   right: 0;
   background: linear-gradient(270deg, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
@@ -87,6 +91,7 @@ body {
   from {
     transform: translate3d(0, 0, 0);
   }
+
   to {
     transform: translate3d(-50%, 0, 0);
   }
@@ -139,6 +144,7 @@ body {
   from {
     transform: translate3d(0, 0, 0);
   }
+
   to {
     transform: translate3d(-50%, 0, 0);
   }
@@ -169,20 +175,16 @@ body {
 }
 
 .vmarquee__layer--sharp {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 20%,
-    black 80%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 20%,
-    black 80%,
-    transparent 100%
-  );
+  -webkit-mask-image: linear-gradient(to bottom,
+      transparent 0%,
+      black 20%,
+      black 80%,
+      transparent 100%);
+  mask-image: linear-gradient(to bottom,
+      transparent 0%,
+      black 20%,
+      black 80%,
+      transparent 100%);
   pointer-events: none;
 }
 
@@ -215,6 +217,7 @@ body {
   from {
     transform: translate3d(0, 0, 0);
   }
+
   to {
     transform: translate3d(0, -50%, 0);
   }
@@ -261,6 +264,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .gallery-section .gallery-stagger,
   .gallery-tile--reveal {
     transition: none;
@@ -396,11 +400,9 @@ body {
   background-color: #111111;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(243, 233, 220, 1) 0 20px,
-    rgba(17, 17, 17, 1) 20px 44px
-  );
+  background-image: repeating-linear-gradient(90deg,
+      rgba(243, 233, 220, 1) 0 20px,
+      rgba(17, 17, 17, 1) 20px 44px);
   background-size: 44px 100%;
   background-position: 14px 0;
 }
@@ -498,11 +500,9 @@ html[data-game="playing"] .hero-scroll__header {
   background-color: #0b0b0b;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.92) 0 11px,
-    rgba(11, 11, 11, 1) 11px 24px
-  );
+  background-image: repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, 0.92) 0 11px,
+      rgba(11, 11, 11, 1) 11px 24px);
   background-size: 24px 100%;
   background-position: 12px 0;
 }
@@ -518,9 +518,15 @@ html[data-game="playing"] .hero-scroll__header {
 
 .animate-marquee {
   animation: marquee 30s linear infinite;
+  will-change: transform;
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }

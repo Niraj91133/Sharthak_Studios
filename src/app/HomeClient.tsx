@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useMemo } from "react";
+import Lenis from "lenis";
 import HeroScroll from "@/components/HeroScroll";
 import GallerySection from "@/components/GallerySection";
 import LatestWorkSection from "@/components/LatestWorkSection";
@@ -11,43 +12,56 @@ import WhyChooseUsBookFlipSection from "@/components/WhyChooseUsBookFlipSection"
 import InfiniteStripsCTASection from "@/components/InfiniteStripsCTASection";
 import CameraCTASection from "@/components/CameraCTASection";
 
-// Lazy load complex components to reduce flickering and initial bundle size
+// Lazy load complex components for performance
 const CoupleShootGame = dynamic(() => import("@/components/CoupleShootGame"), {
   ssr: false,
   loading: () => <div className="h-screen bg-white animate-pulse" />
 });
 
 export default function HomeClient() {
-  const [mounted, setMounted] = useState(false);
-
+  // Setup Lenis for Smooth Scrolling
   useEffect(() => {
-    setMounted(true);
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
   }, []);
 
-  if (!mounted) {
-    return (
-      <main className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-      </main>
-    );
-  }
+  const categories = useMemo(() => ["PHOTOGRAPHY", "PHOTO EDITING", "VIDEO EDITING"], []);
 
-  const categories = ["PHOTOGRAPHY", "PHOTO EDITING", "VIDEO EDITING"];
-
-  const featureLines = [
+  const featureLines = useMemo(() => [
     "Cinematic Quality", "Premium Editing", "Creative Shots", "Luxury Visuals",
     "HD Delivery", "Color Perfection", "Emotional Moments", "Natural Captures",
     "Professional Team", "Fast Delivery", "Trusted Service", "Detail Focused",
     "Storytelling Style", "Perfect Lighting", "Memorable Frames", "Smooth Reels",
-  ];
+  ], []);
 
-  const galleryTabs = Array.from({ length: 6 }, () => ({
-    label: "PHOTOGRAPHY",
-    active: false,
-  }));
-  galleryTabs[0].active = true;
+  const galleryTabs = useMemo(() => {
+    const tabs = Array.from({ length: 6 }, () => ({
+      label: "PHOTOGRAPHY",
+      active: false,
+    }));
+    tabs[0].active = true;
+    return tabs;
+  }, []);
 
-  const galleryItems = [
+  const galleryItems = useMemo(() => [
     { seed: "gal-01", col: "1 / span 1", row: "1 / span 2" },
     { seed: "gal-02", col: "1 / span 1", row: "3 / span 2" },
     { seed: "gal-03", col: "2 / span 2", row: "1 / span 1" },
@@ -66,7 +80,7 @@ export default function HomeClient() {
     { seed: "gal-16", col: "4 / span 1", row: "5 / span 2" },
     { seed: "gal-17", col: "5 / span 1", row: "5 / span 2" },
     { seed: "gal-18", col: "6 / span 1", row: "5 / span 2" },
-  ];
+  ], []);
 
   return (
     <main className="min-h-screen bg-black text-white relative">
@@ -119,7 +133,7 @@ export default function HomeClient() {
       </section>
 
       {/* Feature Slider */}
-      <section className="py-20 bg-white text-black overflow-hidden">
+      <section className="py-20 bg-white text-black overflow-hidden relative">
         <div className="flex animate-marquee whitespace-nowrap">
           {[...featureLines, ...featureLines].map((line, i) => (
             <span key={i} className="text-8xl font-black px-12 tracking-tighter opacity-10 hover:opacity-100 transition-opacity cursor-default">
