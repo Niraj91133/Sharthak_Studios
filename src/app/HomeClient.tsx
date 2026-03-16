@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Lenis from "lenis";
 import HeroScroll from "@/components/HeroScroll";
 import GallerySection from "@/components/GallerySection";
@@ -19,6 +19,8 @@ const CoupleShootGame = dynamic(() => import("@/components/CoupleShootGame"), {
 });
 
 export default function HomeClient() {
+  const lenisRef = useRef<Lenis | null>(null);
+
   // Setup Lenis for Smooth Scrolling
   useEffect(() => {
     const lenis = new Lenis({
@@ -31,6 +33,8 @@ export default function HomeClient() {
       touchMultiplier: 2,
     });
 
+    lenisRef.current = lenis;
+
     function raf(time: number) {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -40,6 +44,7 @@ export default function HomeClient() {
 
     return () => {
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
