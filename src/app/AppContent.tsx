@@ -3,28 +3,28 @@
 import { useMemo, useEffect, useRef } from "react";
 import Lenis from "lenis";
 import dynamic from "next/dynamic";
+
+// Components
 import HeroScroll from "@/components/HeroScroll";
-import GallerySection from "@/components/GallerySection";
-import LatestWorkSection from "@/components/LatestWorkSection";
-import ExpertiseSection from "@/components/ExpertiseSection";
-import VideoEditingTimelineSection from "@/components/VideoEditingTimelineSection";
-import WhyChooseUsBookFlipSection from "@/components/WhyChooseUsBookFlipSection";
-import InfiniteStripsCTASection from "@/components/InfiniteStripsCTASection";
 import CameraCTASection from "@/components/CameraCTASection";
 
-// Only leave the game as dynamic since it's the absolute heaviest part
-const CoupleShootGame = dynamic(() => import("@/components/CoupleShootGame"), {
-    ssr: false,
-});
+// Lazy-loaded sections for performance and stability
+const GallerySection = dynamic(() => import("@/components/GallerySection"), { ssr: false });
+const LatestWorkSection = dynamic(() => import("@/components/LatestWorkSection"), { ssr: false });
+const ExpertiseSection = dynamic(() => import("@/components/ExpertiseSection"), { ssr: false });
+const VideoEditingTimelineSection = dynamic(() => import("@/components/VideoEditingTimelineSection"), { ssr: false });
+const WhyChooseUsBookFlipSection = dynamic(() => import("@/components/WhyChooseUsBookFlipSection"), { ssr: false });
+const InfiniteStripsCTASection = dynamic(() => import("@/components/InfiniteStripsCTASection"), { ssr: false });
+const CoupleShootGame = dynamic(() => import("@/components/CoupleShootGame"), { ssr: false });
 
 export default function AppContent() {
     const lenisRef = useRef<Lenis | null>(null);
 
     useEffect(() => {
-        // Basic Lenis init without complex bounds
         const lenis = new Lenis({
             smoothWheel: true,
             duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         });
 
         lenisRef.current = lenis;

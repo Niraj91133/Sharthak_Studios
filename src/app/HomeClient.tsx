@@ -3,18 +3,54 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-// Directly import the heavy content but don't render it until mounted
-import AppContent from "./AppContent";
+// Strictly Client-Side rendering for the entire app content
+// This is the safest pattern for Next.js to prevent hydration errors and dev server crashes
+const AppContent = dynamic(() => import("./AppContent"), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "black",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "white",
+        fontFamily: "sans-serif"
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            width: "40px",
+            height: "40px",
+            border: "3px solid rgba(255,255,255,0.1)",
+            borderTop: "3px solid white",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+            margin: "0 auto 20px"
+          }}
+        />
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+        <p style={{ letterSpacing: "0.2em", fontSize: "11px", opacity: 0.5, fontWeight: "bold" }}>LOADING SHARTHAK STUDIO</p>
+      </div>
+    </div>
+  )
+});
 
 export default function HomeClient() {
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
-  // Simple, fail-safe loading state that doesn't rely on complex CSS/animations
-  if (!isClient) {
+  if (!mounted) {
     return (
       <div
         style={{
@@ -23,30 +59,10 @@ export default function HomeClient() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "white",
-          fontFamily: "sans-serif"
+          color: "white"
         }}
       >
-        <div style={{ textAlign: "center" }}>
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              border: "3px solid rgba(255,255,255,0.3)",
-              borderTop: "3px solid white",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-              margin: "0 auto 20px"
-            }}
-          />
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-          <p style={{ letterSpacing: "0.2em", fontSize: "12px", opacity: 0.6 }}>SHARTHAK STUDIO</p>
-        </div>
+        <p style={{ letterSpacing: "0.3em", fontSize: "10px", opacity: 0.4 }}>READY</p>
       </div>
     );
   }

@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Fix for Turbopack root as suggested by Next.js warning
+  // @ts-ignore
   turbopack: {
-    root: process.cwd(),
+    root: "/Users/Niraj/Desktop/sharthak-studio-next",
   },
   images: {
     remotePatterns: [
