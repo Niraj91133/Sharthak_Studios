@@ -1,18 +1,20 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState, Suspense } from "react";
 import HeroScroll from "@/components/HeroScroll";
 import GallerySection from "@/components/GallerySection";
 import LatestWorkSection from "@/components/LatestWorkSection";
-import { useEffect, useState } from "react";
 import ExpertiseSection from "@/components/ExpertiseSection";
 import VideoEditingTimelineSection from "@/components/VideoEditingTimelineSection";
 import WhyChooseUsBookFlipSection from "@/components/WhyChooseUsBookFlipSection";
 import InfiniteStripsCTASection from "@/components/InfiniteStripsCTASection";
 import CameraCTASection from "@/components/CameraCTASection";
 
+// Lazy load complex components to reduce flickering and initial bundle size
 const CoupleShootGame = dynamic(() => import("@/components/CoupleShootGame"), {
   ssr: false,
+  loading: () => <div className="h-screen bg-white animate-pulse" />
 });
 
 export default function HomeClient() {
@@ -23,35 +25,28 @@ export default function HomeClient() {
   }, []);
 
   if (!mounted) {
-    return <main className="min-h-svh bg-black" suppressHydrationWarning />;
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
   }
 
-  const categories = [
-    "PHOTOGRAPHY",
-    "PHOTO EDITING",
-    "VIDEO EDITING",
-  ];
+  const categories = ["PHOTOGRAPHY", "PHOTO EDITING", "VIDEO EDITING"];
 
   const featureLines = [
-    "Cinematic Quality",
-    "Premium Editing",
-    "Creative Shots",
-    "Luxury Visuals",
-    "HD Delivery",
-    "Color Perfection",
-    "Emotional Moments",
-    "Natural Captures",
-    "Professional Team",
-    "Fast Delivery",
-    "Trusted Service",
-    "Detail Focused",
-    "Storytelling Style",
-    "Perfect Lighting",
-    "Memorable Frames",
-    "Smooth Reels",
+    "Cinematic Quality", "Premium Editing", "Creative Shots", "Luxury Visuals",
+    "HD Delivery", "Color Perfection", "Emotional Moments", "Natural Captures",
+    "Professional Team", "Fast Delivery", "Trusted Service", "Detail Focused",
+    "Storytelling Style", "Perfect Lighting", "Memorable Frames", "Smooth Reels",
   ];
 
-  const galleryTabs = Array.from({ length: 6 }, () => "PHOTOGRAPHY");
+  const galleryTabs = Array.from({ length: 6 }, () => ({
+    label: "PHOTOGRAPHY",
+    active: false,
+  }));
+  galleryTabs[0].active = true;
+
   const galleryItems = [
     { seed: "gal-01", col: "1 / span 1", row: "1 / span 2" },
     { seed: "gal-02", col: "1 / span 1", row: "3 / span 2" },
@@ -71,15 +66,10 @@ export default function HomeClient() {
     { seed: "gal-16", col: "4 / span 1", row: "5 / span 2" },
     { seed: "gal-17", col: "5 / span 1", row: "5 / span 2" },
     { seed: "gal-18", col: "6 / span 1", row: "5 / span 2" },
-  ] as const;
-
-  const galleryTabsModel = galleryTabs.map((label, idx) => ({
-    label,
-    active: idx === 0,
-  }));
+  ];
 
   return (
-    <main className="min-h-svh bg-black text-white">
+    <main className="min-h-screen bg-black text-white relative">
       <HeroScroll
         title="SHARTHAK STUDIO"
         eyebrow="SHARTHAK STUDIO"
@@ -91,90 +81,55 @@ export default function HomeClient() {
 
       <CameraCTASection />
 
-      <section className="relative min-h-svh bg-black px-6 py-20">
-        <div className="mx-auto w-full max-w-none">
-          <div className="grid items-center gap-10 md:grid-cols-[560px_1px_minmax(0,1fr)] md:gap-12">
-            <div className="flex flex-col md:h-[760px] md:justify-between">
-              <div>
-                <h2 className="whitespace-pre-line text-[54px] font-bold leading-[0.92] tracking-[-0.01em] text-white sm:text-[72px] md:text-[104px]">
-                  SHARTHAK{"\n"}STUDIO
-                </h2>
-                <p className="mt-6 max-w-[520px] text-sm leading-6 text-white/70">
-                  Cinematic visuals. Premium edits. Timeless memories.
-                </p>
-              </div>
-
-              <div className="mt-10 md:mt-0">
-                <a
-                  href="#contact"
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-black px-8 py-3 text-sm font-semibold tracking-wide text-white transition-colors duration-200 hover:bg-white hover:text-black"
-                >
-                  Contact
-                </a>
-              </div>
+      {/* Intro Stats Section */}
+      <section className="relative min-h-[50vh] bg-black px-6 py-20 flex items-center justify-center overflow-hidden">
+        <div className="max-w-7xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <h2 className="text-6xl md:text-8xl font-black leading-none tracking-tighter">
+              SHARTHAK<br />STUDIO
+            </h2>
+            <p className="text-xl text-white/60 max-w-md">
+              We don&apos;t just take photos. We capture the soul of the moment,
+              refined through cinematic lenses and expert hands.
+            </p>
+            <div className="flex gap-4">
+              <button className="px-8 py-3 bg-white text-black font-bold uppercase tracking-widest text-sm hover:invert transition-all">
+                View Portfolio
+              </button>
+              <button className="px-8 py-3 border border-white/20 text-white font-bold uppercase tracking-widest text-sm hover:bg-white hover:text-black transition-all">
+                The Team
+              </button>
             </div>
+          </div>
 
-            <div className="hidden h-[760px] w-px bg-white/10 md:block" />
-
-            <div
-              className="overflow-hidden rounded-2xl bg-black"
-              style={{ border: "1px solid rgba(255,255,255,0.17)" }}
-            >
-              <div className="vmarquee">
-                <div
-                  className="vmarquee__layer vmarquee__layer--blur"
-                  aria-hidden="true"
-                >
-                  <div className="vmarquee__track">
-                    {[...featureLines, ...featureLines].map((line, idx) => (
-                      <div
-                        key={`blur-${line}-${idx}`}
-                        className="vmarquee__row"
-                        style={{
-                          borderTop:
-                            idx === 0
-                              ? "none"
-                              : "1px solid rgba(255,255,255,0.08)",
-                        }}
-                      >
-                        <div className="vmarquee__text">{line}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="vmarquee__layer vmarquee__layer--sharp">
-                  <div className="vmarquee__track">
-                    {[...featureLines, ...featureLines].map((line, idx) => (
-                      <div
-                        key={`sharp-${line}-${idx}`}
-                        className="vmarquee__row"
-                        style={{
-                          borderTop:
-                            idx === 0
-                              ? "none"
-                              : "1px solid rgba(255,255,255,0.08)",
-                        }}
-                      >
-                        <div className="vmarquee__text">{line}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: "YEARS", val: "10+" },
+              { label: "WEDDINGS", val: "500+" },
+              { label: "REELS", val: "2k+" },
+              { label: "HAPPY LIVES", val: "∞" }
+            ].map((stat) => (
+              <div key={stat.label} className="p-8 border border-white/10 bg-white/5 backdrop-blur-sm group hover:bg-yellow-400 transition-all duration-500">
+                <div className="text-4xl font-black group-hover:text-black transition-colors">{stat.val}</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-white/40 group-hover:text-black/60 transition-colors mt-2">{stat.label}</div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <GallerySection
-        tabs={galleryTabsModel}
-        items={galleryItems.map((i) => ({
-          seed: i.seed,
-          col: i.col,
-          row: i.row,
-        }))}
-      />
+      {/* Feature Slider */}
+      <section className="py-20 bg-white text-black overflow-hidden">
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...featureLines, ...featureLines].map((line, i) => (
+            <span key={i} className="text-8xl font-black px-12 tracking-tighter opacity-10 hover:opacity-100 transition-opacity cursor-default">
+              {line.toUpperCase()}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <GallerySection tabs={galleryTabs} items={galleryItems} />
 
       <LatestWorkSection />
 
@@ -187,6 +142,30 @@ export default function HomeClient() {
       <WhyChooseUsBookFlipSection />
 
       <InfiniteStripsCTASection />
+
+      {/* Footer */}
+      <footer className="bg-black py-20 px-6 border-t border-white/5 text-center">
+        <div className="max-w-4xl mx-auto space-y-12">
+          <h2 className="text-4xl md:text-7xl font-black tracking-tighter">LET&apos;S CRAFT YOUR STORY</h2>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16">
+            <div className="space-y-2">
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase">Email Us</div>
+              <div className="text-xl font-bold">hello@sharthak.studio</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase">Call Us</div>
+              <div className="text-xl font-bold">+91 98765 43210</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase">Instagram</div>
+              <div className="text-xl font-bold">@sharthak_studio</div>
+            </div>
+          </div>
+          <div className="pt-20 text-[10px] tracking-[0.5em] text-white/20 uppercase">
+            © 2026 SHARTHAK STUDIO. ALL RIGHTS RESERVED.
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

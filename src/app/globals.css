@@ -515,3 +515,12 @@ html[data-game="playing"] .hero-scroll__header {
   border-top: 2px solid rgba(255, 255, 255, 0.95);
   border-bottom: 2px solid rgba(255, 255, 255, 0.95);
 }
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
