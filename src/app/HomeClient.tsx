@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Lenis from "lenis";
 import HeroScroll from "@/components/HeroScroll";
 import GallerySection from "@/components/GallerySection";
@@ -15,14 +15,17 @@ import CameraCTASection from "@/components/CameraCTASection";
 // Lazy load complex components for performance
 const CoupleShootGame = dynamic(() => import("@/components/CoupleShootGame"), {
   ssr: false,
-  loading: () => <div className="h-screen bg-white animate-pulse" />
+  loading: () => <div className="h-screen bg-black" />
 });
 
 export default function HomeClient() {
+  const [mounted, setMounted] = useState(false);
   const lenisRef = useRef<Lenis | null>(null);
 
-  // Setup Lenis for Smooth Scrolling
   useEffect(() => {
+    setMounted(true);
+
+    // Setup Lenis for Smooth Scrolling
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -86,6 +89,11 @@ export default function HomeClient() {
     { seed: "gal-17", col: "5 / span 1", row: "5 / span 2" },
     { seed: "gal-18", col: "6 / span 1", row: "5 / span 2" },
   ], []);
+
+  // Return a simple div until mounted to prevent hydration errors from breaking the screen
+  if (!mounted) {
+    return <main className="min-h-screen bg-black" />;
+  }
 
   return (
     <main className="min-h-screen bg-black text-white relative">
