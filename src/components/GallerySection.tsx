@@ -4,13 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 type GalleryTab = {
   label: string;
-  active?: boolean;
 };
 
 type GalleryItem = {
   seed: string;
   col: string;
   row: string;
+  category: string;
 };
 
 type GallerySectionProps = {
@@ -21,8 +21,17 @@ type GallerySectionProps = {
 export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [activeTab, setActiveTab] = useState(tabs[0]?.label || "");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const dragStartXRef = useRef<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -39,6 +48,11 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
     return () => io.disconnect();
   }, []);
 
+  // Filter tiles based on active tab
+  const filteredTiles = useMemo(() => {
+    return items.filter(item => item.category === activeTab);
+  }, [items, activeTab]);
+
   useEffect(() => {
     if (lightboxIndex === null) return;
 
@@ -53,7 +67,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
       if (event.key === "ArrowRight") {
         setLightboxIndex((current) => {
           if (current === null) return current;
-          return Math.min(items.length - 1, current + 1);
+          return Math.min(filteredTiles.length - 1, current + 1);
         });
       }
       if (event.key === "ArrowLeft") {
@@ -69,10 +83,9 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [items.length, lightboxIndex]);
+  }, [filteredTiles.length, lightboxIndex]);
 
   const revealClass = revealed ? "is-revealed" : "";
-  const tiles = useMemo(() => items, [items]);
 
   const closeLightbox = () => setLightboxIndex(null);
   const goPrev = () =>
@@ -81,7 +94,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
     );
   const goNext = () =>
     setLightboxIndex((current) =>
-      current === null ? current : Math.min(items.length - 1, current + 1),
+      current === null ? current : Math.min(filteredTiles.length - 1, current + 1),
     );
 
   return (
@@ -90,61 +103,82 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
       className={`gallery-section w-full bg-white px-3 py-16 text-black sm:px-6 sm:py-20 ${revealClass}`}
     >
       <div className="mx-auto w-full max-w-none">
-        <div className="gallery-stagger flex flex-wrap items-center justify-center gap-8">
-          {tabs.map((tab, idx) => (
-            <button
-              key={`tab-${idx}`}
-              type="button"
-              className="h-14 w-[220px] text-sm font-semibold tracking-[0.18em] transition-colors"
-              style={{
-                backgroundColor: tab.active ? "#000000" : "#FFFFFF",
-                color: tab.active ? "#FFFFFF" : "#000000",
-                border: "2px solid #000000",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Mobile Tabs: Scrollable, no-scrollbar, smaller */}
+        <div className="gallery-stagger flex items-center gap-3 sm:gap-8 overflow-x-auto no-scrollbar pb-4 sm:pb-0 sm:justify-center">
+          {tabs.map((tab, idx) => {
+            const isActive = activeTab === tab.label;
+            return (
+              <button
+                key={`tab-${idx}`}
+                type="button"
+                onClick={() => {
+                  setActiveTab(tab.label);
+                  setLightboxIndex(null); // Reset lightbox when tab changes
+                }}
+                className={`
+                  h-10 sm:h-14 px-5 sm:w-[220px] whitespace-nowrap text-[10px] sm:text-sm font-bold tracking-[0.18em] transition-all duration-300
+                  ${isActive ? "bg-black text-white" : "bg-white text-black border-2 border-black hover:bg-black/5"}
+                `}
+                style={{
+                  border: isActive ? "2px solid #000000" : "2px solid #000000",
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         <div
-          className="gallery-stagger mt-10 grid w-full gap-3 sm:gap-4"
+          className="gallery-stagger mt-8 sm:mt-10 grid w-full gap-2 sm:gap-4"
           style={{
-            gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-            gridAutoRows: "160px",
+            gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(6, minmax(0, 1fr))",
+            gridAutoRows: isMobile ? "200px" : "160px",
           }}
         >
-          {tiles.map((item, idx) => (
-            <div
-              key={item.seed}
-              className="gallery-tile gallery-tile--reveal"
-              style={{
-                gridColumn: item.col,
-                gridRow: item.row,
-                transitionDelay: `${Math.min(18, idx) * 55}ms`,
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="Open image"
-              onClick={() => setLightboxIndex(idx)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  setLightboxIndex(idx);
-                }
-              }}
-            >
-              <div className="gallery-tile__inner">
-                {/* Default is B&W via CSS; hover shows original color */}
-                <img
-                  className="gallery-img"
-                  src={`https://picsum.photos/seed/${item.seed}/1600/1200`}
-                  alt=""
-                  loading="lazy"
-                />
+          {filteredTiles.map((item, idx) => {
+            // Calculate grid span for mobile
+            // We'll alternate tall/wide items for a dynamic feel
+            const mobileGridStyle = {
+              gridColumn: idx % 3 === 0 ? "span 1" : (idx % 3 === 1 ? "span 1" : "span 2"),
+              gridRow: idx % 4 === 0 ? "span 2" : "span 1",
+            };
+
+            const desktopGridStyle = {
+              gridColumn: item.col,
+              gridRow: item.row,
+            };
+
+            return (
+              <div
+                key={item.seed}
+                className="gallery-tile gallery-tile--reveal"
+                style={{
+                  ...(isMobile ? mobileGridStyle : desktopGridStyle),
+                  transitionDelay: `${Math.min(12, idx) * 40}ms`,
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Open image"
+                onClick={() => setLightboxIndex(idx)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setLightboxIndex(idx);
+                  }
+                }}
+              >
+                <div className="gallery-tile__inner">
+                  <img
+                    className="gallery-img h-full w-full object-cover"
+                    src={`https://picsum.photos/seed/${item.seed}/1600/1200`}
+                    alt=""
+                    loading="lazy"
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -208,7 +242,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
             className="lightbox__nav lightbox__nav--right"
             aria-label="Next"
             onClick={goNext}
-            disabled={lightboxIndex >= items.length - 1}
+            disabled={lightboxIndex >= filteredTiles.length - 1}
           >
             <svg
               viewBox="0 0 24 24"
@@ -248,7 +282,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                 transform: `translate3d(${-lightboxIndex * 100}%, 0, 0)`,
               }}
             >
-              {tiles.map((item) => (
+              {filteredTiles.map((item) => (
                 <div key={`lb-${item.seed}`} className="lightbox__slide">
                   <img
                     className="lightbox__img"

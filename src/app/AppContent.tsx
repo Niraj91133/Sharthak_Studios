@@ -51,34 +51,40 @@ export default function AppContent() {
         "Storytelling Style", "Perfect Lighting", "Memorable Frames", "Smooth Reels",
     ], []);
 
-    const galleryTabs = useMemo(() => {
-        const tabs = Array.from({ length: 6 }, () => ({
-            label: "PHOTOGRAPHY",
-            active: false,
-        }));
-        tabs[0].active = true;
-        return tabs;
-    }, []);
+    const galleryTabs = useMemo(() => [
+        { label: "WEDDING" },
+        { label: "PRE-WEDDING" },
+        { label: "CANDID" },
+        { label: "MODEL SHOOT" },
+        { label: "MATERNITY" },
+        { label: "BABY SHOOT" },
+    ], []);
 
     const galleryItems = useMemo(() => [
-        { seed: "gal-01", col: "1 / span 1", row: "1 / span 2" },
-        { seed: "gal-02", col: "1 / span 1", row: "3 / span 2" },
-        { seed: "gal-03", col: "2 / span 2", row: "1 / span 1" },
-        { seed: "gal-04", col: "2 / span 2", row: "2 / span 2" },
-        { seed: "gal-05", col: "2 / span 2", row: "4 / span 1" },
-        { seed: "gal-06", col: "4 / span 1", row: "1 / span 2" },
-        { seed: "gal-07", col: "4 / span 1", row: "3 / span 1" },
-        { seed: "gal-08", col: "4 / span 1", row: "4 / span 1" },
-        { seed: "gal-09", col: "5 / span 1", row: "1 / span 2" },
-        { seed: "gal-10", col: "6 / span 1", row: "1 / span 2" },
-        { seed: "gal-11", col: "5 / span 2", row: "3 / span 1" },
-        { seed: "gal-12", col: "5 / span 2", row: "4 / span 1" },
-        { seed: "gal-13", col: "1 / span 1", row: "5 / span 2" },
-        { seed: "gal-14", col: "2 / span 2", row: "5 / span 1" },
-        { seed: "gal-15", col: "2 / span 2", row: "6 / span 1" },
-        { seed: "gal-16", col: "4 / span 1", row: "5 / span 2" },
-        { seed: "gal-17", col: "5 / span 1", row: "5 / span 2" },
-        { seed: "gal-18", col: "6 / span 1", row: "5 / span 2" },
+        // Wedding
+        { seed: "gal-01", col: "1 / span 1", row: "1 / span 2", category: "WEDDING" },
+        { seed: "gal-02", col: "1 / span 1", row: "3 / span 2", category: "WEDDING" },
+        { seed: "gal-03", col: "2 / span 2", row: "1 / span 1", category: "WEDDING" },
+        // Pre-Wedding
+        { seed: "gal-04", col: "2 / span 2", row: "2 / span 2", category: "PRE-WEDDING" },
+        { seed: "gal-05", col: "2 / span 2", row: "4 / span 1", category: "PRE-WEDDING" },
+        { seed: "gal-06", col: "4 / span 1", row: "1 / span 2", category: "PRE-WEDDING" },
+        // Candid
+        { seed: "gal-07", col: "4 / span 1", row: "3 / span 1", category: "CANDID" },
+        { seed: "gal-08", col: "4 / span 1", row: "4 / span 1", category: "CANDID" },
+        { seed: "gal-09", col: "5 / span 1", row: "1 / span 2", category: "CANDID" },
+        // Model Shoot
+        { seed: "gal-10", col: "6 / span 1", row: "1 / span 2", category: "MODEL SHOOT" },
+        { seed: "gal-11", col: "5 / span 2", row: "3 / span 1", category: "MODEL SHOOT" },
+        { seed: "gal-12", col: "5 / span 2", row: "4 / span 1", category: "MODEL SHOOT" },
+        // Maternity
+        { seed: "gal-13", col: "1 / span 1", row: "5 / span 2", category: "MATERNITY" },
+        { seed: "gal-14", col: "2 / span 2", row: "5 / span 1", category: "MATERNITY" },
+        { seed: "gal-15", col: "2 / span 2", row: "6 / span 1", category: "MATERNITY" },
+        // Baby Shoot
+        { seed: "gal-16", col: "4 / span 1", row: "5 / span 2", category: "BABY SHOOT" },
+        { seed: "gal-17", col: "5 / span 1", row: "5 / span 2", category: "BABY SHOOT" },
+        { seed: "gal-18", col: "6 / span 1", row: "5 / span 2", category: "BABY SHOOT" },
     ], []);
 
     return (
