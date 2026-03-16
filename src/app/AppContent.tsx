@@ -92,7 +92,6 @@ export default function AppContent() {
                 }))}
             />
 
-            <CameraCTASection />
 
             {/* Intro Stats Section */}
             <section className="relative min-h-[50vh] bg-black px-6 py-24 flex items-center justify-center overflow-hidden">
@@ -153,6 +152,8 @@ export default function AppContent() {
             <VideoEditingTimelineSection />
 
             <WhyChooseUsBookFlipSection />
+
+            <CameraCTASection />
 
             <InfiniteStripsCTASection />
 

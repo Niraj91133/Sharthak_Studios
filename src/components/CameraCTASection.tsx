@@ -18,7 +18,7 @@ export default function CameraCTASection() {
                     src="/camera-cta.png"
                     alt="Photographer holding camera at a wedding"
                     fill
-                    className="object-cover"
+                    className="object-cover grayscale"
                     priority
                 />
             </motion.div>
