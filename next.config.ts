@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     root: "/Users/Niraj/Desktop/sharthak-studio-next",
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: "https",
