@@ -8,11 +8,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const config = {
-  api: {
-    bodyParser: false, // Disabling bodyParser to handle large streaming files if needed
-  },
-};
+// Route Handlers in App Router do not use 'export const config' for bodyParser.
+// Use 'nextConfig.experimental.serverActions.bodySizeLimit' or similar next.config settings instead.
 
 export async function POST(request: Request) {
   try {
