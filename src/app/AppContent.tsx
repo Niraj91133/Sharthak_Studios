@@ -148,6 +148,9 @@ export default function AppContent() {
             {/* Footer */}
             <footer className="bg-black py-32 px-6 border-t border-white/5 text-center">
                 <div className="max-w-4xl mx-auto space-y-16">
+                    <div className="flex justify-center">
+                        <img src="/logo.jpg" alt="Sharthak Studio Logo" className="w-24 h-24 object-contain rounded-full border border-white/10 p-2" />
+                    </div>
                     <h2 className="text-5xl md:text-8xl font-black tracking-tightest leading-none">LET&apos;S CRAFT YOUR STORY</h2>
                     <div className="flex flex-wrap justify-center gap-12 md:gap-24">
                         <div className="space-y-3">

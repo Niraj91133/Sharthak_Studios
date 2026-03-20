@@ -37,8 +37,12 @@ export async function POST(request: Request) {
       resource_type: "auto",
     };
 
+    const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
+    const isImage = file.type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heic'].includes(fileExtension);
+    const isVideo = file.type.startsWith("video/") || ['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(fileExtension);
+
     // 1. IMAGE COMPRESSION (AVIF)
-    if (file.type.startsWith("image/")) {
+    if (isImage) {
       try {
         const sharpBuffer = await sharp(buffer)
           .avif({
@@ -57,10 +61,12 @@ export async function POST(request: Request) {
         };
       } catch (err) {
         console.error("Sharp AVIF conversion failed, uploading original:", err);
+        // Ensure resource_type is set even if sharp fails
+        uploadOptions.resource_type = "image";
       }
     }
     // 2. VIDEO COMPRESSION (Cloudinary Auto Optimization)
-    else if (file.type.startsWith("video/")) {
+    else if (isVideo) {
       uploadOptions = {
         ...uploadOptions,
         resource_type: "video",

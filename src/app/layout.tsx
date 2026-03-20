@@ -14,7 +14,28 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SHARTHAK STUDIO | Premium Wedding Cinema",
-  description: "Luxury wedding photography and cinematography studio capturing timeless emotions.",
+  description: "Luxury wedding photography and cinematography studio capturing timeless emotions with premium video editing and cinema quality.",
+  keywords: ["sharthak studio", "sharthakstudio.com", "sharthak.studio", "wedding photography", "wedding cinematography", "premium wedding cinema", "wedding studio", "professional photographers India"],
+  authors: [{ name: "Sharthak Studio" }],
+  openGraph: {
+    title: "SHARTHAK STUDIO | Premium Wedding Cinema",
+    description: "Luxury wedding photography and cinematography studio capturing timeless emotions.",
+    url: "https://sharthakstudio.com",
+    siteName: "Sharthak Studio",
+    images: [
+      {
+        url: "/logo.jpg",
+        width: 800,
+        height: 600,
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  icons: {
+    icon: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
 };
 
 import { MediaProvider } from "@/context/MediaContext";

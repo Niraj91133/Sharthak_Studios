@@ -35,8 +35,9 @@ export default function UploadZone({ onUpload, accept, isProcessing }: UploadZon
 
     const validateAndUpload = (file: File) => {
         // Basic validation
-        const isVideo = file.type.startsWith("video/");
-        const isImage = file.type.startsWith("image/");
+        const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+        const isVideo = file.type.startsWith("video/") || ['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(fileExtension);
+        const isImage = file.type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heic'].includes(fileExtension);
 
         if (accept.includes("video") && !isVideo) {
             alert("Please upload a video file.");

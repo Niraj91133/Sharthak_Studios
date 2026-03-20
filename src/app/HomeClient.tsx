@@ -22,19 +22,18 @@ const AppContent = dynamic(() => import("./AppContent"), {
       <div style={{ textAlign: "center" }}>
         <div
           style={{
-            width: "40px",
-            height: "40px",
-            border: "3px solid rgba(255,255,255,0.1)",
-            borderTop: "3px solid white",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-            margin: "0 auto 20px"
+            width: "80px",
+            height: "80px",
+            marginBottom: "20px",
+            animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
           }}
-        />
+        >
+          <img src="/logo.jpg" alt="Loading Logo" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%" }} />
+        </div>
         <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+          @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.95); }
           }
         `}</style>
         <p style={{ letterSpacing: "0.2em", fontSize: "11px", opacity: 0.5, fontWeight: "bold" }}>LOADING SHARTHAK STUDIO</p>
