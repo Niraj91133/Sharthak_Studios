@@ -119,7 +119,7 @@ export default function AppContent() {
             />
 
             {/* Feature Slider */}
-            <section className="py-24 bg-white text-black overflow-hidden relative">
+            <section className="bg-white text-black overflow-hidden relative border-t border-white/10">
                 <div className="flex animate-marquee whitespace-nowrap will-change-transform">
                     {[...featureLines, ...featureLines].map((line, i) => (
                         <span key={i} className="text-9xl font-black px-12 tracking-tighter opacity-10 hover:opacity-100 transition-opacity cursor-default">

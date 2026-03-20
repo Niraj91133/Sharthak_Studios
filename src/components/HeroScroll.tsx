@@ -585,9 +585,6 @@ export default function HeroScroll({
                 <div className="text-[11vw] font-semibold tracking-[0.18em] text-white/95 sm:text-[96px]">
                   {heroTitle}
                 </div>
-                <div className="pointer-events-none absolute inset-0 translate-x-1 translate-y-1 text-[11vw] font-semibold tracking-[0.18em] text-yellow-400/70 blur-[0.3px] sm:text-[96px]">
-                  {heroTitle}
-                </div>
               </button>
             </div>
           </div>

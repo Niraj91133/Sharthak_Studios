@@ -17,7 +17,7 @@ export type MediaSlot = {
 
 export const mediaSlots: MediaSlot[] = [
     // Hero Scroll
-    ...Array.from({ length: 10 }, (_, i) => ({
+    ...Array.from({ length: 4 }, (_, i) => ({
         id: `hero-slide-${String(i + 1).padStart(2, "0")}`,
         section: "Hero Scroll",
         frame: `Slide ${i + 1}`,
@@ -25,7 +25,7 @@ export const mediaSlots: MediaSlot[] = [
         currentSrc: `https://picsum.photos/seed/sharthak-${String(i + 1).padStart(2, "0")}/2400/1600`,
         fallbackSrc: `https://picsum.photos/seed/sharthak-${String(i + 1).padStart(2, "0")}/2400/1600`,
         useOnSite: false,
-        categoryLabel: ["PHOTOGRAPHY", "PHOTO EDITING", "VIDEO EDITING"][i % 3],
+        categoryLabel: ["PHOTOGRAPHY", "PHOTO EDITING", "VIDEO EDITING", "CINEMATOGRAPHY"][i % 4],
     })),
 
     // Camera CTA
