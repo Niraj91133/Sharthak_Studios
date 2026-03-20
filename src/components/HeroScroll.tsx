@@ -280,9 +280,9 @@ function DetailSlide({ index, isVisible }: { index: number; isVisible: boolean }
 export default function HeroScroll({
   title = "SHARTHAK STUDIO",
   eyebrow = "SHARTHAK STUDIO",
-  tickerText = "Professional Wedding Photography & Cinematography Team • High Quality Cameras & Cinematic Equipment • 100% Focus on Capturing Real Emotions & Moments • Creative Editing for Photos, Videos & Reels • Experience in Weddings, Maternity, Baby & Event Shoots • On-Time Delivery of Photos & Videos • Friendly & Professional Team That Makes You Comfortable • Affordable Packages with Premium Quality • Trusted by Many Happy Clients • We Turn Your Special Moments Into Beautiful Memories",
-  headerLogoSrc = "/logo.jpg",
-  headerLogoAlt = "Logo",
+  tickerText = "SHARTHAK STUDIO • Best Wedding Photographer & Cinematographer in Bihar • Serving Patna, Gaya, Muzaffarpur, Deoghar, and Entire Bihar • Expert in Wedding, Pre-Wedding, Baby Shoot, Maternity & Event Cinematography • Professional Cinema Camera & Equipment • Cinematic Editing & Premium Color Grading • 100% Client Satisfaction Guaranteed • Capturing Your Timeless Memories In Gaya • Modern Photography Studio in Patna • Reliable & On-Time Photo & Video Delivery",
+  headerLogoSrc = "/logo-white.png",
+  headerLogoAlt = "Sharthak Studio Logo",
 }: HeroScrollProps) {
   const { slots } = useMediaContext();
   const heroSlots = slots.filter(s => s.section === "Hero Scroll");

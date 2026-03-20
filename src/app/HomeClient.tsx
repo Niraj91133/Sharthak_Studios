@@ -28,7 +28,7 @@ const AppContent = dynamic(() => import("./AppContent"), {
             animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
           }}
         >
-          <img src="/logo.jpg" alt="Loading Logo" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%" }} />
+          <img src="/logo-white.png" alt="Loading Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
         <style>{`
           @keyframes pulse {

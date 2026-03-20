@@ -144,7 +144,7 @@ export default function AppContent() {
             <footer className="bg-black py-32 px-6 border-t border-white/5 text-center">
                 <div className="max-w-4xl mx-auto space-y-16">
                     <div className="flex justify-center">
-                        <img src="/logo.jpg" alt="Sharthak Studio Logo" className="w-24 h-24 object-contain rounded-full border border-white/10 p-2" />
+                        <img src="/logo-white.png" alt="Sharthak Studio Logo" className="w-24 h-24 object-contain" />
                     </div>
                     <h2 className="text-5xl md:text-8xl font-black tracking-tightest leading-none">LET&apos;S CRAFT YOUR STORY</h2>
                     <div className="flex flex-wrap justify-center gap-12 md:gap-24">
@@ -160,6 +160,11 @@ export default function AppContent() {
                             <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Instagram</div>
                             <div className="text-2xl font-bold">@sharthak_studio</div>
                         </div>
+                    </div>
+                    {/* Local SEO Cities */}
+                    <div className="text-[10px] tracking-[0.4em] text-white/20 uppercase font-black uppercase max-w-lg mx-auto leading-relaxed">
+                        Serving Premium Cinematography in:<br />
+                        GAYA • PATNA • MUZAFFARPUR • DEOGHAR • BIHAR
                     </div>
                     <div className="pt-24 space-y-6">
                         <button

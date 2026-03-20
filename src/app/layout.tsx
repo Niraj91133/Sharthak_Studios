@@ -13,18 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SHARTHAK STUDIO | Premium Wedding Cinema",
-  description: "Luxury wedding photography and cinematography studio capturing timeless emotions with premium video editing and cinema quality.",
-  keywords: ["sharthak studio", "sharthakstudio.com", "sharthak.studio", "wedding photography", "wedding cinematography", "premium wedding cinema", "wedding studio", "professional photographers India"],
+  title: "SHARTHAK STUDIO | BEST WEDDING PHOTOGRAPHER & CINEMATOGRAPHER | PRE-WEDDING, BABY SHOOT, MATERNITY & EVENT",
+  description: "Top-rated cinematic wedding photographer & filmmaker in Bihar. Specializing in luxury weddings, pre-weddings, maternity shoots, and events across Gaya, Patna, Muzaffarpur, and Deoghar. Timeless emotions captured with premium quality.",
+  keywords: [
+    "sharthak studio", "best wedding photographer in Bihar", "top cinematographer in Gaya",
+    "wedding photography Patna", "pre-wedding shoot Muzaffarpur", "maternity shoot Deoghar",
+    "event photography Bihar", "baby shoot Gaya", "premium wedding cinema",
+    "sharthakstudio.com", "sharthak.studio", "cinematic wedding films India"
+  ],
   authors: [{ name: "Sharthak Studio" }],
   openGraph: {
-    title: "SHARTHAK STUDIO | Premium Wedding Cinema",
-    description: "Luxury wedding photography and cinematography studio capturing timeless emotions.",
+    title: "SHARTHAK STUDIO | Best Wedding Photographer & Cinematographer in Bihar",
+    description: "Capturing cinematic stories across Bihar, Gaya, and Patna. Specialized in Weddings, Pre-Weddings, & Events.",
     url: "https://sharthakstudio.com",
     siteName: "Sharthak Studio",
     images: [
       {
-        url: "/logo.jpg",
+        url: "/logo-white.png",
         width: 800,
         height: 600,
       },
@@ -33,8 +38,8 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/logo.jpg",
-    apple: "/logo.jpg",
+    icon: "/logo-white.png",
+    apple: "/logo-white.png",
   },
 };
 
