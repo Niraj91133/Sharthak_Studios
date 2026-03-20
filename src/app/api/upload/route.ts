@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-import sharp from "sharp";
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -38,42 +37,25 @@ export async function POST(request: Request) {
     };
 
     const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
-    const isImage = file.type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heic'].includes(fileExtension);
+    const isImage = file.type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heic', 'jpg'].includes(fileExtension);
     const isVideo = file.type.startsWith("video/") || ['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(fileExtension);
 
-    // 1. IMAGE COMPRESSION (AVIF)
+    // Optimized Cloudinary settings for high speed and high quality
     if (isImage) {
-      try {
-        const sharpBuffer = await sharp(buffer)
-          .avif({
-            quality: 65, // Ideal balance for AVIF
-            chromaSubsampling: '4:2:0',
-            effort: 4 // Good balance of compression speed and file size
-          })
-          .toBuffer();
-
-        buffer = sharpBuffer as any;
-
-        uploadOptions = {
-          ...uploadOptions,
-          resource_type: "image",
-          format: "avif",
-        };
-      } catch (err) {
-        console.error("Sharp AVIF conversion failed, uploading original:", err);
-        // Ensure resource_type is set even if sharp fails
-        uploadOptions.resource_type = "image";
-      }
-    }
-    // 2. VIDEO COMPRESSION (Cloudinary Auto Optimization)
-    else if (isVideo) {
+      uploadOptions = {
+        ...uploadOptions,
+        resource_type: "image",
+        quality: "auto:best",
+        fetch_format: "auto",
+      };
+    } else if (isVideo) {
       uploadOptions = {
         ...uploadOptions,
         resource_type: "video",
-        // Cloudinary incoming transformations for high compression
+        quality: "auto:best",
         transformation: [
-          { quality: "auto:eco" }, // High compression
-          { fetch_format: "auto" } // Modern codecs (AV1/H.265)
+          { quality: "auto:best" },
+          { fetch_format: "auto" }
         ],
       };
     }
