@@ -111,6 +111,8 @@ export default function AppContent() {
 
     return (
         <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+            <InfiniteStripsCTASection />
+
             <HeroScroll
                 title="SHARTHAK STUDIO"
                 eyebrow="SHARTHAK STUDIO"
@@ -142,8 +144,6 @@ export default function AppContent() {
             <CameraCTASection />
 
             <WhyChooseUsSection />
-
-            <InfiniteStripsCTASection />
 
             {/* Footer */}
             <footer className="bg-black py-32 px-6 border-t border-white/5 text-center">

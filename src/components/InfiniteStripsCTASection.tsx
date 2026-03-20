@@ -71,8 +71,9 @@ export default function InfiniteStripsCTASection() {
 
         <div className="flex min-h-[380px] w-full items-center justify-center px-6 py-20">
           <div className="text-center">
-            <div className="text-[clamp(28px,4.8vw,64px)] font-light tracking-[0.22em] text-white/95">
-              GET YOUR MOMENT CAPTURE
+            <div className="text-[clamp(28px,4.2vw,56px)] font-black tracking-[0.15em] text-white/95 leading-tight">
+              SHARTHAK STUDIO<br />
+              <span className="text-sm font-medium tracking-[0.4em] text-white/40 block mt-4 uppercase">Capturing Timeless Moments & Cinematic Stories</span>
             </div>
             <a
               href="#contact"
