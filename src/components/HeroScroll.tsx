@@ -557,60 +557,62 @@ export default function HeroScroll({
           </div>
         </div>
 
-        <div className="relative z-10 h-full">
-          <div
-            className="absolute inset-x-0 top-14 text-center text-xs tracking-[0.45em] text-white/80"
-            style={{ opacity: eyebrowOpacity }}
-          >
-            {eyebrow}
-          </div>
-
-          <div
-            className="absolute inset-x-0 top-[18svh] px-6 text-center"
-            style={{
-              transform: `translate3d(0, ${titleTranslateY}svh, 0) scale(${titleScale})`,
-              transformOrigin: "center top",
-            }}
-          >
-            <div className="mx-auto max-w-6xl select-none">
-              <button
-                type="button"
-                onClick={openDetail}
-                className="relative inline-block bg-transparent p-0 text-inherit"
-                style={{
-                  cursor: intro < 1 || detail ? "default" : "pointer",
-                  border: "none",
-                }}
-              >
-                <div className="text-[11vw] font-semibold tracking-[0.18em] text-white/95 sm:text-[96px]">
-                  {heroTitle}
-                </div>
-              </button>
+        {title && (
+          <div className="relative z-10 h-full">
+            <div
+              className="absolute inset-x-0 top-14 text-center text-xs tracking-[0.45em] text-white/80"
+              style={{ opacity: eyebrowOpacity }}
+            >
+              {eyebrow}
             </div>
-          </div>
 
-          <div
-            className="absolute inset-x-0"
-            style={{
-              top: `${splitTop}svh`,
-              opacity: tickerOpacity,
-            }}
-          >
-            <div className="film-ticker">
-              <div className="film-ticker__perfs" aria-hidden="true" />
-              <div className="film-ticker__window">
-                <div className="marquee h-full">
-                  <div className="marquee__track">
-                    <span className="marquee__content">{tickerText}</span>
-                    <span className="marquee__gap" aria-hidden="true"> • </span>
-                    <span className="marquee__content" aria-hidden="true">{tickerText}</span>
+            <div
+              className="absolute inset-x-0 top-[18svh] px-6 text-center"
+              style={{
+                transform: `translate3d(0, ${titleTranslateY}svh, 0) scale(${titleScale})`,
+                transformOrigin: "center top",
+              }}
+            >
+              <div className="mx-auto max-w-6xl select-none">
+                <button
+                  type="button"
+                  onClick={openDetail}
+                  className="relative inline-block bg-transparent p-0 text-inherit"
+                  style={{
+                    cursor: intro < 1 || detail ? "default" : "pointer",
+                    border: "none",
+                  }}
+                >
+                  <div className="text-[11vw] font-semibold tracking-[0.18em] text-white/95 sm:text-[96px]">
+                    {heroTitle}
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div
+              className="absolute inset-x-0"
+              style={{
+                top: `${splitTop}svh`,
+                opacity: tickerOpacity,
+              }}
+            >
+              <div className="film-ticker">
+                <div className="film-ticker__perfs" aria-hidden="true" />
+                <div className="film-ticker__window">
+                  <div className="marquee h-full">
+                    <div className="marquee__track">
+                      <span className="marquee__content">{tickerText}</span>
+                      <span className="marquee__gap" aria-hidden="true"> • </span>
+                      <span className="marquee__content" aria-hidden="true">{tickerText}</span>
+                    </div>
                   </div>
                 </div>
+                <div className="film-ticker__perfs" aria-hidden="true" />
               </div>
-              <div className="film-ticker__perfs" aria-hidden="true" />
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
