@@ -43,28 +43,5 @@ const AppContent = dynamic(() => import("./AppContent"), {
 });
 
 export default function HomeClient() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          backgroundColor: "black",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "white"
-        }}
-      >
-        <p style={{ letterSpacing: "0.3em", fontSize: "10px", opacity: 0.4 }}>READY</p>
-      </div>
-    );
-  }
-
   return <AppContent />;
 }

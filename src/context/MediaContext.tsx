@@ -19,7 +19,7 @@ const MediaContext = createContext<MediaContextType | undefined>(undefined);
 
 export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [slots, setSlots] = useState<MediaSlot[]>(initialMediaSlots);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Fetch slots from Supabase on mount
     useEffect(() => {
