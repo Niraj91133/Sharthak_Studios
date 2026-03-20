@@ -11,6 +11,8 @@ interface MediaContextType {
     getSlot: (id: string) => MediaSlot | undefined;
     uploadFile: (id: string, file: File) => Promise<void>;
     deleteFile: (id: string) => Promise<void>;
+    addSlot: (slot: MediaSlot) => Promise<void>;
+    deleteSlot: (id: string) => Promise<void>;
     allMedia: { id: string; url: string; name: string; section: string; type: string }[];
     isLoading: boolean;
 }
@@ -30,20 +32,25 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     .select('*');
 
                 if (error) {
-                    // If table doesn't exist yet, we'll use initialMediaSlots
                     console.warn("Supabase table 'media_slots' not found. Using local initial data.", error);
                     setIsLoading(false);
                     return;
                 }
 
                 if (data && data.length > 0) {
-                    // Map Supabase data back to MediaSlot type
-                    const mappedSlots = initialMediaSlots.map(initial => {
-                        const dbSlot = data.find(d => d.id === initial.id);
+                    // Start with initial slots and merge DB data
+                    // Also include any slots that are ONLY in the DB
+                    const dbSlotMap = new Map();
+                    data.forEach(d => dbSlotMap.set(d.id, d));
+
+                    const mergedSlots = initialMediaSlots.map(initial => {
+                        const dbSlot = dbSlotMap.get(initial.id);
                         if (dbSlot) {
+                            dbSlotMap.delete(initial.id); // Remove so we know what's left
                             return {
                                 ...initial,
                                 useOnSite: dbSlot.use_on_site,
+                                categoryLabel: dbSlot.category_label || initial.categoryLabel,
                                 uploadedFile: dbSlot.uploaded_file_url ? {
                                     name: dbSlot.uploaded_file_name,
                                     url: dbSlot.uploaded_file_url,
@@ -54,7 +61,28 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                         }
                         return initial;
                     });
-                    setSlots(mappedSlots);
+
+                    // Add purely dynamic slots from the DB
+                    dbSlotMap.forEach((dbSlot, id) => {
+                        mergedSlots.push({
+                            id,
+                            section: dbSlot.section,
+                            frame: dbSlot.frame || 'Dynamic',
+                            type: dbSlot.type || 'image',
+                            currentSrc: dbSlot.uploaded_file_url || '',
+                            fallbackSrc: '',
+                            useOnSite: dbSlot.use_on_site,
+                            categoryLabel: dbSlot.category_label,
+                            uploadedFile: dbSlot.uploaded_file_url ? {
+                                name: dbSlot.uploaded_file_name,
+                                url: dbSlot.uploaded_file_url,
+                                size: dbSlot.uploaded_file_size,
+                                uploadedAt: dbSlot.uploaded_at
+                            } : undefined
+                        });
+                    });
+
+                    setSlots(mergedSlots);
                 }
             } catch (err) {
                 console.error("Error fetching media slots:", err);
@@ -73,6 +101,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Update Supabase
         const dbUpdates: any = {};
         if (updates.useOnSite !== undefined) dbUpdates.use_on_site = updates.useOnSite;
+        if (updates.categoryLabel !== undefined) dbUpdates.category_label = updates.categoryLabel;
 
         if (Object.keys(dbUpdates).length > 0) {
             const { error } = await supabase
@@ -138,14 +167,15 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
 
         // 2. Update Supabase Database with Cloudinary URL
-        const initial = initialMediaSlots.find(s => s.id === id);
+        const currentSlot = slots.find(s => s.id === id);
         const { error: dbError } = await supabase
             .from('media_slots')
             .upsert({
                 id,
-                section: initial?.section || 'Unknown',
-                frame: initial?.frame || 'Unknown',
-                type: initial?.type || 'image',
+                section: currentSlot?.section || 'Unknown',
+                frame: currentSlot?.frame || 'Unknown',
+                type: currentSlot?.type || 'image',
+                category_label: currentSlot?.categoryLabel,
                 uploaded_file_name: uploadedFile.name,
                 uploaded_file_url: uploadedFile.url,
                 uploaded_file_size: uploadedFile.size,
@@ -199,6 +229,29 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         );
     };
 
+    const addSlot = async (slot: MediaSlot) => {
+        setSlots(prev => [...prev, slot]);
+        const { error } = await supabase.from('media_slots').upsert({
+            id: slot.id,
+            section: slot.section,
+            frame: slot.frame,
+            type: slot.type,
+            use_on_site: slot.useOnSite,
+            category_label: slot.categoryLabel,
+            uploaded_file_url: slot.uploadedFile?.url,
+            uploaded_file_name: slot.uploadedFile?.name,
+            uploaded_file_size: slot.uploadedFile?.size,
+            uploaded_at: slot.uploadedFile?.uploadedAt
+        });
+        if (error) console.error("Error adding slot to database:", error);
+    };
+
+    const deleteSlot = async (id: string) => {
+        setSlots(prev => prev.filter(s => s.id !== id));
+        const { error } = await supabase.from('media_slots').delete().eq('id', id);
+        if (error) console.error("Error deleting slot from database:", error);
+    };
+
     const allMedia = slots
         .filter((s) => s.uploadedFile)
         .map((s) => ({
@@ -211,7 +264,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     return (
         <MediaContext.Provider
-            value={{ slots, updateSlot, resetSlot, getSlot, uploadFile, deleteFile, allMedia, isLoading }}
+            value={{ slots, updateSlot, resetSlot, getSlot, uploadFile, deleteFile, addSlot, deleteSlot, allMedia, isLoading }}
         >
             {children}
         </MediaContext.Provider>

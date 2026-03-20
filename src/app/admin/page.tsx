@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMediaContext } from "@/context/MediaContext";
 import SectionCard from "@/components/admin/SectionCard";
 import GlobalMediaPanel from "@/components/admin/GlobalMediaPanel";
+import GalleryManager from "@/components/admin/GalleryManager";
 
 export default function AdminDashboard() {
     const { slots } = useMediaContext();
@@ -112,12 +113,22 @@ export default function AdminDashboard() {
 
                         <div className="space-y-4">
                             {sections.map((section) => (
-                                <SectionCard
-                                    key={section.title}
-                                    title={section.title}
-                                    slots={section.slots}
-                                    accentColor={section.accentColor}
-                                />
+                                section.title === "Gallery Section" ? (
+                                    <div key={section.title} className="space-y-4">
+                                        <div className="flex items-center gap-2 px-2">
+                                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: section.accentColor }} />
+                                            <h3 className="text-[11px] font-black tracking-[0.4em] uppercase text-white/40">{section.title}</h3>
+                                        </div>
+                                        <GalleryManager />
+                                    </div>
+                                ) : (
+                                    <SectionCard
+                                        key={section.title}
+                                        title={section.title}
+                                        slots={section.slots}
+                                        accentColor={section.accentColor}
+                                    />
+                                )
                             ))}
                         </div>
                     </div>

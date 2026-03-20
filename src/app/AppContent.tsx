@@ -4,6 +4,8 @@ import { useMemo, useEffect, useRef } from "react";
 import Lenis from "lenis";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { useMediaContext } from "@/context/MediaContext";
+import { MediaSlot } from "@/lib/mediaSlots";
 
 // Components
 import HeroScroll from "@/components/HeroScroll";
@@ -59,41 +61,30 @@ export default function AppContent() {
         "Storytelling Style", "Perfect Lighting", "Memorable Frames", "Smooth Reels",
     ], []);
 
-    const galleryTabs = useMemo(() => [
-        { label: "WEDDING" },
-        { label: "PRE-WEDDING" },
-        { label: "CANDID" },
-        { label: "MODEL SHOOT" },
-        { label: "MATERNITY" },
-        { label: "BABY SHOOT" },
-    ], []);
+    const { slots } = useMediaContext();
 
-    const galleryItems = useMemo(() => [
-        // Wedding
-        { seed: "gal-01", col: "1 / span 1", row: "1 / span 2", category: "WEDDING" },
-        { seed: "gal-02", col: "1 / span 1", row: "3 / span 2", category: "WEDDING" },
-        { seed: "gal-03", col: "2 / span 2", row: "1 / span 1", category: "WEDDING" },
-        // Pre-Wedding
-        { seed: "gal-04", col: "2 / span 2", row: "2 / span 2", category: "PRE-WEDDING" },
-        { seed: "gal-05", col: "2 / span 2", row: "4 / span 1", category: "PRE-WEDDING" },
-        { seed: "gal-06", col: "4 / span 1", row: "1 / span 2", category: "PRE-WEDDING" },
-        // Candid
-        { seed: "gal-07", col: "4 / span 1", row: "3 / span 1", category: "CANDID" },
-        { seed: "gal-08", col: "4 / span 1", row: "4 / span 1", category: "CANDID" },
-        { seed: "gal-09", col: "5 / span 1", row: "1 / span 2", category: "CANDID" },
-        // Model Shoot
-        { seed: "gal-10", col: "6 / span 1", row: "1 / span 2", category: "MODEL SHOOT" },
-        { seed: "gal-11", col: "5 / span 2", row: "3 / span 1", category: "MODEL SHOOT" },
-        { seed: "gal-12", col: "5 / span 2", row: "4 / span 1", category: "MODEL SHOOT" },
-        // Maternity
-        { seed: "gal-13", col: "1 / span 1", row: "5 / span 2", category: "MATERNITY" },
-        { seed: "gal-14", col: "2 / span 2", row: "5 / span 1", category: "MATERNITY" },
-        { seed: "gal-15", col: "2 / span 2", row: "6 / span 1", category: "MATERNITY" },
-        // Baby Shoot
-        { seed: "gal-16", col: "4 / span 1", row: "5 / span 2", category: "BABY SHOOT" },
-        { seed: "gal-17", col: "5 / span 1", row: "5 / span 2", category: "BABY SHOOT" },
-        { seed: "gal-18", col: "6 / span 1", row: "5 / span 2", category: "BABY SHOOT" },
-    ], []);
+    const galleryTabs = useMemo(() => {
+        const gallerySlots = slots.filter((s: MediaSlot) => s.section === "Gallery Section");
+        const set = new Set(gallerySlots.map((s: MediaSlot) => s.categoryLabel).filter(Boolean));
+        // Fallback to defaults if no custom ones added
+        if (set.size === 0) {
+            ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"].forEach(c => set.add(c));
+        }
+        return Array.from(set).map(cat => ({ label: cat as string }));
+    }, [slots]);
+
+    const galleryItems = useMemo(() => {
+        const gallerySlots = slots.filter((s: MediaSlot) => s.section === "Gallery Section");
+        // We only want items that actually have content or were intended for display
+        return gallerySlots.map((s: MediaSlot, i: number) => ({
+            id: s.id,
+            seed: s.id,
+            // For dynamic items, we assign a default grid position if not specified
+            col: (i % 3 === 0) ? "1 / span 1" : (i % 3 === 1) ? "2 / span 2" : "4 / span 1",
+            row: (Math.floor(i / 3) * 2 + 1) + " / span 2",
+            category: s.categoryLabel || "WEDDING"
+        }));
+    }, [slots]);
 
     const handleAdminLogin = () => {
         const id = window.prompt("Enter Admin ID:");
