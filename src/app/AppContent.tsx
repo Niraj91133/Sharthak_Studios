@@ -101,7 +101,7 @@ export default function AppContent() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+        <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
             <InfiniteStripsCTASection />
             {/* Feature Slider */}
             <section className="bg-white text-black overflow-hidden relative border-t border-white/10">
