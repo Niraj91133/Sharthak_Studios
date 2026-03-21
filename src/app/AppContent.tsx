@@ -72,17 +72,16 @@ export default function AppContent() {
     }, [slots]);
 
     const galleryItems = useMemo(() => {
-        const gallerySlots = slots.filter((s: MediaSlot) => s.section.includes("GALLERY")).slice(0, 10);
+        const gallerySlots = slots.filter((s: MediaSlot) => s.section.includes("GALLERY"));
         return gallerySlots.map((s: MediaSlot, i: number) => {
             const mod = i % 10;
-            let col = "span 1";
-            let row = "span 3";
+            let col = "span 2";
+            let row = "span 2";
 
-            // 8-column desktop strategy for 10 items
-            if (mod >= 8) {
-                col = "span 4";
-                row = "span 2";
-            }
+            // Create a varied masonry-like layout
+            if (i % 7 === 0) { col = "span 4"; row = "span 3"; }
+            else if (i % 5 === 0) { col = "span 3"; row = "span 2"; }
+            else if (i % 3 === 0) { col = "span 2"; row = "span 3"; }
 
             return {
                 id: s.id,

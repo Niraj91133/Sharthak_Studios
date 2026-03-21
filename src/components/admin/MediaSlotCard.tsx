@@ -7,9 +7,10 @@ import UploadZone from "./UploadZone";
 
 interface MediaSlotCardProps {
     slot: MediaSlot;
+    allCategories?: string[];
 }
 
-export default function MediaSlotCard({ slot }: MediaSlotCardProps) {
+export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProps) {
     const { uploadFile, deleteFile, updateSlot } = useMediaContext();
     const [isUploading, setIsUploading] = useState(false);
 
@@ -158,13 +159,25 @@ export default function MediaSlotCard({ slot }: MediaSlotCardProps) {
 
             {slot.categoryLabel !== undefined && (
                 <div className="pt-2 border-t border-white/[0.03]">
-                    <label className="block text-[8px] uppercase tracking-widest text-white/30 mb-1">Category Label</label>
-                    <input
-                        type="text"
-                        value={slot.categoryLabel}
-                        onChange={(e) => updateSlot(slot.id, { categoryLabel: e.target.value })}
-                        className="w-full bg-black/50 border border-white/10 rounded px-2 py-1 text-[10px] text-white/80 focus:outline-none focus:border-white/30"
-                    />
+                    <label className="block text-[8px] uppercase tracking-widest text-white/30 mb-1.5">Category Section</label>
+                    {allCategories ? (
+                        <select
+                            value={slot.categoryLabel}
+                            onChange={(e) => updateSlot(slot.id, { categoryLabel: e.target.value })}
+                            className="w-full bg-black/50 border border-white/10 rounded px-2 py-1.5 text-[10px] text-white/80 focus:outline-none focus:border-white/30 cursor-pointer appearance-none"
+                        >
+                            {allCategories.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                    ) : (
+                        <input
+                            type="text"
+                            value={slot.categoryLabel}
+                            onChange={(e) => updateSlot(slot.id, { categoryLabel: e.target.value })}
+                            className="w-full bg-black/50 border border-white/10 rounded px-2 py-1.5 text-[10px] text-white/80 focus:outline-none focus:border-white/30"
+                        />
+                    )}
                 </div>
             )}
         </div>

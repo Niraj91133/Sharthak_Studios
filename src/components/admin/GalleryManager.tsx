@@ -171,12 +171,17 @@ export default function GalleryManager() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {activeSlots.map((slot) => (
                         <div key={slot.id} className="relative group">
-                            <MediaSlotCard slot={slot} />
+                            <MediaSlotCard slot={slot} allCategories={categories} />
                             <button
-                                onClick={() => deleteSlot(slot.id)}
-                                className="absolute top-2 right-2 w-7 h-7 bg-red-600/80 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[12px] opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
+                                onClick={() => {
+                                    if (confirm("Delete this image from gallery?")) deleteSlot(slot.id);
+                                }}
+                                className="absolute top-2 right-2 w-8 h-8 bg-red-600/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[14px] opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-xl border-2 border-white/20"
+                                title="Delete Image"
                             >
-                                ✕
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
                         </div>
                     ))}
