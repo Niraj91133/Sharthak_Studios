@@ -193,9 +193,9 @@ export default function ExpertiseSection() {
 
   return (
     <section className="w-full overflow-x-hidden bg-black px-6 py-20 text-white">
-      <div className="mx-auto w-full max-w-none">
+      <div className="mx-auto w-full max-w-7xl">
         <h2
-          className="text-center text-5xl font-semibold tracking-[0.12em] sm:text-6xl"
+          className="text-center text-4xl font-extrabold tracking-[0.2em] sm:text-7xl uppercase"
           style={{
             fontFamily:
               'ui-serif, "Cormorant Garamond", Georgia, "Times New Roman", serif',
@@ -204,16 +204,16 @@ export default function ExpertiseSection() {
           CHOOSE YOUR EXPERTISE
         </h2>
         <div
-          className="mt-3 text-center text-2xl tracking-wide text-[#B6FF00]/90"
+          className="mt-6 text-center text-xl font-medium tracking-[0.15em] text-[#B6FF00]"
           style={{
             fontFamily:
               'ui-sans-serif, "Annie Use Your Telescope", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif',
           }}
         >
-          YOUR DAY WITH OUR EXPERTS
+          YOUR DAY WITH OUR EXPERTS • CRAFTING STORIES SINCE 2012
         </div>
 
-        <div className="mt-16 flex w-full items-center justify-center">
+        <div className="mt-20 flex w-full items-center justify-center">
           <div
             className="relative mx-auto w-full max-w-[1440px] select-none overflow-hidden"
             style={{ height: 480 }}
