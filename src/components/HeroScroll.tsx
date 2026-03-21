@@ -84,7 +84,7 @@ function SlideImage({ index, slideT, priority = false }: { index: number; slideT
         fill
         priority={priority}
         sizes="100vw"
-        className="object-cover contrast-125 grayscale hover:grayscale-0 transition-all duration-1000"
+        className="object-contain md:object-cover contrast-125 grayscale hover:grayscale-0 transition-all duration-1000"
       />
     </div>
   );
@@ -119,13 +119,80 @@ export default function HeroScroll({
   const currentCategory = heroSlots[activeSlideIndex]?.categoryLabel || "";
   const heroTitle = intro < 1 ? "STUDIO" : (heroSlots[titleSlideIndex]?.categoryLabel || "SHARTHAK");
 
-  const imageHeight = lerp(52, 100, intro);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const imageHeight = isMobile ? lerp(28, 48, intro) : lerp(52, 100, intro);
   const splitTop = 100 - imageHeight;
   const titleTranslateY = lerp(0, 44, intro);
-  const titleScale = lerp(1, 0.78, intro);
+  const titleScale = isMobile ? lerp(0.9, 0.75, intro) : lerp(1, 0.78, intro);
   const tickerOpacity = lerp(1, 0, clamp01(intro * 1.4));
   const categoryOpacity = lerp(0.75, 1, clamp01(intro * 1.2));
   const categoryTranslateY = lerp(10, 0, clamp01(intro * 1.2));
+
+  if (isMobile) {
+    const displayImages = heroSlots.length > 0
+      ? heroSlots.map((s) => s.uploadedFile?.url || s.currentSrc)
+      : Array.from({ length: 6 }).map((_, i) => `https://picsum.photos/seed/sharthak-${i}/400/300`);
+
+    return (
+      <section className="relative bg-black w-full overflow-hidden" style={{ height: "694px" }}>
+        <div className="flex flex-col h-full w-full py-[48px] px-[24px]">
+          {/* Top Scrolling Strip */}
+          <div className="w-full h-[116px] overflow-hidden shrink-0">
+            <div className="flex gap-[12px] animate-marquee whitespace-nowrap">
+              {displayImages.concat(displayImages).map((src, i) => (
+                <div key={i} className="relative w-[174px] h-[116px] flex-shrink-0">
+                  <Image
+                    src={src}
+                    alt=""
+                    width={174}
+                    height={116}
+                    className="rounded-[8px] object-cover contrast-125"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Center Content Section */}
+          <div className="flex-1 flex flex-col items-center justify-center" style={{ paddingTop: "99px", paddingBottom: "99px" }}>
+            <h1 className="text-[28px] font-bold tracking-[4px] text-white text-center leading-none uppercase">
+              SHARTHAK STUDIO
+            </h1>
+            <p className="mt-[12px] text-[14px] font-normal tracking-[3px] leading-[1.6] text-[#A1A1A1] text-center max-w-[280px] uppercase">
+              CAPTURING TIMELESS MOMENTS & CINEMATIC STORIES
+            </p>
+            <button className="mt-[32px] w-[320px] h-[46px] border border-white rounded-[4px] text-white text-[14px] font-medium tracking-[2px] bg-transparent active:bg-white/10 transition-colors uppercase cursor-pointer">
+              CONTACT US
+            </button>
+          </div>
+
+          {/* Bottom Scrolling Strip */}
+          <div className="w-full h-[116px] overflow-hidden shrink-0">
+            <div className="flex gap-[12px] animate-marquee whitespace-nowrap" style={{ animationDirection: "reverse" }}>
+              {displayImages.concat(displayImages).map((src, i) => (
+                <div key={i} className="relative w-[174px] h-[116px] flex-shrink-0">
+                  <Image
+                    src={src}
+                    alt=""
+                    width={174}
+                    height={116}
+                    className="rounded-[8px] object-cover contrast-125"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -150,10 +217,10 @@ export default function HeroScroll({
             ))}
           </div>
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-black via-black/40 to-transparent" />
+          <div className={`pointer-events-none absolute inset-x-0 bottom-0 ${isMobile ? 'h-32' : 'h-96'} bg-gradient-to-t from-black via-black/40 to-transparent`} />
 
           {/* Dynamic Category Tag */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-20 flex flex-col items-center gap-4">
+          <div className={`pointer-events-none absolute inset-x-0 ${isMobile ? 'bottom-8' : 'bottom-20'} flex flex-col items-center gap-4`}>
             <div className="h-0.5 w-12 bg-[#B6FF00] opacity-40" />
             {!!currentCategory && (
               <div
