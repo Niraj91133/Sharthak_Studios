@@ -8,7 +8,7 @@ export interface Blog {
     id: string;
     title: string;
     excerpt: string;
-    content: any[]; // Systematic blocks
+    content: string; // Systematic HTML string
     date: string;
     image: string;
     category: string;
@@ -75,13 +75,13 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                         date: b.created_at,
                         image: b.image_url,
                         category: b.category,
-                        content: b.content_blocks || []
+                        content: b.content_blocks || ""
                     })));
                 } else {
                     console.log("ℹ️ No blogs found or fetch empty. Using dummy.");
                     // Seed dummy blogs for demo/initial
                     setBlogs([
-                        { id: "wedding-light-guide", title: "The Art of Natural Light", excerpt: "Cinemtic guide to lights.", date: "2026-03-15", image: "https://images.unsplash.com/photo-1519741497674-611481863552", category: "TECHNIQUE", content: [] }
+                        { id: "wedding-light-guide", title: "The Art of Natural Light", excerpt: "Cinemtic guide to lights.", date: "2026-03-15", image: "https://images.unsplash.com/photo-1519741497674-611481863552", category: "TECHNIQUE", content: "<p>Cinematic light guide...</p>" }
                     ]);
                 }
             } catch (err) { console.error("Error fetching data:", err); }

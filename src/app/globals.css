@@ -573,3 +573,61 @@ html[data-game="playing"] .hero-scroll__header {
     opacity: 0;
   }
 }
+.systematic-rich-text {
+  font-family: inherit;
+}
+
+.systematic-rich-text p {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: rgba(0, 0, 0, 0.75);
+  margin-bottom: 2.25rem;
+  font-weight: 500;
+}
+
+.systematic-rich-text h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  margin-top: 4.5rem;
+  margin-bottom: 1.75rem;
+  color: #000;
+  line-height: 1.05;
+}
+
+.systematic-rich-text img {
+  width: 100%;
+  border-radius: 3rem;
+  margin: 3.5rem 0;
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.systematic-rich-text blockquote {
+  border-left: 8px solid #000;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 3rem;
+  margin: 3.5rem 0;
+  border-radius: 0 2.5rem 2.5rem 0;
+}
+
+.systematic-rich-text blockquote p {
+  font-size: 2rem;
+  font-weight: 900;
+  font-style: italic;
+  color: #111;
+  margin-bottom: 0;
+  line-height: 1.15;
+}
+
+.systematic-rich-text ul, .systematic-rich-text ol {
+  margin: 2.5rem 0;
+  padding-left: 2rem;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.systematic-rich-text li {
+  margin-bottom: 1.25rem;
+  font-size: 1.2rem;
+}

@@ -50,79 +50,50 @@ function BlogPostContent() {
                 </div>
             </nav>
 
-            {/* Hero Header - Based on reference image layout */}
-            <header className="pt-32 pb-12 px-6">
+            {/* Featured Photo - Large Pill Design (Pure Image, No Text) */}
+            <header className="pt-32 pb-8 px-6">
                 <div className="max-w-6xl mx-auto">
-                    <div className="relative w-full aspect-[21/9] rounded-[2.5rem] md:rounded-[4rem] overflow-hidden group shadow-2xl">
-                        {/* Background Image */}
+                    <div className="relative w-full aspect-[21/9] rounded-[2.5rem] md:rounded-[4rem] overflow-hidden shadow-2xl border border-black/5">
                         <img
                             src={blog.image}
                             alt={blog.title}
-                            className="w-full h-full object-cover transform active:scale-105 transition-transform duration-1000"
+                            className="w-full h-full object-cover"
                         />
-                        {/* Text Overlay - Title and Subtitle over image as requested */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-8 md:p-16">
-                            <div className="max-w-4xl space-y-4 md:space-y-6">
-                                <div className="flex gap-4">
-                                    <span className="px-4 py-1.5 bg-white/20 backdrop-blur-lg rounded-full text-[9px] font-black tracking-widest text-white uppercase border border-white/20 inline-block">
-                                        {blog.category}
-                                    </span>
-                                    <span className="px-4 py-1.5 bg-white/20 backdrop-blur-lg rounded-full text-[9px] font-black tracking-widest text-white uppercase border border-white/20 inline-block">
-                                        {new Date(blog.date).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <h1 className="text-4xl md:text-8xl font-black tracking-tightest leading-[1.05] text-white uppercase drop-shadow-2xl h-auto">
-                                    {blog.title}
-                                </h1>
-                                <p className="text-base md:text-xl text-white/70 max-w-xl font-medium tracking-wide">
-                                    {blog.excerpt}
-                                </p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </header>
 
-            {/* Systematic Content Section */}
-            <main className="max-w-4xl mx-auto px-6 py-12">
-                <article className="space-y-12">
-                    {blog.content?.map((item, idx) => {
-                        if (item.type === "p") {
-                            return <p key={idx} className="text-base md:text-xl text-black/70 leading-relaxed font-normal tracking-wide px-2">{item.text}</p>;
-                        }
-                        if (item.type === "h2") {
-                            return (
-                                <div key={idx} className="pt-12 pb-4 px-2 border-b border-black/5 mb-8">
-                                    <h2 className="text-3xl md:text-5xl font-black tracking-tightest leading-tight uppercase text-black">{item.text}</h2>
-                                </div>
-                            );
-                        }
-                        if (item.type === "img") {
-                            return (
-                                <figure key={idx} className="space-y-6 pt-10 pb-10">
-                                    <div className="relative aspect-video rounded-[3rem] overflow-hidden shadow-2xl border border-black/5">
-                                        <img src={item.src} alt={item.text} className="w-full h-full object-cover transition-all duration-700" />
-                                    </div>
-                                    <figcaption className="text-center text-[10px] uppercase font-bold tracking-[0.4em] text-black/30 bg-black/5 py-4 rounded-full mx-auto max-w-md">{item.caption}</figcaption>
-                                </figure>
-                            );
-                        }
-                        if (item.type === "quote") {
-                            return (
-                                <div key={idx} className="p-12 md:p-20 bg-[#F4F4F4] rounded-[3rem] md:rounded-[4rem] border border-black/5 shadow-inner">
-                                    <p className="text-2xl md:text-4xl font-black italic tracking-tightest leading-tight text-black text-center max-w-2xl mx-auto">
-                                        “{item.text}”
-                                    </p>
-                                    <div className="w-12 h-1 bg-black/10 mx-auto mt-8 rounded-full" />
-                                </div>
-                            );
-                        }
-                        return null;
-                    })}
-                </article>
+            {/* Title & Metadata - Below the Photo as requested */}
+            <section className="max-w-4xl mx-auto px-6 py-12 text-center md:text-left">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-8">
+                    <span className="px-5 py-1.5 bg-black/5 rounded-full text-[10px] font-black tracking-widest text-black/40 uppercase border border-black/5">
+                        {blog.category}
+                    </span>
+                    <span className="px-5 py-1.5 bg-black/5 rounded-full text-[10px] font-black tracking-widest text-black/40 uppercase border border-black/5">
+                        {new Date(blog.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </span>
+                </div>
+
+                <h1 className="text-4xl md:text-7xl font-black tracking-tightest leading-[1.05] uppercase text-black mb-6">
+                    {blog.title}
+                </h1>
+
+                <p className="text-lg md:text-2xl text-black/40 font-medium tracking-wide max-w-2xl">
+                    {blog.excerpt}
+                </p>
+
+                <div className="h-px w-full bg-black/5 mt-16" />
+            </section>
+
+            {/* HTML Content Render - Using Systematic dangerouslySetInnerHTML */}
+            <main className="max-w-4xl mx-auto px-6 py-8">
+                <div
+                    className="systematic-rich-text"
+                    dangerouslySetInnerHTML={{ __html: blog.content }}
+                />
             </main>
 
-            {/* Horizontal Scrollable Recent Blogs */}
+            {/* Horizontal Scroll Recent Blogs */}
             <section className="mt-32 border-t border-black/5 pt-32 mb-20">
                 <div className="max-w-6xl mx-auto px-6">
                     <div className="flex items-center justify-between mb-16">
