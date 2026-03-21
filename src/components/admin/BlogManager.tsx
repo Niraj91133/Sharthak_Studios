@@ -2,10 +2,13 @@
 
 import React, { useState } from "react";
 import { useMediaContext, Blog } from "@/context/MediaContext";
+import UploadZone from "./UploadZone";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export default function BlogManager() {
     const { blogs, addBlog, deleteBlog } = useMediaContext();
     const [isCreating, setIsCreating] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [newBlog, setNewBlog] = useState<Partial<Blog>>({
         title: "",
         excerpt: "",
@@ -15,6 +18,30 @@ export default function BlogManager() {
     });
 
     const categories = ["TECHNIQUE", "LOCATIONS", "TRENDS", "TIPS"];
+
+    const handleFeatureUpload = async (file: File) => {
+        setIsUploading(true);
+        try {
+            const url = await uploadToCloudinary(file);
+            setNewBlog(prev => ({ ...prev, image: url }));
+        } catch (e) {
+            alert("Upload failed.");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleBlockImageUpload = async (index: number, file: File) => {
+        setIsUploading(true);
+        try {
+            const url = await uploadToCloudinary(file);
+            updateBlock(index, { src: url });
+        } catch (e) {
+            alert("Upload failed.");
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleAddBlock = (type: string) => {
         const block = type === "img" ? { type, src: "", caption: "" } : { type, text: "" };
@@ -37,9 +64,9 @@ export default function BlogManager() {
         }
         const id = newBlog.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
         await addBlog({
-            ...newBlog as Blog,
+            ...(newBlog as Blog),
             id,
-            date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+            date: new Date().toISOString()
         });
         setIsCreating(false);
         setNewBlog({ title: "", excerpt: "", category: "TECHNIQUE", image: "", content: [{ type: "p", text: "" }] });
@@ -48,135 +75,171 @@ export default function BlogManager() {
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-black tracking-tightest uppercase opacity-40">Blog management</h2>
+                <h2 className="text-2xl font-black tracking-tightest uppercase opacity-40">Journals</h2>
                 {!isCreating && (
                     <button
                         onClick={() => setIsCreating(true)}
-                        className="px-6 py-2 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                        className="px-8 py-3 bg-white text-black rounded-full text-[12px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
                     >
-                        + Create New Post
+                        + Write New Story
                     </button>
                 )}
             </div>
 
             {isCreating ? (
-                <div className="bg-[#111] rounded-3xl border border-white/10 p-8 space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            <label className="block text-[10px] uppercase font-black text-white/40 tracking-widest">Post Title</label>
-                            <input
-                                value={newBlog.title}
-                                onChange={e => setNewBlog(prev => ({ ...prev, title: e.target.value }))}
-                                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-white/30 outline-none"
-                                placeholder="THE ART OF LIGHT..."
-                            />
-                        </div>
-                        <div className="space-y-4">
-                            <label className="block text-[10px] uppercase font-black text-white/40 tracking-widest">Category</label>
-                            <select
-                                value={newBlog.category}
-                                onChange={e => setNewBlog(prev => ({ ...prev, category: e.target.value }))}
-                                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-white/30 outline-none"
-                            >
-                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-4">
-                        <label className="block text-[10px] uppercase font-black text-white/40 tracking-widest">Excerpt (Brief Summary)</label>
-                        <textarea
-                            value={newBlog.excerpt}
-                            onChange={e => setNewBlog(prev => ({ ...prev, excerpt: e.target.value }))}
-                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-white/30 outline-none h-20"
-                            placeholder="A short intro..."
-                        />
-                    </div>
-
-                    <div className="space-y-4">
-                        <label className="block text-[10px] uppercase font-black text-white/40 tracking-widest">Featured Image URL</label>
-                        <input
-                            value={newBlog.image}
-                            onChange={e => setNewBlog(prev => ({ ...prev, image: e.target.value }))}
-                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-white/30 outline-none"
-                            placeholder="https://images.unsplash.com/..."
-                        />
-                    </div>
-
-                    {/* Dynamic Content Blocks */}
-                    <div className="space-y-6 pt-8 border-t border-white/5">
-                        <label className="block text-xs font-black uppercase tracking-[0.2em] text-white">Systematic Content</label>
-
-                        {newBlog.content?.map((block, idx) => (
-                            <div key={idx} className="bg-black/40 p-6 rounded-2xl border border-white/5 relative group">
-                                <div className="absolute -left-3 top-1/2 -translate-y-1/2 bg-white/10 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest">
-                                    {block.type}
-                                </div>
-
-                                {block.type === 'p' || block.type === 'h2' || block.type === 'quote' ? (
-                                    <textarea
-                                        value={block.text}
-                                        onChange={e => updateBlock(idx, { text: e.target.value })}
-                                        className="w-full bg-transparent border-none text-white/80 focus:ring-0 text-sm h-24 italic"
-                                        placeholder={`Content for ${block.type}...`}
-                                    />
-                                ) : block.type === 'img' ? (
-                                    <div className="space-y-4">
-                                        <input
-                                            value={block.src}
-                                            onChange={e => updateBlock(idx, { src: e.target.value })}
-                                            className="w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-[10px]"
-                                            placeholder="IMAGE URL..."
-                                        />
-                                        <input
-                                            value={block.caption}
-                                            onChange={e => updateBlock(idx, { caption: e.target.value })}
-                                            className="w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-[10px]"
-                                            placeholder="CAPTION..."
-                                        />
-                                    </div>
-                                ) : null}
-
-                                <button
-                                    onClick={() => setNewBlog(prev => ({ ...prev, content: (prev.content || []).filter((_, i) => i !== idx) }))}
-                                    className="absolute top-4 right-4 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >✕</button>
+                <div className="bg-[#111] rounded-[3rem] border border-white/10 p-12 space-y-12 shadow-2x-large">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <div className="space-y-8">
+                            <div className="space-y-4">
+                                <label className="block text-[10px] uppercase font-black text-white/40 tracking-widest px-2">Story Title</label>
+                                <input
+                                    value={newBlog.title}
+                                    onChange={e => setNewBlog(prev => ({ ...prev, title: e.target.value }))}
+                                    className="w-full bg-[#050505] border border-white/10 rounded-2xl px-6 py-5 text-base font-medium focus:border-white/30 outline-none transition-all placeholder:opacity-20"
+                                    placeholder="Enter a cinematic title..."
+                                />
                             </div>
-                        ))}
+                            <div className="space-y-4">
+                                <label className="block text-[10px] uppercase font-black text-white/40 tracking-widest px-2">Summary / Excerpt</label>
+                                <textarea
+                                    value={newBlog.excerpt}
+                                    onChange={e => setNewBlog(prev => ({ ...prev, excerpt: e.target.value }))}
+                                    className="w-full bg-[#050505] border border-white/10 rounded-2xl px-6 py-5 text-sm font-medium focus:border-white/30 outline-none transition-all h-32 placeholder:opacity-20 resize-none"
+                                    placeholder="Briefly describe what this story is about..."
+                                />
+                            </div>
+                            <div className="space-y-4">
+                                <label className="block text-[10px] uppercase font-black text-white/40 tracking-widest px-2">Category</label>
+                                <select
+                                    value={newBlog.category}
+                                    onChange={e => setNewBlog(prev => ({ ...prev, category: e.target.value }))}
+                                    className="w-full bg-[#050505] border border-white/10 rounded-2xl px-6 py-5 text-sm focus:border-white/30 outline-none"
+                                >
+                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                        </div>
 
-                        <div className="flex gap-4 pt-4">
-                            <button onClick={() => handleAddBlock('p')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-white/10">+ Paragraph</button>
-                            <button onClick={() => handleAddBlock('h2')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-white/10">+ Subheading</button>
-                            <button onClick={() => handleAddBlock('img')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-white/10">+ Image</button>
-                            <button onClick={() => handleAddBlock('quote')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-white/10">+ Quote</button>
+                        <div className="space-y-4">
+                            <label className="block text-[10px] uppercase font-black text-white/40 tracking-widest px-2">Featured Cover Image</label>
+                            {newBlog.image ? (
+                                <div className="relative aspect-[16/10] rounded-3xl overflow-hidden group shadow-2xl border border-white/5">
+                                    <img src={newBlog.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button
+                                            onClick={() => setNewBlog(prev => ({ ...prev, image: "" }))}
+                                            className="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                                        >Change Image</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="h-full min-h-[300px]">
+                                    <UploadZone
+                                        onUpload={handleFeatureUpload}
+                                        isProcessing={isUploading}
+                                        accept="image/*"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className="flex gap-4 pt-12">
-                        <button onClick={handleSave} className="px-10 py-4 bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-full hover:scale-105 transition-all">Publish Journal Entry</button>
-                        <button onClick={() => setIsCreating(false)} className="px-10 py-4 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest rounded-full hover:bg-white/5 transition-all">Cancel</button>
+                    {/* Dynamic Content Builder */}
+                    <div className="space-y-8 pt-12 border-t border-white/5">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-black uppercase tracking-[0.3em] text-white/60">Story Content Blocks</h3>
+                            <div className="flex gap-4">
+                                <button onClick={() => handleAddBlock('p')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[9px] font-black uppercase hover:bg-white/10 transition-all">+ Text</button>
+                                <button onClick={() => handleAddBlock('h2')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[9px] font-black uppercase hover:bg-white/10 transition-all">+ Heading</button>
+                                <button onClick={() => handleAddBlock('img')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[9px] font-black uppercase hover:bg-white/10 transition-all">+ Photo</button>
+                                <button onClick={() => handleAddBlock('quote')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[9px] font-black uppercase hover:bg-white/10 transition-all">+ Quote</button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            {newBlog.content?.map((block, idx) => (
+                                <div key={idx} className="bg-[#050505] p-8 rounded-[2.5rem] border border-white/5 relative group/block">
+                                    {block.type === 'p' || block.type === 'h2' || block.type === 'quote' ? (
+                                        <div className="space-y-4">
+                                            <div className="text-[8px] font-black uppercase text-white/20 tracking-[0.4em] mb-2">{block.type === 'p' ? 'Paragraph' : block.type === 'h2' ? 'Sub-heading' : 'Inspirational Quote'}</div>
+                                            <textarea
+                                                value={block.text}
+                                                onChange={e => updateBlock(idx, { text: e.target.value })}
+                                                className={`w-full bg-transparent border-none text-white/80 focus:ring-0 outline-none resize-none ${block.type === 'h2' ? 'text-3xl font-black uppercase' : block.type === 'quote' ? 'text-2xl italic font-serif opacity-100' : 'text-base font-medium'}`}
+                                                rows={block.type === 'p' ? 4 : 1}
+                                                placeholder="Write here..."
+                                            />
+                                        </div>
+                                    ) : block.type === 'img' ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                            <div>
+                                                {block.src ? (
+                                                    <div className="relative aspect-video rounded-2xl overflow-hidden group/img">
+                                                        <img src={block.src} className="w-full h-full object-cover" />
+                                                        <button onClick={() => updateBlock(idx, { src: "" })} className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                                                            <span className="bg-red-600 text-white px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest">Remove</span>
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <UploadZone onUpload={(f) => handleBlockImageUpload(idx, f)} isProcessing={isUploading} accept="image/*" />
+                                                )}
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="text-[8px] font-black uppercase text-white/20 tracking-[0.4em]">Photo Caption</div>
+                                                <input
+                                                    value={block.caption}
+                                                    onChange={e => updateBlock(idx, { caption: e.target.value })}
+                                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-white/30"
+                                                    placeholder="Short description for this photo..."
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : null}
+
+                                    <button
+                                        onClick={() => setNewBlog(prev => ({ ...prev, content: (prev.content || []).filter((_, i) => i !== idx) }))}
+                                        className="absolute -top-3 -right-3 w-10 h-10 flex items-center justify-center bg-red-600 text-white rounded-full opacity-0 group-hover/block:opacity-100 transition-opacity shadow-xl"
+                                    >✕</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex gap-6 pt-12 border-t border-white/5">
+                        <button
+                            onClick={handleSave}
+                            disabled={isUploading}
+                            className={`px-16 py-5 bg-white text-black font-black uppercase text-[12px] tracking-widest rounded-full hover:scale-105 active:scale-95 transition-all shadow-2xl ${isUploading ? 'opacity-50 cursor-wait' : ''}`}
+                        >
+                            {isUploading ? 'UPLOADING...' : 'SAVE JOURNAL ENTRY'}
+                        </button>
+                        <button onClick={() => setIsCreating(false)} className="px-12 py-5 border border-white/10 text-white font-black uppercase text-[12px] tracking-widest rounded-full hover:bg-white/5 transition-all">Discard</button>
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {blogs.map(blog => (
-                        <div key={blog.id} className="bg-[#111] rounded-2xl border border-white/5 overflow-hidden group">
-                            <div className="aspect-video relative">
-                                <img src={blog.image} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
-                                <div className="absolute top-4 left-4 px-2 py-0.5 bg-black/50 backdrop-blur rounded text-[8px] font-black text-white/80">{blog.category}</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {blogs.length > 0 ? blogs.map(blog => (
+                        <div key={blog.id} className="bg-[#111] rounded-[2.5rem] border border-white/5 overflow-hidden group shadow-xl">
+                            <div className="aspect-[16/10] relative">
+                                <img src={blog.image} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+                                <div className="absolute top-6 left-6 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[8px] font-black text-white/90 uppercase tracking-widest border border-white/10">{blog.category}</div>
                             </div>
-                            <div className="p-6 space-y-4">
-                                <h3 className="font-bold text-sm uppercase tracking-tight line-clamp-1">{blog.title}</h3>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[9px] text-white/30 font-bold uppercase">{blog.date}</span>
+                            <div className="p-8 space-y-6">
+                                <h3 className="font-black text-lg uppercase tracking-tight line-clamp-2 leading-tight">{blog.title}</h3>
+                                <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest">{new Date(blog.date).toLocaleDateString()}</span>
                                     <button
                                         onClick={() => deleteBlog(blog.id)}
-                                        className="text-[9px] text-red-500 font-bold uppercase tracking-widest hover:underline"
-                                    >Delete Post</button>
+                                        className="text-[10px] text-red-500 font-black uppercase tracking-widest hover:text-red-400 transition-colors"
+                                    >Delete</button>
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    )) : (
+                        <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
+                            <p className="text-white/20 font-black tracking-widest uppercase">No Journal entries yet.</p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
