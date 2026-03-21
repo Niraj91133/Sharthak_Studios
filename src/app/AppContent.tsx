@@ -28,10 +28,10 @@ export default function AppContent() {
 
     useEffect(() => {
         const lenis = new Lenis({
-            lerp: 0.1,
-            duration: 1,
+            lerp: 0.08, // Smoother scroll
+            duration: 1.2,
             smoothWheel: true,
-            wheelMultiplier: 1.1,
+            wheelMultiplier: 1,
             gestureOrientation: "vertical",
             touchMultiplier: 2,
             infinite: false,
@@ -53,19 +53,18 @@ export default function AppContent() {
     }, []);
 
     const { slots, blogs } = useMediaContext();
-    console.log(`[AppContent] Render: ${slots.length} slots, ${blogs.length} blogs loaded.`);
 
     const featureLines = useMemo(() => [
-        "Cinematic Quality", "Premium Editing", "Creative Shots", "Luxury Visuals",
-        "HD Delivery", "Color Perfection", "Emotional Moments", "Natural Captures",
-        "Professional Team", "Fast Delivery", "Trusted Service", "Detail Focused",
+        "Cinematic Quality", "Premium Color Grade", "Creative Storytelling", "Luxury Visuals",
+        "8K RAW Workflow", "Masterful Editing", "Hyper-Realistic Captures", "Bespoke Lighting",
+        "High-Speed Cinema", "Timeless Frames", "Editorial Precision", "The Golden Hour",
     ], []);
 
     const galleryTabs = useMemo(() => {
         const gallerySlots = slots.filter((s: MediaSlot) => s.section && s.section.includes("GALLERY"));
         const set = new Set(gallerySlots.map((s: MediaSlot) => s.categoryLabel).filter(Boolean));
         if (set.size === 0) {
-            ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"].forEach(c => set.add(c));
+            ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "BABY SHOOT"].forEach(c => set.add(c));
         }
         return Array.from(set).map(cat => ({ label: cat as string }));
     }, [slots]);
@@ -98,103 +97,135 @@ export default function AppContent() {
     };
 
     return (
-        <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black font-sans">
+        <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black font-sans scroll-smooth">
+            {/* 1. INITIAL TOP STRIPS */}
             <InfiniteStripsCTASection />
 
-            {/* Feature Slider */}
-            <section className="bg-white text-black overflow-hidden relative border-t border-white/10">
-                <div className="flex animate-marquee whitespace-nowrap will-change-transform">
+            {/* 2. PREMIUM FEATURE MARQUEE */}
+            <section className="bg-white text-black overflow-hidden relative border-y border-black/5 py-4">
+                <div className="flex animate-marquee whitespace-nowrap will-change-transform gap-24">
                     {[...featureLines, ...featureLines].map((line, i) => (
-                        <span key={i} className="text-9xl font-black px-12 tracking-tighter opacity-10 hover:opacity-100 transition-opacity cursor-default">
-                            {line.toUpperCase()}
-                        </span>
+                        <div key={i} className="flex items-center gap-8">
+                            <span className="text-8xl md:text-[10rem] font-black tracking-tightest opacity-15">
+                                {line.toUpperCase()}
+                            </span>
+                            <div className="w-12 h-1 bg-black/5 rounded-full" />
+                        </div>
                     ))}
                 </div>
             </section>
 
-            <GallerySection tabs={galleryTabs} items={galleryItems} />
+            {/* 3. GALLERY SECTION */}
+            <div className="bg-white">
+                <GallerySection tabs={galleryTabs} items={galleryItems} />
+            </div>
 
+            {/* 4. EXPERTISE SECTION (Titled Dark) */}
             <ExpertiseSection />
 
+            {/* 5. LATEST WORK */}
             <LatestWorkSection />
 
-            {/* Blog Highlight Section - NEW */}
-            <section className="bg-white py-32 px-6">
-                <div className="max-w-6xl mx-auto space-y-20">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                        <div className="space-y-4">
-                            <span className="text-[10px] font-black tracking-[0.4em] text-black/30 uppercase italic">STUDIO PERSPECTIVES</span>
-                            <h2 className="text-5xl md:text-8xl font-black tracking-tightest leading-none text-black">STUDIO BLOGS</h2>
+            {/* 6. STUDIO BLOGS (Cinematic White Section) */}
+            <section className="bg-white py-32 md:py-48 px-6 border-t border-black/5">
+                <div className="max-w-6xl mx-auto space-y-24">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+                        <div className="space-y-6">
+                            <span className="text-[10px] font-black tracking-[0.6em] text-black/30 uppercase block">PERSPECTIVES & JOURNALS</span>
+                            <h2 className="text-6xl md:text-8xl font-black tracking-tightest leading-none text-black uppercase italic">STUDIO BLOGS</h2>
                         </div>
-                        <Link href="/blog" className="px-12 py-5 bg-black text-white text-[11px] font-black tracking-widest uppercase rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl">
-                            VIEW ALL STORIES →
+                        <Link href="/blog" className="px-12 py-5 bg-black text-white text-[11px] font-black tracking-widest uppercase hover:scale-105 active:scale-95 transition-all shadow-2xl">
+                            EXPLORE STORIES →
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 sm:gap-6">
                         {latestBlogs.length > 0 ? latestBlogs.map(blog => (
-                            <Link key={blog.id} href={`/blog/${blog.id}`} className="group block space-y-8">
-                                <div className="aspect-[4/5] bg-black/5 overflow-hidden shadow-xl group-hover:shadow-2x-large transition-all">
+                            <Link key={blog.id} href={`/blog/${blog.id}`} className="group block space-y-8 bg-[#f9f9f9] border border-black/[0.03]">
+                                <div className="aspect-[4/5] bg-black/5 overflow-hidden">
                                     <img src={blog.image} alt={blog.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                                 </div>
-                                <div className="space-y-4">
-                                    <span className="text-[9px] font-black tracking-[0.4em] text-black/30 uppercase">{blog.category}</span>
-                                    <h3 className="text-2xl font-black leading-tight uppercase line-clamp-2 text-black">{blog.title}</h3>
-                                    <p className="text-sm text-black/50 line-clamp-2 font-medium">{blog.excerpt}</p>
+                                <div className="p-8 space-y-4">
+                                    <span className="text-[9px] font-bold tracking-[0.4em] text-black/20 uppercase">{blog.category}</span>
+                                    <h3 className="text-2xl font-black leading-tight uppercase line-clamp-2 text-black tracking-tighter">{blog.title}</h3>
+                                    <div className="h-px w-8 bg-black/10 group-hover:w-full transition-all duration-700" />
+                                    <p className="text-xs text-black/40 line-clamp-2 font-medium leading-relaxed">{blog.excerpt}</p>
                                 </div>
                             </Link>
                         )) : (
-                            <div className="col-span-full py-20 text-center border-2 border-dashed border-black/5">
-                                <p className="text-black/20 font-black tracking-widest uppercase">STORY IN PROGRESS...</p>
+                            <div className="col-span-full py-40 text-center border-2 border-dashed border-black/5">
+                                <p className="text-black/10 font-black tracking-[0.6em] uppercase">NO RECENT STORIES PUBLISHED</p>
                             </div>
                         )}
                     </div>
                 </div>
             </section>
 
-            <VideoEditingTimelineSection />
+            {/* 7. VIDEO TIMELINE (Sharp Dark Section) */}
+            <div className="bg-black border-y border-white/5">
+                <VideoEditingTimelineSection />
+            </div>
 
-            <WhyChooseUsBookFlipSection />
+            {/* 8. BOOK FLIP SECTION */}
+            <div className="bg-[#f2f2f2]">
+                <WhyChooseUsBookFlipSection />
+            </div>
 
+            {/* 9. MINI GAME (Interaction) */}
             <CoupleShootGame />
 
+            {/* 10. CALL TO ACTION (Premium Wallpaper) */}
             <CameraCTASection />
 
-            <WhyChooseUsSection />
+            {/* 11. STATS SECTION (Clean Dark) */}
+            <div className="bg-[#050505] border-t border-white/5">
+                <WhyChooseUsSection />
+            </div>
 
-            <HeroScroll title="STUDIO" eyebrow="SHARTHAK" />
+            {/* 12. EPIC HERO SCROLL (Final Impact) */}
+            <HeroScroll tickerText="SHARTHAK STUDIO • BEST CINEMATOGRAPHY IN BIHAR • PREMIUM WEDDING FILMS • GAYA • PATNA • MUZAFFARPUR • CREATING TIMELESS CINEMATIC MEMORIES • UNMATCHED PRODUCTION QUALITY" />
 
-            {/* Footer */}
-            <footer className="bg-black py-40 px-6 border-t border-white/5 text-center">
-                <div className="max-w-4xl mx-auto space-y-20">
-                    <div className="flex justify-center">
-                        <img src="/logo-white.png" alt="Sharthak Studio Logo" className="w-20 h-20 object-contain opacity-40 hover:opacity-100 transition-opacity" />
-                    </div>
-                    <h2 className="text-5xl md:text-9xl font-black tracking-tightest leading-none italic uppercase">CRAFTING CINEMA</h2>
-                    <div className="flex flex-wrap justify-center gap-12 md:gap-32">
-                        <div className="space-y-4">
-                            <div className="text-[9px] tracking-[0.5em] text-white/20 uppercase font-black">Email</div>
-                            <div className="text-xl font-bold tracking-tight">hello@sharthak.studio</div>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="text-[9px] tracking-[0.5em] text-white/20 uppercase font-black">Call</div>
-                            <div className="text-xl font-bold tracking-tight">+91 98765 43210</div>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="text-[9px] tracking-[0.5em] text-white/20 uppercase font-black">Social</div>
-                            <div className="text-xl font-bold tracking-tight">@sharthak_studio</div>
-                        </div>
+            {/* 13. CRAFTED FOOTER */}
+            <footer className="bg-black py-48 px-6 border-t border-white/[0.02] text-center overflow-hidden">
+                <div className="max-w-4xl mx-auto space-y-24 relative">
+                    {/* Background faint logo */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[20vw] font-black text-white/[0.01] pointer-events-none select-none tracking-tighter">STUDIO</div>
+
+                    <div className="flex justify-center relative z-10">
+                        <img src="/logo-white.png" alt="Sharthak Studio Logo" className="w-20 h-20 object-contain opacity-20 hover:opacity-100 transition-all duration-700" />
                     </div>
 
-                    <div className="pt-32 space-y-8">
+                    <h2 className="text-6xl md:text-[10rem] font-black tracking-tightest leading-none text-white uppercase italic relative z-10 transition-all hover:tracking-tighter cursor-default">
+                        LET&apos;S CRAFT YOUR STORY
+                    </h2>
+
+                    <div className="flex flex-wrap justify-center gap-16 md:gap-32 relative z-10">
+                        <div className="space-y-4">
+                            <div className="text-[10px] tracking-[0.6em] text-white/10 uppercase font-black">Electronic Mail</div>
+                            <div className="text-xl font-bold tracking-tight text-white/50 hover:text-white transition-colors">hello@sharthak.studio</div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="text-[10px] tracking-[0.6em] text-white/10 uppercase font-black">Direct Line</div>
+                            <div className="text-xl font-bold tracking-tight text-white/50 hover:text-white transition-colors">+91 98765 43210</div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="text-[10px] tracking-[0.6em] text-white/10 uppercase font-black">Social Handle</div>
+                            <div className="text-xl font-bold tracking-tight text-white/50 hover:text-white transition-colors">@sharthak_studio</div>
+                        </div>
+                    </div>
+
+                    <div className="pt-40 space-y-10 relative z-10">
                         <button
                             onClick={handleAdminLogin}
-                            className="text-[9px] tracking-[0.8em] text-white/10 uppercase font-black hover:text-white/40 transition-colors"
+                            className="px-8 py-3 border border-white/5 text-[9px] tracking-[0.8em] text-white/15 uppercase font-black hover:bg-white/5 hover:text-white transition-all rounded-full"
                         >
-                            ADMIN ACCESS
+                            ADMIN LOGIN
                         </button>
-                        <div className="text-[8px] tracking-[0.8em] text-white/5 uppercase font-black">
-                            © 2026 SHARTHAK STUDIO • STUDIO BLOGS • BIHAR
+                        <div className="space-y-4">
+                            <div className="text-[8px] tracking-[1em] text-white/5 uppercase font-black">
+                                © 2026 SHARTHAK STUDIO • EST. BIHAR • ALL RIGHTS RESERVED
+                            </div>
+                            <div className="text-[7px] tracking-[0.5em] text-white/5 uppercase font-medium">MADE WITH PASSION BY ANTIGRAVITY</div>
                         </div>
                     </div>
                 </div>

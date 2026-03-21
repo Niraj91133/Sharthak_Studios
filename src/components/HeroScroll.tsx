@@ -19,112 +19,6 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = () => setReduced(mql.matches);
-    onChange();
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-
-  return reduced;
-}
-
-function useWheelSnapPaging(
-  sectionRef: RefObject<HTMLElement | null>,
-  maxIndex: number,
-  enabled: boolean,
-) {
-  const lockedRef = useRef(false);
-  const unlockTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (!enabled) return;
-    const sectionEl = sectionRef.current;
-    if (!sectionEl) return;
-
-    const clearUnlockTimer = () => {
-      if (unlockTimerRef.current) {
-        window.clearTimeout(unlockTimerRef.current);
-        unlockTimerRef.current = null;
-      }
-    };
-
-    const unlockSoon = (delay = 500) => {
-      clearUnlockTimer();
-      unlockTimerRef.current = window.setTimeout(() => {
-        lockedRef.current = false;
-        unlockTimerRef.current = null;
-      }, delay);
-    };
-
-    const onWheel = (event: WheelEvent) => {
-      if (event.defaultPrevented) return;
-      if (event.deltaY === 0) return;
-      if (lockedRef.current) {
-        event.preventDefault();
-        return;
-      }
-
-      const sectionTop = sectionEl.getBoundingClientRect().top + window.scrollY;
-      const viewport = window.innerHeight || 1;
-      const y = window.scrollY;
-      const withinSection =
-        y >= sectionTop - 10 && y <= sectionTop + maxIndex * viewport + 10;
-
-      if (!withinSection) return;
-
-      const rawIndex = (y - sectionTop) / viewport;
-      const currentIndex = Math.min(
-        maxIndex,
-        Math.max(0, Math.round(rawIndex)),
-      );
-      const direction = Math.sign(event.deltaY);
-
-      if (direction > 0 && currentIndex >= maxIndex) return;
-      if (direction < 0 && currentIndex <= 0) return;
-
-      event.preventDefault();
-      lockedRef.current = true;
-
-      const nextIndex = Math.min(
-        maxIndex,
-        Math.max(0, currentIndex + direction),
-      );
-      const targetTop = sectionTop + nextIndex * viewport;
-
-      const lenis = (window as any).lenis;
-      if (lenis) {
-        lenis.scrollTo(targetTop, {
-          duration: 1,
-          easing: (t: number) => 1 - Math.pow(1 - t, 4), // Quartic out
-          onComplete: () => {
-            unlockSoon(60);
-          }
-        });
-      } else {
-        gsap.to(window, {
-          scrollTo: { y: targetTop, autoKill: false },
-          duration: 0.8,
-          ease: "power4.out",
-          onComplete: () => {
-            unlockSoon(60);
-          }
-        });
-      }
-    };
-
-    window.addEventListener("wheel", onWheel, { passive: false });
-    return () => {
-      clearUnlockTimer();
-      window.removeEventListener("wheel", onWheel);
-    };
-  }, [enabled, maxIndex, sectionRef]);
-}
-
 function useSectionScrollProgress(sectionRef: RefObject<HTMLElement | null>) {
   const [progress, setProgress] = useState(0);
 
@@ -163,69 +57,8 @@ function useSectionScrollProgress(sectionRef: RefObject<HTMLElement | null>) {
   return progress;
 }
 
-function useWheelCarouselPaging(
-  containerRef: RefObject<HTMLElement | null>,
-  enabled: boolean,
-  count: number,
-  getIndex: () => number,
-  setIndex: (next: number) => void,
-) {
-  const lockedRef = useRef(false);
-  const unlockTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (!enabled) return;
-    if (count <= 1) return;
-
-    const clearUnlockTimer = () => {
-      if (unlockTimerRef.current) {
-        window.clearTimeout(unlockTimerRef.current);
-        unlockTimerRef.current = null;
-      }
-    };
-
-    const unlockSoon = () => {
-      clearUnlockTimer();
-      unlockTimerRef.current = window.setTimeout(() => {
-        lockedRef.current = false;
-        unlockTimerRef.current = null;
-      }, 420);
-    };
-
-    const onWheel = (event: WheelEvent) => {
-      const containerEl = containerRef.current;
-      if (!containerEl) return;
-      if (!containerEl.contains(event.target as Node)) return;
-
-      if (event.defaultPrevented) return;
-      if (event.deltaY === 0) return;
-
-      event.preventDefault();
-      if (lockedRef.current) return;
-      lockedRef.current = true;
-
-      const direction = Math.sign(event.deltaY);
-      const current = getIndex();
-      const next = Math.min(count - 1, Math.max(0, current + direction));
-      setIndex(next);
-
-      unlockSoon();
-    };
-
-    window.addEventListener("wheel", onWheel, { passive: false });
-    return () => {
-      clearUnlockTimer();
-      window.removeEventListener("wheel", onWheel);
-    };
-  }, [containerRef, count, enabled, getIndex, setIndex]);
-}
-
 type HeroScrollProps = {
-  title?: string;
-  eyebrow?: string;
   tickerText?: string;
-  headerLogoSrc?: string;
-  headerLogoAlt?: string;
 };
 
 // Helper component for each slide image
@@ -251,60 +84,24 @@ function SlideImage({ index, slideT, priority = false }: { index: number; slideT
         fill
         priority={priority}
         sizes="100vw"
-        className="object-cover"
-      />
-    </div>
-  );
-}
-
-// Helper component for detail overlay slide
-function DetailSlide({ index, isVisible }: { index: number; isVisible: boolean }) {
-  const slotId = `hero-slide-${String(index + 1).padStart(2, "0")}`;
-  const fallback = `https://picsum.photos/seed/sharthak-${String(index + 1).padStart(2, "0")}/2400/1600`;
-  const src = useMedia(slotId, fallback);
-
-  return (
-    <div className="relative h-full w-full flex-[0_0_100%]">
-      <Image
-        src={src}
-        alt=""
-        fill
-        sizes="(min-width: 1200px) 1120px, 78vw"
-        className="object-cover"
-        priority={isVisible}
+        className="object-cover contrast-125 grayscale hover:grayscale-0 transition-all duration-1000"
       />
     </div>
   );
 }
 
 export default function HeroScroll({
-  title = "SHARTHAK STUDIO",
-  eyebrow = "SHARTHAK STUDIO",
-  tickerText = "SHARTHAK STUDIO • Best Wedding Photographer & Cinematographer in Bihar • Serving Patna, Gaya, Muzaffarpur, Deoghar, and Entire Bihar • Expert in Wedding, Pre-Wedding, Baby Shoot, Maternity & Event Cinematography • Professional Cinema Camera & Equipment • Cinematic Editing & Premium Color Grading • 100% Client Satisfaction Guaranteed • Capturing Your Timeless Memories In Gaya • Modern Photography Studio in Patna • Reliable & On-Time Photo & Video Delivery",
-  headerLogoSrc = "/logo-white.png",
-  headerLogoAlt = "Sharthak Studio Logo",
+  tickerText = "SHARTHAK STUDIO • PREMIUM CINEMATOGRAPHY • GAYA • BIHAR • CAPTURING YOUR TIMELESS STORIES WITH CINEMATIC PRECISION",
 }: HeroScrollProps) {
   const { slots } = useMediaContext();
   const heroSlots = slots.filter(s => s.section && (s.section.includes("HERO") || s.section.includes("08.")));
   const slideCount = heroSlots.length || 4;
 
   const sectionRef = useRef<HTMLElement | null>(null);
-  const prefersReducedMotion = usePrefersReducedMotion();
   const rawProgress = useSectionScrollProgress(sectionRef);
-  const progress = prefersReducedMotion ? 0 : rawProgress;
-  const [hasScrolled, setHasScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setHasScrolled(window.scrollY > 4);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const headerVisible = rawProgress >= 0.999 && hasScrolled;
+  const progress = rawProgress;
 
   const totalSegments = slideCount;
-  useWheelSnapPaging(sectionRef, totalSegments, !prefersReducedMotion);
   const tSeg = progress * totalSegments;
   const intro = clamp01(tSeg);
   const slideT = Math.max(0, tSeg - 1);
@@ -320,76 +117,13 @@ export default function HeroScroll({
   );
 
   const currentCategory = heroSlots[activeSlideIndex]?.categoryLabel || "";
-  const heroTitle = intro < 1 ? title : (heroSlots[titleSlideIndex]?.categoryLabel || title);
-
-  const detailRef = useRef<HTMLDivElement | null>(null);
-  const [detail, setDetail] = useState<null | { startIndex: number }>(null);
-  const [detailVisible, setDetailVisible] = useState(false);
-  const [detailIndex, setDetailIndex] = useState(0);
-  const detailIndexRef = useRef(0);
-
-  useEffect(() => {
-    detailIndexRef.current = detailIndex;
-  }, [detailIndex]);
-
-  useEffect(() => {
-    if (!detail) return;
-    setDetailIndex(detail.startIndex);
-    const t = window.setTimeout(() => setDetailVisible(true), 16);
-    return () => window.clearTimeout(t);
-  }, [detail]);
-
-  const openDetail = () => {
-    if (prefersReducedMotion) return;
-    if (intro < 1) return;
-    if (detail) return;
-    setDetailIndex(activeSlideIndex);
-    setDetail({ startIndex: activeSlideIndex });
-  };
-
-  const closeDetail = () => {
-    setDetailVisible(false);
-    window.setTimeout(() => setDetail(null), 240);
-  };
-
-  const jumpToNextSection = () => {
-    const sectionEl = sectionRef.current;
-    if (!sectionEl) return;
-    if (detail) closeDetail();
-
-    window.setTimeout(() => {
-      const top = sectionEl.getBoundingClientRect().top + window.scrollY;
-      const targetTop = Math.round(top + sectionEl.offsetHeight + 1);
-
-      const lenis = (window as any).lenis;
-      if (lenis) {
-        lenis.scrollTo(targetTop, {
-          duration: 1.2,
-          easing: (t: number) => 1 - Math.pow(1 - t, 4),
-        });
-      } else {
-        window.scrollTo({
-          top: targetTop,
-          behavior: prefersReducedMotion ? "auto" : "smooth",
-        });
-      }
-    }, detail ? 260 : 0);
-  };
-
-  useWheelCarouselPaging(
-    detailRef,
-    !!detail && !prefersReducedMotion,
-    slideCount,
-    () => detailIndexRef.current,
-    setDetailIndex,
-  );
+  const heroTitle = intro < 1 ? "STUDIO" : (heroSlots[titleSlideIndex]?.categoryLabel || "SHARTHAK");
 
   const imageHeight = lerp(52, 100, intro);
   const splitTop = 100 - imageHeight;
   const titleTranslateY = lerp(0, 44, intro);
   const titleScale = lerp(1, 0.78, intro);
   const tickerOpacity = lerp(1, 0, clamp01(intro * 1.4));
-  const eyebrowOpacity = lerp(1, 0, clamp01(intro * 1.8));
   const categoryOpacity = lerp(0.75, 1, clamp01(intro * 1.2));
   const categoryTranslateY = lerp(10, 0, clamp01(intro * 1.2));
 
@@ -399,137 +133,13 @@ export default function HeroScroll({
       className="relative bg-black text-white"
       style={{ height: `${(totalSegments + 1) * 100}svh` }}
     >
-      <header
-        className="hero-scroll__header fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-center bg-black/60 backdrop-blur-md transition-opacity duration-300"
-        style={{
-          opacity: headerVisible ? 1 : 0,
-          pointerEvents: headerVisible ? "auto" : "none",
-        }}
-      >
-        <Image src={headerLogoSrc} alt={headerLogoAlt} width={40} height={40} />
-      </header>
-
       <div className="sticky top-0 h-svh w-full overflow-hidden">
-        <button
-          type="button"
-          onClick={jumpToNextSection}
-          aria-label="Scroll to next section"
-          className="absolute bottom-6 left-1/2 z-30 -translate-x-1/2 flex flex-col items-center gap-2 group transition-all duration-300 hover:bottom-5"
-        >
-          <span className="text-[10px] font-black tracking-[0.3em] uppercase text-white/40 group-hover:text-white transition-colors">
-            (End Scroll)
-          </span>
-          <div
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-black/50 text-white/90 backdrop-blur-md border border-white/10 shadow-2xl relative overflow-hidden"
-          >
-            {/* Animated indicating double arrow */}
-            <div className="flex flex-col items-center -space-y-2">
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                className="animate-[scroll-indicator_1.5s_infinite] relative -bottom-1"
-              >
-                <path d="M6 8L12 14L18 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                className="animate-[scroll-indicator_1.5s_infinite] delay-[200ms] relative -top-1"
-              >
-                <path d="M6 8L12 14L18 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-        </button>
-
-        {detail && (
-          <div
-            className="absolute inset-0 z-40 bg-black"
-            style={{
-              opacity: detailVisible ? 1 : 0,
-              transition: "opacity 200ms ease-out",
-            }}
-          >
-            <button
-              type="button"
-              aria-label="Back"
-              onClick={closeDetail}
-              className="absolute z-50 rounded-full bg-black/50 p-3 text-white/90 backdrop-blur-md"
-              style={{
-                left: 40,
-                top: 40,
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-
-            <div className="absolute inset-0 flex items-center justify-center px-10">
-              <div
-                className="relative w-[min(78vw,1120px)] overflow-hidden"
-                ref={detailRef}
-                style={{
-                  aspectRatio: "16 / 9",
-                  boxShadow: "0 24px 70px rgba(0,0,0,0.65)",
-                }}
-              >
-                <div
-                  className="absolute inset-0 flex"
-                  style={{
-                    transform: `translate3d(${-detailIndex * 100}%, 0, 0)`,
-                    transition: prefersReducedMotion
-                      ? "none"
-                      : "transform 280ms cubic-bezier(0.22, 1, 0.36, 1)",
-                  }}
-                >
-                  {Array.from({ length: slideCount }).map((_, idx) => (
-                    <DetailSlide key={idx} index={idx} isVisible={idx === detailIndex} />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="absolute origin-left"
-              style={{
-                left: 40,
-                top: "50%",
-                transform: `translate3d(${detailVisible ? 0 : -160}px, -50%, 0) rotate(-90deg)`,
-                transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)",
-              }}
-            >
-              {heroSlots[detailIndex]?.categoryLabel && (
-                <div
-                  className="text-[46px] font-extrabold tracking-[0.12em]"
-                  style={{ color: "#B6FF00" }}
-                >
-                  {heroSlots[detailIndex].categoryLabel}
-                </div>
-              )}
-            </div>
-
-            <div
-              className="absolute right-8 top-1/2 h-12 w-1 -translate-y-1/2"
-              style={{ backgroundColor: "#B6FF00" }}
-            />
-          </div>
-        )}
-
+        {/* Cinematic Backdrop Image Stack */}
         <div
           className="absolute bottom-0 left-0 w-full"
           style={{ height: `${imageHeight}svh` }}
         >
-          <div
-            className="relative h-full w-full"
-            onClick={openDetail}
-            style={{ cursor: intro < 1 || detail ? "default" : "pointer" }}
-          >
+          <div className="relative h-full w-full">
             {Array.from({ length: slideCount }).map((_, index) => (
               <SlideImage
                 key={index}
@@ -540,12 +150,14 @@ export default function HeroScroll({
             ))}
           </div>
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center">
+          {/* Dynamic Category Tag */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-20 flex flex-col items-center gap-4">
+            <div className="h-0.5 w-12 bg-[#B6FF00] opacity-40" />
             {!!currentCategory && (
               <div
-                className="text-center text-sm tracking-[0.35em] text-white/95 drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)] sm:text-base"
+                className="text-center text-[10px] font-black tracking-[0.5em] text-white/95 uppercase drop-shadow-2xl"
                 style={{
                   opacity: categoryOpacity,
                   transform: `translate3d(0, ${categoryTranslateY}px, 0)`,
@@ -557,62 +169,42 @@ export default function HeroScroll({
           </div>
         </div>
 
-        {title && (
-          <div className="relative z-10 h-full">
-            <div
-              className="absolute inset-x-0 top-14 text-center text-xs tracking-[0.45em] text-white/80"
-              style={{ opacity: eyebrowOpacity }}
-            >
-              {eyebrow}
-            </div>
-
-            <div
-              className="absolute inset-x-0 top-[18svh] px-6 text-center"
-              style={{
-                transform: `translate3d(0, ${titleTranslateY}svh, 0) scale(${titleScale})`,
-                transformOrigin: "center top",
-              }}
-            >
-              <div className="mx-auto max-w-6xl select-none">
-                <button
-                  type="button"
-                  onClick={openDetail}
-                  className="relative inline-block bg-transparent p-0 text-inherit"
-                  style={{
-                    cursor: intro < 1 || detail ? "default" : "pointer",
-                    border: "none",
-                  }}
-                >
-                  <div className="text-[11vw] font-semibold tracking-[0.18em] text-white/95 sm:text-[96px]">
-                    {heroTitle}
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <div
-              className="absolute inset-x-0"
-              style={{
-                top: `${splitTop}svh`,
-                opacity: tickerOpacity,
-              }}
-            >
-              <div className="film-ticker">
-                <div className="film-ticker__perfs" aria-hidden="true" />
-                <div className="film-ticker__window">
-                  <div className="marquee h-full">
-                    <div className="marquee__track">
-                      <span className="marquee__content">{tickerText}</span>
-                      <span className="marquee__gap" aria-hidden="true"> • </span>
-                      <span className="marquee__content" aria-hidden="true">{tickerText}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="film-ticker__perfs" aria-hidden="true" />
+        {/* Cinematic Text Core Overlay */}
+        <div className="relative z-10 h-full">
+          <div
+            className="absolute inset-x-0 top-[22svh] px-6 text-center"
+            style={{
+              transform: `translate3d(0, ${titleTranslateY}svh, 0) scale(${titleScale})`,
+              transformOrigin: "center top",
+            }}
+          >
+            <div className="mx-auto max-w-6xl select-none">
+              <div className="text-[14vw] md:text-[200px] font-black tracking-tightest leading-none text-white italic transition-all hover:tracking-tighter">
+                {heroTitle.toUpperCase()}
               </div>
             </div>
           </div>
-        )}
+
+          {/* Scrolling Film Ticker */}
+          <div
+            className="absolute inset-x-0"
+            style={{
+              top: `${splitTop}svh`,
+              opacity: tickerOpacity,
+            }}
+          >
+            <div className="w-full bg-black border-y border-white/10 shadow-2xl">
+              <div className="py-2 opacity-30 bg-white/20 h-4" />
+              <div className="h-16 md:h-24 flex items-center overflow-hidden bg-black border-y-2 border-white">
+                <div className="flex animate-marquee whitespace-nowrap will-change-transform gap-12 items-center">
+                  <span className="text-3xl md:text-5xl font-black tracking-tightest uppercase italic text-white">{tickerText}</span>
+                  <span className="text-3xl md:text-5xl font-black tracking-tightest uppercase italic text-white">{tickerText}</span>
+                </div>
+              </div>
+              <div className="py-2 opacity-30 bg-white/20 h-4" />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
