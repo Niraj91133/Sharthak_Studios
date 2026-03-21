@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { type ComponentProps, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useMedia } from "@/hooks/useMedia";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -57,7 +57,11 @@ function ExpertiseCard({
   );
 }
 
-function DynamicExpertiseImage({ slotId, fallback, ...props }: any) {
+function DynamicExpertiseImage({
+  slotId,
+  fallback,
+  ...props
+}: { slotId: string; fallback: string } & Omit<ComponentProps<typeof ExpertiseCard>, "imageUrl">) {
   const src = useMedia(slotId, fallback);
   return <ExpertiseCard {...props} imageUrl={src} />;
 }
@@ -74,10 +78,11 @@ export default function ExpertiseSection() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
   }, []);
 
   const handleNext = useCallback(() => setActiveIndex((v) => (v + 1) % slideConfigs.length), []);
@@ -95,13 +100,13 @@ export default function ExpertiseSection() {
   const src = useMedia(activeSlotId, activeFallback);
 
   return (
-    <section className="relative w-full bg-black text-white pt-0 pb-20 px-0 flex flex-col items-center overflow-hidden" style={{ minHeight: "900px", maxHeight: "900px" }}>
+    <section className="relative w-full bg-black text-white px-0 flex flex-col items-center overflow-hidden h-[694px] max-h-[694px] md:h-[900px] md:max-h-[900px]">
       {/* Search for a similar look: Prata or Bodoni Moda */}
       <link href="https://fonts.googleapis.com/css2?family=Prata&display=swap" rel="stylesheet" />
 
       {/* Header Container */}
-      <div className="text-center z-10 mb-16 px-6">
-        <h2 className="text-4xl md:text-7xl font-normal tracking-wider text-white uppercase mb-2" style={{ fontFamily: "'Prata', serif" }}>
+      <div className="text-center z-10 mb-8 md:mb-16 px-6 pt-10 md:pt-0">
+        <h2 className="text-[26px] md:text-7xl font-normal tracking-wider text-white uppercase mb-2" style={{ fontFamily: "'Prata', serif" }}>
           CHOOSE YOUR EXPERTISE
         </h2>
         <p className="text-[10px] md:text-xs font-bold tracking-[0.4em] text-white/40 uppercase">
@@ -111,7 +116,7 @@ export default function ExpertiseSection() {
 
       {/* Main Carousel Viewport */}
       <div className="relative w-full flex-1 flex items-center justify-center overflow-visible">
-        <div className="relative w-full max-w-[1400px] h-[500px] flex items-center justify-center">
+        <div className="relative w-full max-w-[1400px] h-[340px] sm:h-[420px] md:h-[500px] flex items-center justify-center">
 
           <AnimatePresence mode="popLayout">
             {/* Navigational Cards Container */}
@@ -123,7 +128,7 @@ export default function ExpertiseSection() {
                 initial={{ opacity: 0, x: -100 }}
                 animate={{ opacity: 0.3, x: isMobile ? -150 : -450, scale: 0.8 }}
                 exit={{ opacity: 0 }}
-                className="absolute z-0 w-[500px] h-[350px] overflow-hidden grayscale pointer-events-none"
+                className="absolute z-0 w-[260px] h-[190px] sm:w-[360px] sm:h-[260px] md:w-[500px] md:h-[350px] overflow-hidden grayscale pointer-events-none"
               >
                 <img src={slideConfigs[(activeIndex - 1 + slideConfigs.length) % slideConfigs.length].fallback} className="w-full h-full object-cover" alt="" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent" />
@@ -135,7 +140,7 @@ export default function ExpertiseSection() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute z-20 w-[min(850px,94vw)] h-[400px] md:h-[550px] bg-neutral-900 shadow-2xl overflow-hidden border border-white/5 active:scale-95 transition-transform cursor-pointer"
+                className="absolute z-20 w-[min(850px,94vw)] h-[280px] sm:h-[380px] md:h-[550px] bg-neutral-900 shadow-2xl overflow-hidden border border-white/5 active:scale-95 transition-transform cursor-pointer"
                 onClick={handleNext}
               >
                 <img
@@ -145,8 +150,8 @@ export default function ExpertiseSection() {
                 />
 
                 {/* Subtle Title Overlay */}
-                <div className="absolute inset-x-0 bottom-0 p-8 md:p-12 bg-gradient-to-t from-black/80 to-transparent">
-                  <h3 className="text-2xl md:text-4xl font-normal tracking-widest text-white uppercase italic" style={{ fontFamily: "'Prata', serif" }}>
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 md:p-12 bg-gradient-to-t from-black/80 to-transparent">
+                  <h3 className="text-lg sm:text-2xl md:text-4xl font-normal tracking-widest text-white uppercase italic" style={{ fontFamily: "'Prata', serif" }}>
                     {slideConfigs[activeIndex].title}
                   </h3>
                 </div>
@@ -158,7 +163,7 @@ export default function ExpertiseSection() {
                 initial={{ opacity: 0, x: 100 }}
                 animate={{ opacity: 0.3, x: isMobile ? 150 : 450, scale: 0.8 }}
                 exit={{ opacity: 0 }}
-                className="absolute z-0 w-[500px] h-[350px] overflow-hidden grayscale pointer-events-none"
+                className="absolute z-0 w-[260px] h-[190px] sm:w-[360px] sm:h-[260px] md:w-[500px] md:h-[350px] overflow-hidden grayscale pointer-events-none"
               >
                 <img src={slideConfigs[(activeIndex + 1) % slideConfigs.length].fallback} className="w-full h-full object-cover" alt="" />
                 <div className="absolute inset-0 bg-gradient-to-l from-black via-transparent to-transparent" />
@@ -174,9 +179,9 @@ export default function ExpertiseSection() {
       </div>
 
       {/* Footer CTA */}
-      <div className="mt-12 z-10">
+      <div className="mt-8 md:mt-12 pb-10 md:pb-0 z-10">
         <button
-          className="group flex items-center gap-4 px-12 py-4 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white hover:text-black transition-all duration-500 shadow-xl"
+          className="group flex items-center gap-4 px-9 py-3 md:px-12 md:py-4 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white hover:text-black transition-all duration-500 shadow-xl"
           onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
         >
           <span className="text-[11px] font-black tracking-[0.3em] uppercase">CONTACT US NOW</span>

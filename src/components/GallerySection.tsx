@@ -62,6 +62,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   }, [items, activeTab]);
 
   const mobileTiles = useMemo(() => filteredTiles.slice(0, 12), [filteredTiles]);
+  const desktopTiles = useMemo(() => filteredTiles.slice(0, 36), [filteredTiles]);
   const activeTiles = isMobile ? mobileTiles : filteredTiles;
 
   useEffect(() => {
@@ -85,11 +86,11 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   return (
     <section
       ref={sectionRef}
-      className={`gallery-section w-full bg-black px-0 pt-6 pb-0 ${revealClass} flex flex-col overflow-hidden h-[694px] max-h-[694px] sm:h-auto sm:max-h-none`}
+      className={`gallery-section w-full bg-black px-0 pt-6 pb-0 ${revealClass} flex flex-col overflow-hidden h-[694px] max-h-[694px] sm:h-[900px] sm:max-h-[900px]`}
     >
       <div className="w-full px-0 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Category Header - Robust Rectangular Buttons */}
-        <div className="gallery-stagger mb-4 px-6 flex-shrink-0">
+        <div className="gallery-stagger mb-4 px-6 flex-shrink-0 sm:hidden">
           <div
             className="overflow-x-auto no-scrollbar scroll-smooth"
             dir="rtl"
@@ -107,6 +108,33 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                     }}
                     className={`
                       flex-shrink-0 h-11 px-6 border border-white/35 text-[10px] font-black tracking-[0.22em] uppercase transition-all duration-300
+                      ${isActive ? "bg-white text-black" : "bg-black text-white/70 hover:bg-white/5 hover:text-white"}
+                    `}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Category Header (Centered, scrolls when overflow) */}
+        <div className="gallery-stagger mb-4 hidden sm:block px-10 flex-shrink-0">
+          <div className="overflow-x-auto no-scrollbar scroll-smooth">
+            <div className="mx-auto inline-flex w-max items-center justify-center gap-4 px-2">
+              {tabs.map((tab, idx) => {
+                const isActive = activeTab === tab.label;
+                return (
+                  <button
+                    key={`tab-desktop-${idx}`}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.label);
+                      setLightboxIndex(null);
+                    }}
+                    className={`
+                      flex-shrink-0 h-12 px-10 border border-white/30 text-[11px] font-black tracking-[0.35em] uppercase transition-all duration-300
                       ${isActive ? "bg-white text-black" : "bg-black text-white/70 hover:bg-white/5 hover:text-white"}
                     `}
                   >
@@ -150,34 +178,43 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
           })}
         </div>
 
-        {/* Desktop Dense Grid */}
+        {/* Desktop Dense Grid (fits within 900px, no internal scrolling) */}
         <div
-          className="gallery-stagger hidden w-full gap-0 pb-24 sm:grid"
+          className="gallery-stagger hidden w-full flex-1 min-h-0 overflow-hidden gap-0 sm:grid"
           style={{
-            gridTemplateColumns: "repeat(8, minmax(0, 1fr))",
-            gridAutoRows: "140px",
+            gridTemplateColumns: "repeat(10, minmax(0, 1fr))",
+            gridAutoRows: "78px",
             gridAutoFlow: "dense",
           }}
         >
-          {filteredTiles.map((item, idx) => (
-            <button
-              key={item.seed}
-              type="button"
-              className="gallery-tile--reveal relative group overflow-hidden bg-white/5 ring-1 ring-white/10"
-              style={{
-                gridColumn: item.col,
-                gridRow: item.row,
-                transitionDelay: `${Math.min(15, idx) * 30}ms`,
-              }}
-              onClick={() => setLightboxIndex(idx)}
-            >
-              <GalleryImage
-                seed={item.seed}
-                className="gallery-img absolute inset-0 h-full w-full object-cover opacity-95 transition-transform duration-700 group-hover:scale-[1.06]"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-black/0 to-black/10 opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
-            </button>
-          ))}
+          {desktopTiles.map((item, idx) => {
+            const isHeroLandscape = idx % 9 === 0;
+            const isLandscape = !isHeroLandscape && idx % 5 === 0;
+            const spanClass = isHeroLandscape
+              ? "col-span-4 row-span-3"
+              : isLandscape
+                ? "col-span-3 row-span-3"
+                : "col-span-2 row-span-4";
+
+            return (
+              <button
+                key={item.seed}
+                type="button"
+                className={[
+                  "gallery-tile--reveal relative group overflow-hidden bg-white/5 border border-white/10",
+                  spanClass,
+                ].join(" ")}
+                style={{ transitionDelay: `${Math.min(20, idx) * 20}ms` }}
+                onClick={() => setLightboxIndex(idx)}
+              >
+                <GalleryImage
+                  seed={item.seed}
+                  className="gallery-img absolute inset-0 h-full w-full object-cover opacity-95 transition-transform duration-700 group-hover:scale-[1.04]"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/10 opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
+              </button>
+            );
+          })}
         </div>
       </div>
 

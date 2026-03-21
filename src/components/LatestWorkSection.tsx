@@ -1,71 +1,148 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Eye, Heart } from "lucide-react";
 import { useMedia } from "@/hooks/useMedia";
 
 const reels = [
-  { id: "reel-01", title: "Eternal Vows", category: "Wedding", time: "0:45", fallback: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800" },
-  { id: "reel-02", title: "Urban Beats", category: "Editorial", time: "0:30", fallback: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=800" },
-  { id: "reel-03", title: "Golden Hour", category: "Candid", time: "0:55", fallback: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800" },
-  { id: "reel-04", title: "Midnight Sun", category: "Cinema", time: "0:15", fallback: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=800" },
-];
+  {
+    id: "latest-work-01",
+    title: "Eternal Vows",
+    time: "0:45",
+    likes: "12.4K",
+    views: "210K",
+    fallback:
+      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=1200",
+  },
+  {
+    id: "latest-work-02",
+    title: "City Lights",
+    time: "0:30",
+    likes: "8.1K",
+    views: "142K",
+    fallback:
+      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=1200",
+  },
+  {
+    id: "latest-work-03",
+    title: "Golden Hour",
+    time: "0:55",
+    likes: "18.9K",
+    views: "310K",
+    fallback:
+      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200",
+  },
+  {
+    id: "latest-work-04",
+    title: "Midnight Sun",
+    time: "0:15",
+    likes: "6.7K",
+    views: "98K",
+    fallback:
+      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=1200",
+  },
+  {
+    id: "latest-work-05",
+    title: "Soft Focus",
+    time: "0:38",
+    likes: "10.2K",
+    views: "176K",
+    fallback:
+      "https://images.unsplash.com/photo-1523437237164-d442d57cc3c9?auto=format&fit=crop&q=80&w=1200",
+  },
+  {
+    id: "latest-work-06",
+    title: "Afterglow",
+    time: "0:22",
+    likes: "7.9K",
+    views: "121K",
+    fallback:
+      "https://images.unsplash.com/photo-1529634897861-1fe71c0421d2?auto=format&fit=crop&q=80&w=1200",
+  },
+] as const;
 
-function ReelCard({ reel, isActive }: any) {
+type Reel = (typeof reels)[number];
+
+function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
   const src = useMedia(reel.id, reel.fallback);
   return (
-    <div className={`relative flex-shrink-0 w-[300px] md:w-[350px] aspect-[10/16] transition-all duration-1000 ease-[0.22, 1, 0.36, 1] ${isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-40 grayscale'}`}>
-      <div className="w-full h-full bg-[#1A1A1A] rounded-[32px] overflow-hidden relative shadow-2xl border border-white/5 flex flex-col">
+    <img
+      src={src}
+      alt=""
+      className={className}
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+    />
+  );
+}
 
-        {/* Top: Video Thumbnail Area */}
-        <div className="relative flex-1 bg-black overflow-hidden group/thumb">
-          <img src={src} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt={reel.title} />
-
-          {/* Time Badge */}
-          <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-            <span className="text-[10px] font-black text-white">{reel.time}</span>
+function ReelStats({ reel }: { reel: Reel }) {
+  return (
+    <div className="absolute inset-x-0 bottom-0 p-4">
+      <div className="flex items-end justify-between gap-4">
+        <div className="space-y-2">
+          <div className="text-[11px] font-black tracking-[0.3em] text-white/70 uppercase">
+            {reel.title}
           </div>
-
-          {/* Player controls (Center Overlay) */}
-          <div className="absolute inset-0 flex items-center justify-center gap-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-            <button className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18V6l11 6-11 6z" /></svg>
-            </button>
-            <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-black shadow-xl hover:scale-110 active:scale-95 transition-all">
-              <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18v-12h2v12h-2zm10-12v12h2v-12h-2z" /></svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom: Info Bar */}
-        <div className="h-44 bg-[#1A1A1A] p-6 flex flex-col justify-between">
-          {/* Progress line */}
-          <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden relative">
-            <div className="absolute inset-y-0 left-0 bg-[#A855F7] w-1/3 rounded-full shadow-[0_0_10px_#A855F7]" />
-            <div className="absolute left-1/3 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full border-2 border-[#A855F7]" />
-          </div>
-
-          <div className="flex justify-between items-end">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-left">
-                <div className="w-2 h-2 rounded-full bg-[#A855F7]" />
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{reel.category}</span>
-              </div>
-              <h4 className="text-xl font-black text-white tracking-tight uppercase leading-none text-left">{reel.title}</h4>
-              <div className="flex gap-4 pt-2 opacity-40">
-                <span className="text-[10px] font-black">❤ 12</span>
-                <span className="text-[10px] font-black">💬 3</span>
-              </div>
-            </div>
-
-            <button className="px-6 py-2.5 bg-[#A855F7] text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-[0_10px_20px_-5px_rgba(168,85,247,0.4)] hover:scale-105 active:scale-95 transition-all leading-none">
-              WATCH
-            </button>
+          <div className="flex items-center gap-4 text-[12px] font-black text-white/85">
+            <span className="inline-flex items-center gap-2">
+              <Heart className="h-4 w-4" />
+              {reel.likes}
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              {reel.views}
+            </span>
           </div>
         </div>
 
+        <div className="shrink-0 rounded-full bg-black/40 px-3 py-1 text-[10px] font-black tracking-[0.2em] text-white/80 backdrop-blur">
+          {reel.time}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PhoneMockup({ reel }: { reel: Reel }) {
+  return (
+    <div className="relative w-[min(260px,72vw)] sm:w-[min(360px,84vw)] md:w-[420px]">
+      <div className="relative aspect-[9/19] w-full rounded-[48px] bg-[#0b0b0b] shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)] ring-1 ring-white/10">
+        <div className="absolute inset-[10px] overflow-hidden rounded-[40px] bg-black">
+          <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
+          <ReelStats reel={reel} />
+        </div>
+
+        <div className="pointer-events-none absolute left-1/2 top-[14px] -translate-x-1/2 h-[26px] w-[108px] rounded-full bg-black/85 ring-1 ring-white/10" />
+        <div className="pointer-events-none absolute left-1/2 top-[24px] -translate-x-1/2 h-[4px] w-[44px] rounded-full bg-white/10" />
+      </div>
+    </div>
+  );
+}
+
+function SideReel({ reel, side }: { reel: Reel; side: "left" | "right" }) {
+  return (
+    <div
+      className={[
+        "pointer-events-none hidden sm:block",
+        "relative w-[240px] md:w-[280px] aspect-[9/16]",
+        "opacity-25 grayscale blur-[1px]",
+        side === "left" ? "-mr-16 md:-mr-24" : "-ml-16 md:-ml-24",
+      ].join(" ")}
+      aria-hidden="true"
+    >
+      <div className="absolute inset-0 overflow-hidden rounded-[28px] bg-white/5 ring-1 ring-white/10">
+        <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-cover" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/45" />
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="flex items-center justify-between text-[10px] font-black tracking-[0.25em] text-white/70 uppercase">
+            <span>{reel.likes}</span>
+            <span>{reel.views}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -73,78 +150,80 @@ function ReelCard({ reel, isActive }: any) {
 
 export default function LatestWorkSection() {
   const [index, setIndex] = useState(0);
-  const [winWidth, setWinWidth] = useState(0);
 
-  useEffect(() => {
-    setWinWidth(window.innerWidth);
-    const handleResize = () => setWinWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const handleNext = useCallback(() => setIndex((v) => (v + 1) % reels.length), []);
+  const handlePrev = useCallback(() => setIndex((v) => (v - 1 + reels.length) % reels.length), []);
 
-  const handleNext = useCallback(() => setIndex(prev => (prev + 1) % reels.length), []);
-  const handlePrev = useCallback(() => setIndex(prev => (prev - 1 + reels.length) % reels.length), []);
-
-  useEffect(() => {
-    const timer = setInterval(handleNext, 4000);
-    return () => clearInterval(timer);
-  }, [handleNext]);
-
-  // Center calculation logic
-  const cardWidth = 350;
-  const gap = winWidth < 768 ? 20 : 40;
-  const translateX = winWidth ? (winWidth / 2) - (cardWidth / 2) - (index * (cardWidth + gap)) : 0;
+  const active = reels[index];
+  const prev = useMemo(() => reels[(index - 1 + reels.length) % reels.length], [index]);
+  const next = useMemo(() => reels[(index + 1) % reels.length], [index]);
 
   return (
-    <section className="relative w-full bg-black text-white pt-24 pb-32 flex flex-col items-center overflow-hidden border-t border-white/5" style={{ minHeight: "900px", maxHeight: "900px" }}>
-
-      {/* Feed Header */}
-      <div className="w-full max-w-7xl px-8 flex flex-col md:flex-row justify-between items-center mb-16 gap-8 z-10 text-center md:text-left">
+    <section className="relative w-full bg-black text-white flex flex-col items-center overflow-hidden border-t border-white/5 h-[654px] max-h-[654px] sm:h-[900px] sm:max-h-[900px] pt-10 pb-10 sm:pt-20 sm:pb-20">
+      <div className="w-full max-w-7xl px-6 sm:px-8 flex flex-col md:flex-row justify-between items-center mb-6 sm:mb-12 gap-6 sm:gap-8 z-10 text-center md:text-left flex-shrink-0">
         <div className="space-y-2">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tightest uppercase italic leading-none">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tightest uppercase italic leading-none">
             INSTAGRAM FEED
           </h2>
-          <p className="text-[10px] md:text-xs font-black opacity-30 tracking-[0.4em] uppercase">(CONNECTING TO SHARTHAK_STUDIO)</p>
+          <p className="text-[10px] md:text-xs font-black opacity-30 tracking-[0.4em] uppercase">
+            (CONNECTING TO SHARTHAK_STUDIO)
+          </p>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="flex -space-x-3">
-            {[1, 2, 3].map(i => <div key={i} className="w-10 h-10 rounded-full border-2 border-black bg-neutral-800" />)}
-          </div>
-          <button className="px-8 py-3 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl leading-none">
-            FOLLOW US
-          </button>
-        </div>
+        <button className="px-7 py-3 sm:px-8 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl leading-none">
+          FOLLOW US
+        </button>
       </div>
 
-      {/* Social Carousel Container */}
-      <div className="w-full flex-1 flex flex-col justify-center overflow-hidden relative">
+      <div className="w-full flex-1 min-h-0 flex flex-col justify-center overflow-hidden relative">
         <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black z-10 pointer-events-none opacity-80" />
 
-        <div
-          className="flex items-center will-change-transform"
-          style={{
-            gap: `${gap}px`,
-            transform: `translateX(${translateX}px)`,
-            transition: "transform 1000ms cubic-bezier(0.22, 1, 0.36, 1)"
-          }}
-        >
-          {reels.map((reel, i) => (
-            <ReelCard key={reel.id} reel={reel} isActive={i === index} />
-          ))}
+        <div className="relative z-0 flex w-full items-center justify-center">
+          <SideReel reel={prev} side="left" />
+
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={active.id}
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -10 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-20"
+            >
+              <PhoneMockup reel={active} />
+            </motion.div>
+          </AnimatePresence>
+
+          <SideReel reel={next} side="right" />
         </div>
       </div>
 
-      {/* Navigation Footer */}
-      <div className="w-full max-w-7xl px-8 mt-16 flex justify-center">
-        <div className="flex items-center gap-8">
-          <button onClick={handlePrev} className="text-white/20 hover:text-white transition-colors text-xl font-black">← PREV</button>
+      <div className="w-full max-w-7xl px-6 sm:px-8 mt-8 sm:mt-12 flex justify-center flex-shrink-0">
+        <div className="flex items-center gap-6 sm:gap-8">
+          <button
+            onClick={handlePrev}
+            className="text-white/20 hover:text-white transition-colors text-base sm:text-xl font-black"
+          >
+            ← PREV
+          </button>
+
           <div className="flex gap-2">
             {reels.map((_, i) => (
-              <div key={i} className={`h-1.5 transition-all duration-500 rounded-full ${i === index ? 'w-8 bg-[#A855F7]' : 'w-2 bg-white/20'}`} />
+              <div
+                key={i}
+                className={`h-1.5 transition-all duration-500 rounded-full ${
+                  i === index ? "w-8 bg-[#A855F7]" : "w-2 bg-white/20"
+                }`}
+              />
             ))}
           </div>
-          <button onClick={handleNext} className="text-white/20 hover:text-white transition-colors text-xl font-black">NEXT →</button>
+
+          <button
+            onClick={handleNext}
+            className="text-white/20 hover:text-white transition-colors text-base sm:text-xl font-black"
+          >
+            NEXT →
+          </button>
         </div>
       </div>
     </section>

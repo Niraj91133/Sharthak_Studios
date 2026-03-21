@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useInView, motion, AnimatePresence } from "framer-motion";
 import { useMediaContext } from "@/context/MediaContext";
+import { MediaSlot } from "@/lib/mediaSlots";
 
 function Digit({ digit }: { digit: string }) {
   return (
@@ -55,7 +56,18 @@ function FlipNumber({ value }: { value: string }) {
 
 export default function WhyChooseUsSection() {
   const { slots } = useMediaContext();
-  const metrics = slots.filter(s => s.section === "10. STUDIO METRICS");
+  const metricsFromSlots = (slots as MediaSlot[]).filter(
+    (s) => s.section === "08. STUDIO METRICS" || s.section === "10. STUDIO METRICS",
+  );
+  const metrics =
+    metricsFromSlots.length > 0
+      ? metricsFromSlots
+      : [
+          { id: "metric-1", textValue: "12+", textContent: "YEARS OF LEGACY" },
+          { id: "metric-2", textValue: "750+", textContent: "STORIES CAPTURED" },
+          { id: "metric-3", textValue: "3200+", textContent: "REELS PRODUCED" },
+          { id: "metric-4", textValue: "99%", textContent: "CLIENT TRUST" },
+        ];
 
   return (
     <section className="relative w-full overflow-hidden bg-black text-white flex flex-col justify-center items-center px-6 md:px-24 border-y border-white/5" style={{ height: "900px" }}>

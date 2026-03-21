@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { type CSSProperties, useMemo } from "react";
 import { useMedia } from "@/hooks/useMedia";
 
 function StripImage({
@@ -35,6 +35,14 @@ function AutoStrip({
   reverse?: boolean;
 }) {
   const loop = [...items, ...items];
+  const marqueeVars = useMemo(
+    () =>
+      ({
+        ["--tile-h"]: "116px",
+        ["--tile-w"]: "240px",
+      }) as CSSProperties,
+    [],
+  );
 
   return (
     <div
@@ -43,7 +51,7 @@ function AutoStrip({
         "imgmarquee pointer-events-none select-none",
         reverse ? "imgmarquee--reverse" : "",
       ].join(" ")}
-      style={{ ["--tile-h" as any]: "116px", ["--tile-w" as any]: "240px" }}
+      style={marqueeVars}
     >
       <div className="imgmarquee__track">
         {loop.map((it, idx) => (
