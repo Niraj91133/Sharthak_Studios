@@ -1,170 +1,102 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useMedia } from "@/hooks/useMedia";
+import { motion, AnimatePresence } from "framer-motion";
 
-type SlideConfig = {
-  id: string;
-  fallback: string;
-  title?: string;
-  subtitle?: string;
-};
+const works = [
+  { id: "latest-01", title: "Retreat & Rally", client: "for Padel United", fallback: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=1200" },
+  { id: "latest-02", title: "Urban Escape", client: "for H&M", fallback: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=1200" },
+  { id: "latest-03", title: "Desert Moods", client: "for Zara", fallback: "https://images.unsplash.com/photo-1445205170230-053b830c6050?auto=format&fit=crop&q=80&w=1200" },
+  { id: "latest-04", title: "Midnight Sun", client: "for Volvo", fallback: "https://images.unsplash.com/photo-1503376780353-7e66a876a11a?auto=format&fit=crop&q=80&w=1200" },
+];
 
-function DynamicLatestSlide({ config, isActive }: { config: SlideConfig; isActive: boolean }) {
-  const src = useMedia(config.id, config.fallback);
+function LatestWorkSlide({ work, isActive, index }: any) {
+  const src = useMedia(work.id, work.fallback);
   return (
-    <div className="latest-work__slide group">
-      <div className={`relative h-full w-full transition-all duration-700 overflow-hidden ${isActive ? 'scale-100 opacity-100 shadow-2x-large' : 'scale-90 opacity-40 grayscale blur-[2px]'}`}>
-        <Image
-          src={src}
-          alt=""
-          fill
-          sizes="440px"
-          className="object-cover transition-transform duration-1000 group-hover:scale-110"
-          priority={isActive}
-        />
+    <div className={`relative flex-shrink-0 w-[min(600px,85vw)] aspect-[16/10] sm:aspect-[16/9] transition-all duration-1000 ${isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-40 grayscale blur-[1px]'}`}>
+      <img src={src} className="w-full h-full object-cover" alt={work.title} />
 
-        {isActive && config.title && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-            <span className="text-[8px] font-black tracking-[0.4em] text-white/50 uppercase block mb-2">PROJECT ARCHIVE</span>
-            <h4 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">
-              {config.title}
-            </h4>
-            <p className="text-[10px] text-white/40 uppercase tracking-widest font-black">
-              {config.subtitle}
-            </p>
-          </div>
-        )}
+      {/* View Badge - Only for active */}
+      {isActive && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl cursor-pointer hover:scale-110 transition-transform">
+          <span className="text-[10px] font-black tracking-widest text-black/80 uppercase">VIEW</span>
+        </div>
+      )}
+
+      {/* Info Overlay */}
+      <div className="absolute bottom-10 left-10 text-white z-10">
+        <h4 className="text-xl md:text-2xl font-bold tracking-tight mb-1">{work.title}</h4>
+        <p className="text-[9px] md:text-[11px] font-bold text-white/50 uppercase tracking-widest">{work.client}</p>
       </div>
     </div>
   );
 }
 
 export default function LatestWorkSection() {
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const slides: SlideConfig[] = useMemo(
-    () => [
-      { id: "latest-work-01", title: "THE ETERNAL VOW", subtitle: "S&N WEDDING FILM", fallback: "https://picsum.photos/seed/latest-work-01/1600/1200" },
-      { id: "latest-work-02", title: "DUSK & DAWN", subtitle: "EDITORIAL SERIES", fallback: "https://picsum.photos/seed/latest-work-02/1600/1200" },
-      { id: "latest-work-03", title: "CINEMATIC LOVE", subtitle: "PRE-WEDDING SHORT", fallback: "https://picsum.photos/seed/latest-work-03/1600/1200" },
-      { id: "latest-work-04", title: "URBAN RHYTHM", subtitle: "MUSIC PORTFOLIO", fallback: "https://picsum.photos/seed/latest-work-04/1600/1200" },
-      { id: "latest-work-05", title: "THE CEREMONY", subtitle: "TRADITIONAL LUXE", fallback: "https://picsum.photos/seed/latest-work-05/1600/1200" },
-      { id: "latest-work-06", title: "ROYAL HERITAGE", subtitle: "BRIDAL CINEMA", fallback: "https://picsum.photos/seed/latest-work-06/1600/1200" },
-    ],
-    [],
-  );
-
   const [index, setIndex] = useState(0);
-  const canPrev = index > 0;
-  const canNext = index < slides.length - 1;
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleNext = useCallback(() => setIndex(prev => (prev + 1) % works.length), []);
+  const handlePrev = useCallback(() => setIndex(prev => (prev - 1 + works.length) % works.length), []);
 
   useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    let locked = false;
-    let unlockTimer: number | null = null;
-
-    const onWheel = (event: WheelEvent) => {
-      if (!el.contains(event.target as Node)) return;
-      if (Math.abs(event.deltaY) < 10) return;
-      event.preventDefault();
-      if (locked) return;
-      locked = true;
-      const direction = Math.sign(event.deltaY);
-      setIndex((current) => Math.min(slides.length - 1, Math.max(0, current + direction)));
-      unlockTimer = window.setTimeout(() => { locked = false; }, 400);
-    };
-
-    window.addEventListener("wheel", onWheel, { passive: false });
-    return () => {
-      if (unlockTimer) window.clearTimeout(unlockTimer);
-      window.removeEventListener("wheel", onWheel);
-    };
-  }, [slides.length]);
+    const timer = setInterval(handleNext, 4000);
+    return () => clearInterval(timer);
+  }, [handleNext]);
 
   return (
-    <section className="latest-work w-full bg-[#f2f2f2] px-0 py-32 md:py-48 text-[#111111] overflow-hidden border-y border-black/[0.03]">
-      <div className="mx-auto w-full max-w-none space-y-24">
-        {/* Cinematic Split Title */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 px-6 max-w-6xl mx-auto items-end">
-          <div className="space-y-6">
-            <span className="text-[10px] font-black tracking-[0.5em] text-black/20 uppercase block mb-2">CURATED BEST WORK</span>
-            <h2 className="text-6xl md:text-[8rem] font-black leading-[0.85] tracking-tightest uppercase italic">
-              FEED ON OUR<br />LATEST WORK
-            </h2>
-            <div className="h-0.5 w-24 bg-black" />
-          </div>
+    <section className="relative w-full bg-white text-black pt-0 pb-24 flex flex-col items-center overflow-hidden" style={{ minHeight: "900px", maxHeight: "1000px" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda&display=swap" rel="stylesheet" />
 
-          <div className="space-y-8 md:pl-20">
-            <p className="text-xs md:text-sm font-semibold tracking-widest text-black/40 uppercase leading-relaxed">
-              Experience the stopping power of our cinematic visuals. We curate only the finest stories from our recent archive.
-            </p>
-            <button
-              type="button"
-              onClick={() => window.open("/blog", "_blank")}
-              className="px-12 py-4 bg-black text-white text-[10px] font-black tracking-[0.4em] uppercase hover:scale-105 active:scale-95 transition-all shadow-xl"
-            >
-              EXPLORE COLLECTION →
-            </button>
-          </div>
+      {/* Header Area */}
+      <div className="w-full max-w-7xl px-8 flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-8">
+        <div className="space-y-1">
+          <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-none">Feed on our latest work</h2>
+          <p className="text-xs md:text-sm font-bold opacity-40 tracking-wide">(see how we stop the scroll)</p>
         </div>
 
-        {/* Film Strip Stage */}
-        <div className="pt-20">
-          <div className="latest-work__film w-screen max-w-none bg-black py-4">
-            <div className="latest-work__perfs opacity-30 h-10" aria-hidden="true" />
-
-            <div
-              className="latest-work__window h-[420px] md:h-[580px] bg-[#050505] cursor-pointer"
-              ref={stageRef}
-              onClick={(event) => {
-                const rect = event.currentTarget.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                if (x > rect.width * 0.55) setIndex(v => Math.min(slides.length - 1, v + 1));
-                else if (x < rect.width * 0.45) setIndex(v => Math.max(0, v - 1));
-              }}
-            >
-              <div
-                className="latest-work__track h-full"
-                style={{
-                  transform: `translate3d(calc(50% - 220px - ${index * 460}px), 0, 0)`,
-                  transition: "transform 700ms cubic-bezier(0.22, 1, 0.36, 1)",
-                  padding: 0,
-                  gap: 20
-                }}
-              >
-                {slides.map((config, i) => (
-                  <DynamicLatestSlide
-                    key={config.id}
-                    config={config}
-                    isActive={i === index}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="latest-work__perfs opacity-30 h-10" aria-hidden="true" />
-          </div>
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12">
+          <div className="h-24 w-px bg-black hidden md:block opacity-10" />
+          <p className="text-[10px] md:text-xs font-normal tracking-[0.3em] uppercase max-w-xs opacity-60" style={{ fontFamily: "'Bodoni Moda', serif" }}>
+            CURATE THE BEST WORK AND SERVICES
+          </p>
+          <button className="px-8 py-3 rounded-full border border-black text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all">
+            Our work
+          </button>
         </div>
+      </div>
 
-        {/* Cinematic Counters */}
-        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center opacity-40">
-          <div className="flex gap-12">
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] font-black text-black/20 tracking-widest uppercase">SECTION</span>
-              <span className="text-lg font-black font-mono">04 / 12</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] font-black text-black/20 tracking-widest uppercase">LATEST PROJECT</span>
-              <span className="text-lg font-black font-mono">0{index + 1}</span>
-            </div>
-          </div>
+      {/* Carousel Container */}
+      <div className="w-full bg-neutral-900 py-20 flex-1 flex flex-col justify-center overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-neutral-900 via-transparent to-neutral-900 z-10 pointer-events-none" />
 
-          <div className="flex gap-4">
-            <button onClick={() => setIndex(v => Math.max(0, v - 1))} className="w-12 h-12 border border-black/10 rounded-full flex items-center justify-center hover:bg-black hover:text-white transition-all">←</button>
-            <button onClick={() => setIndex(v => Math.min(slides.length - 1, v + 1))} className="w-12 h-12 border border-black/10 rounded-full flex items-center justify-center hover:bg-black hover:text-white transition-all">→</button>
-          </div>
+        <div
+          ref={scrollRef}
+          className="flex items-center gap-8 md:gap-16 px-10 transition-transform duration-1000 ease-[0.22, 1, 0.36, 1]"
+          style={{ transform: `translateX(calc(50% - (min(600px,85vw)/2) - ${index * (Math.min(600, window?.innerWidth * 0.85 || 600) + (window?.innerWidth < 768 ? 32 : 64))}px))` }}
+        >
+          {works.map((work, i) => (
+            <LatestWorkSlide key={work.id} work={work} isActive={i === index} index={i} />
+          ))}
+        </div>
+      </div>
+
+      {/* Navigation Footer */}
+      <div className="w-full max-w-7xl px-8 mt-12 flex justify-start">
+        <div className="flex bg-black">
+          <button
+            onClick={handlePrev}
+            className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center text-white/40 hover:text-white transition-colors border-r border-white/5"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <button
+            onClick={handleNext}
+            className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center text-white/40 hover:text-white transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M9 5l7 7-7 7" /></svg>
+          </button>
         </div>
       </div>
     </section>

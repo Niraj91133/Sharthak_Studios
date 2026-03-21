@@ -122,6 +122,8 @@ export default function AppContent() {
 
             <ExpertiseSection />
 
+            <div className="h-6" /> {/* 24px Gap */}
+
             <LatestWorkSection />
 
             <VideoEditingTimelineSection />
