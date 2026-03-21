@@ -15,7 +15,7 @@ function BlogListingContent() {
         return blogs.filter(b => b.category === activeCategory);
     }, [blogs, activeCategory]);
 
-    if (isLoading) return <div className="min-h-screen bg-white flex items-center justify-center text-black/10 tracking-widest font-black uppercase italic">Studio Blogs Loading...</div>;
+    if (isLoading) return <div className="min-h-screen bg-white flex items-center justify-center text-black/10 tracking-widest font-black uppercase italic text-xs">Studio Blogs Loading...</div>;
 
     return (
         <div className="min-h-screen bg-white text-[#111] selection:bg-black selection:text-white font-sans">
@@ -39,30 +39,30 @@ function BlogListingContent() {
                 </div>
             </nav>
 
-            {/* Main Hero - Full Width Screen, Sharp Corners, Small Titles */}
+            {/* Main Hero - Height Reduced (Panoramic) */}
             <header className="pt-16">
                 <div className="w-full">
                     {filteredBlogs.length > 0 ? (
-                        <Link href={`/blog/${filteredBlogs[0].id}`} className="group relative block w-full aspect-[21/9] bg-black overflow-hidden shadow-2xl transition-all">
+                        <Link href={`/blog/${filteredBlogs[0].id}`} className="group relative block w-full h-[300px] md:h-[450px] bg-black overflow-hidden shadow-2xl transition-all">
                             <img
                                 src={filteredBlogs[0].image}
                                 alt={filteredBlogs[0].title}
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             />
                             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12">
-                                <div className="max-w-3xl space-y-4">
+                                <div className="max-w-3xl space-y-3">
                                     <span className="px-3 py-1 bg-black/50 backdrop-blur rounded-full text-[7px] font-black tracking-[0.4em] text-white/40 uppercase border border-white/10 inline-block">FEATURED BLOG</span>
                                     <h1 className="text-2xl md:text-3xl font-black tracking-tightest leading-none text-white uppercase">
                                         {filteredBlogs[0].title}
                                     </h1>
-                                    <p className="text-[10px] md:text-xs text-white/30 max-w-xl font-medium line-clamp-1 uppercase tracking-widest">
+                                    <p className="text-[9px] md:text-xs text-white/30 max-w-xl font-medium line-clamp-1 uppercase tracking-widest leading-loose">
                                         {filteredBlogs[0].excerpt}
                                     </p>
                                 </div>
                             </div>
                         </Link>
                     ) : (
-                        <div className="w-full aspect-[21/9] bg-[#f9f9f9] flex items-center justify-center text-black/10 font-black tracking-[0.4em] uppercase italic text-xs">NO STORIES PUBLISHED.</div>
+                        <div className="w-full h-[300px] bg-[#f9f9f9] flex items-center justify-center text-black/10 font-black tracking-[0.4em] uppercase italic text-xs">NO STORIES PUBLISHED.</div>
                     )}
                 </div>
             </header>
@@ -103,7 +103,7 @@ function BlogListingContent() {
                                         {blog.category}
                                     </div>
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <span className="text-[8px] text-black/20 font-bold uppercase tracking-[0.3em]">{new Date(blog.date).toLocaleDateString()}</span>
                                     <h2 className="text-lg font-black leading-tight group-hover:text-black/50 transition-colors uppercase tracking-tight h-[2.5rem] overflow-hidden">
                                         {blog.title}
@@ -124,8 +124,8 @@ function BlogListingContent() {
             {/* Simple Studio Footer */}
             <footer className="mt-40 py-24 bg-black text-white text-center px-6">
                 <div className="max-w-xl mx-auto space-y-8">
-                    <h2 className="text-xl md:text-2xl font-black tracking-tightest uppercase italic">SHARTHAK STUDIO • BLOGS</h2>
-                    <div className="h-px w-12 bg-white/10 mx-auto" />
+                    <h2 className="text-xl md:text-2xl font-black tracking-tightest uppercase italic leading-none">SHARTHAK STUDIO • STUDIO BLOGS</h2>
+                    <div className="h-px w-10 bg-white/10 mx-auto" />
                     <p className="text-[7.5px] tracking-[0.6em] text-white/20 uppercase font-black">
                         BIHAR • CINEMATIC STORYTELLING • EST 2024
                     </p>

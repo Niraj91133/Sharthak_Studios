@@ -19,7 +19,7 @@ function BlogPostContent() {
         return blogs.filter(b => b.id !== blogId).slice(0, 4);
     }, [blogs, blogId]);
 
-    if (isLoading) return <div className="min-h-screen bg-white flex items-center justify-center text-black/20 tracking-widest font-black uppercase italic">Blog Loading...</div>;
+    if (isLoading) return <div className="min-h-screen bg-white flex items-center justify-center text-black/10 tracking-widest font-black uppercase italic">Blog Loading...</div>;
 
     if (!blog) return (
         <div className="min-h-screen bg-white flex flex-col items-center justify-center text-black space-y-8">
@@ -50,9 +50,9 @@ function BlogPostContent() {
                 </div>
             </nav>
 
-            {/* Featured Photo - 100% Full Width, Square/Sharp Corners */}
+            {/* Featured Photo - Narrow Panorama (Height Reduced) */}
             <header className="pt-16">
-                <div className="w-full aspect-[21/9] bg-black overflow-hidden relative">
+                <div className="w-full h-[300px] md:h-[450px] bg-black overflow-hidden relative">
                     <img
                         src={blog.image}
                         alt={blog.title}
@@ -61,8 +61,8 @@ function BlogPostContent() {
                 </div>
             </header>
 
-            {/* Meta, Title & Subtitle - Below the Photo, Smaller Title */}
-            <section className="max-w-4xl mx-auto px-6 pt-16 pb-12">
+            {/* Meta, Title & Subtitle - Aligned Below the Photo */}
+            <section className="max-w-4xl mx-auto px-6 pt-12 pb-6">
                 <div className="flex flex-wrap items-center gap-3 mb-6">
                     <span className="text-[10px] font-black tracking-widest text-black/30 uppercase">
                         {blog.category}
@@ -77,26 +77,26 @@ function BlogPostContent() {
                     {blog.title}
                 </h1>
 
-                <p className="text-base md:text-lg text-black/60 font-medium tracking-wide max-w-2xl leading-relaxed">
+                <p className="text-base md:text-lg text-black/40 font-medium tracking-wide max-w-2xl leading-relaxed">
                     {blog.excerpt}
                 </p>
 
-                <div className="h-px w-full bg-black/5 mt-16" />
+                <div className="h-px w-full bg-black/5 mt-10" />
             </section>
 
-            {/* HTML Content Render - Using Systematic dangerouslySetInnerHTML */}
-            <main className="max-w-4xl mx-auto px-6 py-8">
+            {/* HTML Content Render */}
+            <main className="max-w-4xl mx-auto px-6 py-4">
                 <div
-                    className="systematic-rich-text text-sm md:text-base leading-loose"
+                    className="systematic-rich-text"
                     dangerouslySetInnerHTML={{ __html: blog.content }}
                 />
             </main>
 
             {/* Horizontal Scroll Recent Blogs */}
-            <section className="mt-32 border-t border-black/5 pt-24 mb-12">
+            <section className="mt-24 border-t border-black/5 pt-16 mb-12">
                 <div className="max-w-6xl mx-auto px-6">
                     <div className="flex items-center justify-between mb-12">
-                        <h3 className="text-[11px] font-black tracking-[0.4em] text-black/30 uppercase">LATEST BLOGS</h3>
+                        <h3 className="text-[10px] font-black tracking-[0.4em] text-black/30 uppercase">LATEST BLOGS</h3>
                         <div className="flex gap-4">
                             <button
                                 onClick={() => scrollRef.current?.scrollBy({ left: -400, behavior: 'smooth' })}
@@ -114,13 +114,12 @@ function BlogPostContent() {
                         className="flex gap-8 overflow-x-auto no-scrollbar pb-12 snap-x"
                     >
                         {otherBlogs.length > 0 ? otherBlogs.map(b => (
-                            <Link key={b.id} href={`/blog/${b.id}`} className="flex-shrink-0 w-[280px] md:w-[380px] group space-y-6 snap-start">
-                                <div className="aspect-video bg-black/5 relative overflow-hidden">
+                            <Link key={b.id} href={`/blog/${b.id}`} className="flex-shrink-0 w-[240px] md:w-[320px] group space-y-4 snap-start">
+                                <div className="aspect-video bg-black/5 overflow-hidden">
                                     <img src={b.image} alt={b.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                                 </div>
-                                <div className="space-y-3">
-                                    <span className="text-[8px] font-black tracking-widest text-black/30 uppercase">{b.category}</span>
-                                    <h4 className="text-lg font-black leading-tight uppercase tracking-tight group-hover:text-black/50 transition-colors line-clamp-2">
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-black leading-tight uppercase tracking-tight group-hover:text-black/50 transition-colors line-clamp-2">
                                         {b.title}
                                     </h4>
                                 </div>
@@ -130,15 +129,15 @@ function BlogPostContent() {
                 </div>
             </section>
 
-            {/* Styled Footer */}
+            {/* Simple Studio Footer */}
             <footer className="py-20 bg-black text-white text-center px-6">
-                <div className="max-w-2xl mx-auto space-y-8">
-                    <h2 className="text-xl md:text-2xl font-black tracking-tightest uppercase">SHARTHAK STUDIO • BIHAR</h2>
+                <div className="max-w-2xl mx-auto space-y-6">
+                    <h2 className="text-xl md:text-2xl font-black tracking-tightest uppercase">STUDIO BLOGS • BIHAR</h2>
                     <Link href="/#contact" className="inline-block px-10 py-4 bg-white text-black text-[9px] font-black uppercase tracking-widest rounded-full hover:scale-105 active:scale-95 transition-all shadow-2xl">
                         BOOK YOUR JOURNEY
                     </Link>
                     <p className="text-[8px] tracking-[0.4em] text-white/20 uppercase font-bold pt-8">
-                        © {new Date().getFullYear()} STUDIO BLOGS • ALL RIGHTS RESERVED
+                        © {new Date().getFullYear()} ALL RIGHTS RESERVED
                     </p>
                 </div>
             </footer>
