@@ -96,7 +96,7 @@ export default function LatestWorkSection() {
   const translateX = winWidth ? (winWidth / 2) - (cardWidth / 2) - (index * (cardWidth + gap)) : 0;
 
   return (
-    <section className="relative w-full bg-black text-white pt-24 pb-32 flex flex-col items-center overflow-hidden border-t border-white/5" style={{ minHeight: "950px" }}>
+    <section className="relative w-full bg-black text-white pt-24 pb-32 flex flex-col items-center overflow-hidden border-t border-white/5" style={{ minHeight: "900px", maxHeight: "900px" }}>
 
       {/* Feed Header */}
       <div className="w-full max-w-7xl px-8 flex flex-col md:flex-row justify-between items-center mb-16 gap-8 z-10 text-center md:text-left">

@@ -91,7 +91,7 @@ export default function ExpertiseSection() {
   }, [handleNext]);
 
   return (
-    <section className="relative w-full bg-black text-white pt-0 pb-20 px-0 flex flex-col items-center overflow-hidden" style={{ minHeight: "900px", maxHeight: "1000px" }}>
+    <section className="relative w-full bg-black text-white pt-0 pb-20 px-0 flex flex-col items-center overflow-hidden" style={{ minHeight: "900px", maxHeight: "900px" }}>
       {/* Search for a similar look: Prata or Bodoni Moda */}
       <link href="https://fonts.googleapis.com/css2?family=Prata&display=swap" rel="stylesheet" />
 
