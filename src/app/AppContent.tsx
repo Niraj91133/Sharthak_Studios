@@ -17,10 +17,10 @@ import WhyChooseUsSection from "@/components/WhyChooseUsSection";
 const GallerySection = dynamic(() => import("@/components/GallerySection"), { ssr: false });
 const LatestWorkSection = dynamic(() => import("@/components/LatestWorkSection"), { ssr: false });
 const ExpertiseSection = dynamic(() => import("@/components/ExpertiseSection"), { ssr: false });
-const VideoEditingTimelineSection = dynamic(() => import("@/components/VideoEditingTimelineSection"), { ssr: false });
 const WhyChooseUsBookFlipSection = dynamic(() => import("@/components/WhyChooseUsBookFlipSection"), { ssr: false });
 const InfiniteStripsCTASection = dynamic(() => import("@/components/InfiniteStripsCTASection"), { ssr: false });
 const CoupleShootGame = dynamic(() => import("@/components/CoupleShootGame"), { ssr: false });
+const AboutMeSection = dynamic(() => import("@/components/AboutMeSection"), { ssr: false });
 
 export default function AppContent() {
     const lenisRef = useRef<Lenis | null>(null);
@@ -126,7 +126,9 @@ export default function AppContent() {
 
             <LatestWorkSection />
 
-            <VideoEditingTimelineSection />
+            <div className="h-6" /> {/* 24px Gap */}
+
+            <AboutMeSection />
 
             <WhyChooseUsBookFlipSection />
 

@@ -114,4 +114,15 @@ export const mediaSlots: MediaSlot[] = [
         useOnSite: false,
         categoryLabel: ["PHOTOGRAPHY", "PHOTO EDITING", "VIDEO EDITING", "CINEMATOGRAPHY"][i % 4],
     })),
+
+    // 9. ABOUT ME
+    {
+        id: "about-me-photo",
+        section: "09. ABOUT ME SECTION",
+        frame: "Founder Profile Photo",
+        type: "image",
+        currentSrc: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=2000",
+        fallbackSrc: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=2000",
+        useOnSite: false,
+    },
 ];
