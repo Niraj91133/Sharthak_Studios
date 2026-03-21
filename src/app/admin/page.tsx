@@ -6,6 +6,7 @@ import { useMediaContext } from "@/context/MediaContext";
 import SectionCard from "@/components/admin/SectionCard";
 import GlobalMediaPanel from "@/components/admin/GlobalMediaPanel";
 import GalleryManager from "@/components/admin/GalleryManager";
+import BlogManager from "@/components/admin/BlogManager";
 
 export default function AdminDashboard() {
     const { slots } = useMediaContext();
@@ -62,6 +63,14 @@ export default function AdminDashboard() {
                         </button>
 
                         <Link
+                            href="/blog"
+                            target="_blank"
+                            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
+                        >
+                            Journal →
+                        </Link>
+
+                        <Link
                             href="/"
                             className="px-6 py-2 bg-white text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
                         >
@@ -75,7 +84,7 @@ export default function AdminDashboard() {
             <main className="max-w-[1400px] mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-12">
                     {/* Sidebar - Desktop Only */}
-                    <aside className="hidden md:block space-y-8">
+                    <aside className="hidden md:block space-y-8 sticky top-32 h-fit">
                         <div className="space-y-4">
                             <p className="text-[10px] font-black tracking-[0.4em] text-white/20 uppercase ml-2">
                                 Sections
@@ -84,21 +93,23 @@ export default function AdminDashboard() {
                                 {sections.map((section) => (
                                     <button
                                         key={section.title}
+                                        onClick={() => {
+                                            document.getElementById(section.title)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }}
                                         className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-[11px] font-bold text-white/40 hover:text-white transition-all flex items-center gap-3"
                                     >
                                         <div className="w-1 h-1 rounded-full" style={{ backgroundColor: section.accentColor }} />
                                         {section.title}
                                     </button>
                                 ))}
+                                <button
+                                    onClick={() => document.getElementById('THE-JOURNAL')?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-[11px] font-bold text-white/40 hover:text-white transition-all flex items-center gap-3"
+                                >
+                                    <div className="w-1 h-1 rounded-full bg-blue-500" />
+                                    09. THE JOURNAL
+                                </button>
                             </nav>
-                        </div>
-
-                        <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
-                            <p className="text-[10px] font-bold text-white/60 mb-2 uppercase tracking-widest">Storage Status</p>
-                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full bg-white w-1/4 rounded-full" />
-                            </div>
-                            <p className="text-[9px] text-white/20 mt-2">Local Persistence Active</p>
                         </div>
                     </aside>
 
@@ -113,8 +124,8 @@ export default function AdminDashboard() {
 
                         <div className="space-y-4">
                             {sections.map((section) => (
-                                section.title === "Gallery Section" ? (
-                                    <div key={section.title} className="space-y-4">
+                                section.title.includes("GALLERY") ? (
+                                    <div key={section.title} className="space-y-4 pt-10" id={section.title}>
                                         <div className="flex items-center gap-2 px-2">
                                             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: section.accentColor }} />
                                             <h3 className="text-[11px] font-black tracking-[0.4em] uppercase text-white/40">{section.title}</h3>
@@ -122,14 +133,33 @@ export default function AdminDashboard() {
                                         <GalleryManager />
                                     </div>
                                 ) : (
-                                    <SectionCard
-                                        key={section.title}
-                                        title={section.title}
-                                        slots={section.slots}
-                                        accentColor={section.accentColor}
-                                    />
+                                    <div key={section.title} id={section.title}>
+                                        <SectionCard
+                                            title={section.title}
+                                            slots={section.slots}
+                                            accentColor={section.accentColor}
+                                        />
+                                    </div>
                                 )
                             ))}
+                        </div>
+
+                        {/* Blog Management Section */}
+                        <div className="pt-24 border-t border-white/5 space-y-8" id="THE-JOURNAL">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-3xl font-black tracking-tightest uppercase">09. THE JOURNAL / BLOG</h3>
+                                    <p className="text-xs text-white/40 mt-1">Your cinematic storytelling hub.</p>
+                                </div>
+                                <Link
+                                    href="/blog"
+                                    target="_blank"
+                                    className="px-6 py-2 border border-white/20 rounded-full text-[10px] font-black tracking-widest uppercase hover:bg-white/10 transition-all"
+                                >
+                                    View Live Blog →
+                                </Link>
+                            </div>
+                            <BlogManager />
                         </div>
                     </div>
                 </div>

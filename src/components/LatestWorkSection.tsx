@@ -117,31 +117,32 @@ export default function LatestWorkSection() {
   }, [slides.length]);
 
   return (
-    <section className="latest-work w-full bg-[#f8f5f1] px-6 py-20 text-[#111111] sm:py-32">
-      <div className="mx-auto w-full max-w-7xl">
-        <div className="grid gap-12 md:grid-cols-[1fr_2px_1fr] md:items-start group">
-          <div className="md:pl-12 transform transition-transform duration-700 hover:translate-x-2">
-            <h2 className="text-balance text-5xl font-black leading-[0.88] tracking-tightest sm:text-8xl">
-              FEED ON OUR LATEST WORK
+    <section className="latest-work w-full bg-[#F3E9DC] px-6 py-16 text-[#111111] sm:py-20">
+      <div className="mx-auto w-full max-w-none">
+        <div className="grid gap-10 md:grid-cols-[1fr_2px_1fr] md:items-start">
+          <div className="md:pl-8">
+            <h2 className="text-balance text-4xl font-extrabold leading-[0.95] tracking-[-0.02em] sm:text-6xl">
+              Feed on our latest work
             </h2>
-            <div className="mt-8 text-xl font-medium tracking-wide italic opacity-80">
-              (How we stop the scroll)
+            <div className="mt-2 text-xl font-semibold">
+              (see how we stop the scroll)
             </div>
           </div>
 
-          <div className="hidden h-32 w-[1.5px] bg-[#111111]/10 md:block translate-y-2" />
+          <div className="hidden h-28 w-[2px] bg-[#8FA7A133] md:block" />
 
-          <div className="md:pr-12 md:text-right">
-            <div className="font-[var(--font-geist-sans)] text-[11px] font-black tracking-[0.4em] text-[#111111]/40 uppercase mb-8">
-              PREMIUM WORK & SERVICES
+          <div className="md:pr-8">
+            <div className="font-[var(--font-geist-sans)] text-sm font-semibold tracking-[0.18em]">
+              <span className="latest-work__tag">
+                CURATE THE BEST WORK AND SERVICES
+              </span>
             </div>
-            <div className="flex flex-col md:items-end gap-3">
+            <div className="mt-6 flex justify-end">
               <button
                 type="button"
-                className="group relative inline-flex items-center justify-center overflow-hidden border-2 border-[#111111] px-12 py-5 text-xs font-black uppercase tracking-widest transition-all hover:bg-[#111111] hover:text-white"
+                className="rounded-full border-2 border-[#111111] px-10 py-4 text-base font-semibold transition-colors hover:bg-[#111111] hover:text-[#F3E9DC]"
               >
-                <span className="relative z-10">EXPLORE PORTFOLIO</span>
-                <div className="absolute inset-x-0 bottom-0 h-0 bg-black transition-all group-hover:h-full -z-0" />
+                Our work
               </button>
             </div>
           </div>
