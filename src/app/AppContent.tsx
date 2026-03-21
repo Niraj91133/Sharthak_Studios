@@ -6,11 +6,11 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMediaContext } from "@/context/MediaContext";
 import { MediaSlot } from "@/lib/mediaSlots";
+import Link from "next/link";
 
 // Components
 import HeroScroll from "@/components/HeroScroll";
 import CameraCTASection from "@/components/CameraCTASection";
-
 import WhyChooseUsSection from "@/components/WhyChooseUsSection";
 
 // Lazy-loaded sections for performance and stability
@@ -37,10 +37,8 @@ export default function AppContent() {
             infinite: false,
         });
 
-        // Expose lenis globally for components like HeroScroll to use
         (window as any).lenis = lenis;
 
-        // Sync GSAP with Lenis RAF
         function raf(time: number) {
             lenis.raf(time);
             requestAnimationFrame(raf);
@@ -54,19 +52,18 @@ export default function AppContent() {
         };
     }, []);
 
+    const { slots, blogs } = useMediaContext();
+    console.log(`[AppContent] Render: ${slots.length} slots, ${blogs.length} blogs loaded.`);
+
     const featureLines = useMemo(() => [
         "Cinematic Quality", "Premium Editing", "Creative Shots", "Luxury Visuals",
         "HD Delivery", "Color Perfection", "Emotional Moments", "Natural Captures",
         "Professional Team", "Fast Delivery", "Trusted Service", "Detail Focused",
-        "Storytelling Style", "Perfect Lighting", "Memorable Frames", "Smooth Reels",
     ], []);
 
-    const { slots } = useMediaContext();
-
     const galleryTabs = useMemo(() => {
-        const gallerySlots = slots.filter((s: MediaSlot) => s.section === "Gallery Section");
+        const gallerySlots = slots.filter((s: MediaSlot) => s.section && s.section.includes("GALLERY"));
         const set = new Set(gallerySlots.map((s: MediaSlot) => s.categoryLabel).filter(Boolean));
-        // Fallback to defaults if no custom ones added
         if (set.size === 0) {
             ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"].forEach(c => set.add(c));
         }
@@ -74,17 +71,17 @@ export default function AppContent() {
     }, [slots]);
 
     const galleryItems = useMemo(() => {
-        const gallerySlots = slots.filter((s: MediaSlot) => s.section === "Gallery Section");
-        // We only want items that actually have content or were intended for display
+        const gallerySlots = slots.filter((s: MediaSlot) => s.section && s.section.includes("GALLERY"));
         return gallerySlots.map((s: MediaSlot, i: number) => ({
             id: s.id,
             seed: s.id,
-            // For dynamic items, we assign a default grid position if not specified
             col: (i % 3 === 0) ? "1 / span 1" : (i % 3 === 1) ? "2 / span 2" : "4 / span 1",
             row: (Math.floor(i / 3) * 2 + 1) + " / span 2",
             category: s.categoryLabel || "WEDDING"
         }));
     }, [slots]);
+
+    const latestBlogs = useMemo(() => blogs.slice(0, 3), [blogs]);
 
     const handleAdminLogin = () => {
         const id = window.prompt("Enter Admin ID:");
@@ -101,8 +98,9 @@ export default function AppContent() {
     };
 
     return (
-        <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
+        <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black font-sans">
             <InfiniteStripsCTASection />
+
             {/* Feature Slider */}
             <section className="bg-white text-black overflow-hidden relative border-t border-white/10">
                 <div className="flex animate-marquee whitespace-nowrap will-change-transform">
@@ -120,6 +118,40 @@ export default function AppContent() {
 
             <LatestWorkSection />
 
+            {/* Blog Highlight Section - NEW */}
+            <section className="bg-white py-32 px-6">
+                <div className="max-w-6xl mx-auto space-y-20">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                        <div className="space-y-4">
+                            <span className="text-[10px] font-black tracking-[0.4em] text-black/30 uppercase italic">STUDIO PERSPECTIVES</span>
+                            <h2 className="text-5xl md:text-8xl font-black tracking-tightest leading-none text-black">STUDIO BLOGS</h2>
+                        </div>
+                        <Link href="/blog" className="px-12 py-5 bg-black text-white text-[11px] font-black tracking-widest uppercase rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl">
+                            VIEW ALL STORIES →
+                        </Link>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        {latestBlogs.length > 0 ? latestBlogs.map(blog => (
+                            <Link key={blog.id} href={`/blog/${blog.id}`} className="group block space-y-8">
+                                <div className="aspect-[4/5] bg-black/5 overflow-hidden shadow-xl group-hover:shadow-2x-large transition-all">
+                                    <img src={blog.image} alt={blog.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                                </div>
+                                <div className="space-y-4">
+                                    <span className="text-[9px] font-black tracking-[0.4em] text-black/30 uppercase">{blog.category}</span>
+                                    <h3 className="text-2xl font-black leading-tight uppercase line-clamp-2 text-black">{blog.title}</h3>
+                                    <p className="text-sm text-black/50 line-clamp-2 font-medium">{blog.excerpt}</p>
+                                </div>
+                            </Link>
+                        )) : (
+                            <div className="col-span-full py-20 text-center border-2 border-dashed border-black/5">
+                                <p className="text-black/20 font-black tracking-widest uppercase">STORY IN PROGRESS...</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </section>
+
             <VideoEditingTimelineSection />
 
             <WhyChooseUsBookFlipSection />
@@ -129,43 +161,40 @@ export default function AppContent() {
             <CameraCTASection />
 
             <WhyChooseUsSection />
-            <HeroScroll title="" eyebrow="" />
+
+            <HeroScroll title="STUDIO" eyebrow="SHARTHAK" />
 
             {/* Footer */}
-            <footer className="bg-black py-32 px-6 border-t border-white/5 text-center">
-                <div className="max-w-4xl mx-auto space-y-16">
+            <footer className="bg-black py-40 px-6 border-t border-white/5 text-center">
+                <div className="max-w-4xl mx-auto space-y-20">
                     <div className="flex justify-center">
-                        <img src="/logo-white.png" alt="Sharthak Studio Logo" className="w-24 h-24 object-contain" />
+                        <img src="/logo-white.png" alt="Sharthak Studio Logo" className="w-20 h-20 object-contain opacity-40 hover:opacity-100 transition-opacity" />
                     </div>
-                    <h2 className="text-5xl md:text-8xl font-black tracking-tightest leading-none">LET&apos;S CRAFT YOUR STORY</h2>
-                    <div className="flex flex-wrap justify-center gap-12 md:gap-24">
-                        <div className="space-y-3">
-                            <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Email Us</div>
-                            <div className="text-2xl font-bold">hello@sharthak.studio</div>
+                    <h2 className="text-5xl md:text-9xl font-black tracking-tightest leading-none italic uppercase">CRAFTING CINEMA</h2>
+                    <div className="flex flex-wrap justify-center gap-12 md:gap-32">
+                        <div className="space-y-4">
+                            <div className="text-[9px] tracking-[0.5em] text-white/20 uppercase font-black">Email</div>
+                            <div className="text-xl font-bold tracking-tight">hello@sharthak.studio</div>
                         </div>
-                        <div className="space-y-3">
-                            <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Call Us</div>
-                            <div className="text-2xl font-bold">+91 98765 43210</div>
+                        <div className="space-y-4">
+                            <div className="text-[9px] tracking-[0.5em] text-white/20 uppercase font-black">Call</div>
+                            <div className="text-xl font-bold tracking-tight">+91 98765 43210</div>
                         </div>
-                        <div className="space-y-3">
-                            <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Instagram</div>
-                            <div className="text-2xl font-bold">@sharthak_studio</div>
+                        <div className="space-y-4">
+                            <div className="text-[9px] tracking-[0.5em] text-white/20 uppercase font-black">Social</div>
+                            <div className="text-xl font-bold tracking-tight">@sharthak_studio</div>
                         </div>
                     </div>
-                    {/* Local SEO Cities */}
-                    <div className="text-[10px] tracking-[0.4em] text-white/20 uppercase font-black uppercase max-w-lg mx-auto leading-relaxed">
-                        Serving Premium Cinematography in:<br />
-                        GAYA • PATNA • MUZAFFARPUR • DEOGHAR • BIHAR
-                    </div>
-                    <div className="pt-24 space-y-6">
+
+                    <div className="pt-32 space-y-8">
                         <button
                             onClick={handleAdminLogin}
-                            className="text-[10px] tracking-[0.6em] text-white/20 uppercase font-medium hover:text-white/60 transition-colors"
+                            className="text-[9px] tracking-[0.8em] text-white/10 uppercase font-black hover:text-white/40 transition-colors"
                         >
-                            ADMIN LOGIN
+                            ADMIN ACCESS
                         </button>
-                        <div className="text-[10px] tracking-[0.6em] text-white/10 uppercase font-medium">
-                            © 2026 SHARTHAK STUDIO. ALL RIGHTS RESERVED.
+                        <div className="text-[8px] tracking-[0.8em] text-white/5 uppercase font-black">
+                            © 2026 SHARTHAK STUDIO • STUDIO BLOGS • BIHAR
                         </div>
                     </div>
                 </div>

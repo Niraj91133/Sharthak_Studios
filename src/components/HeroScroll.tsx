@@ -285,8 +285,8 @@ export default function HeroScroll({
   headerLogoAlt = "Sharthak Studio Logo",
 }: HeroScrollProps) {
   const { slots } = useMediaContext();
-  const heroSlots = slots.filter(s => s.section === "Hero Scroll");
-  const slideCount = heroSlots.length || 10;
+  const heroSlots = slots.filter(s => s.section && (s.section.includes("HERO") || s.section.includes("08.")));
+  const slideCount = heroSlots.length || 4;
 
   const sectionRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
