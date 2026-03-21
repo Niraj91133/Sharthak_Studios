@@ -9,7 +9,6 @@ import { MediaSlot } from "@/lib/mediaSlots";
 
 // Components
 import HeroScroll from "@/components/HeroScroll";
-import CameraCTASection from "@/components/CameraCTASection";
 
 import WhyChooseUsSection from "@/components/WhyChooseUsSection";
 
@@ -130,8 +129,6 @@ export default function AppContent() {
             <AboutMeSection />
 
             <WhyChooseUsBookFlipSection />
-
-            <CameraCTASection />
 
             <WhyChooseUsSection />
 
