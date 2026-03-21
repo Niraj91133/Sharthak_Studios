@@ -15,34 +15,40 @@ function StripImage({
   const src = useMedia(slotId, fallback);
 
   return (
-    <div className="h-[116px] w-[174px] shrink-0 overflow-hidden rounded-[8px] bg-white/5">
+    <div className="imgmarquee__tile bg-white/5">
       <img
         src={src}
         alt=""
         loading={priority ? "eager" : "lazy"}
         decoding="async"
-        className="h-full w-full object-cover"
+        className="pointer-events-none h-full w-full select-none object-cover"
       />
     </div>
   );
 }
 
-function ImageStrip({
+function AutoStrip({
   items,
-  ariaLabel,
+  reverse,
 }: {
   items: Array<{ id: string; fallback: string }>;
-  ariaLabel: string;
+  reverse?: boolean;
 }) {
+  const loop = [...items, ...items];
+
   return (
     <div
-      aria-label={ariaLabel}
-      className="h-[116px] w-full overflow-x-auto overflow-y-hidden no-scrollbar"
+      aria-hidden="true"
+      className={[
+        "imgmarquee pointer-events-none select-none",
+        reverse ? "imgmarquee--reverse" : "",
+      ].join(" ")}
+      style={{ ["--tile-h" as any]: "116px", ["--tile-w" as any]: "240px" }}
     >
-      <div className="flex h-full w-max gap-[12px]">
-        {items.map((it, idx) => (
+      <div className="imgmarquee__track">
+        {loop.map((it, idx) => (
           <StripImage
-            key={it.id}
+            key={`${it.id}-${idx}`}
             slotId={it.id}
             fallback={it.fallback}
             priority={idx < 2}
@@ -80,13 +86,13 @@ export default function MobileHeroSection() {
 
   return (
     <section className="w-full bg-black text-white md:hidden">
-      <div className="mx-auto h-[694px] w-full px-6">
+      <div className="mx-auto h-[694px] w-full">
         <div className="flex h-full w-full flex-col">
-          <ImageStrip items={topItems} ariaLabel="Top image strip" />
+          <AutoStrip items={topItems} />
 
           <div className="h-[99px]" />
 
-          <div className="flex w-full flex-col items-center text-center">
+          <div className="flex w-full flex-col items-center px-6 text-center">
             <h1 className="text-[28px] font-bold tracking-[4px] text-white">
               SHARTHAK STUDIO
             </h1>
@@ -105,7 +111,7 @@ export default function MobileHeroSection() {
 
           <div className="h-[99px]" />
 
-          <ImageStrip items={bottomItems} ariaLabel="Bottom image strip" />
+          <AutoStrip items={bottomItems} reverse />
         </div>
       </div>
     </section>

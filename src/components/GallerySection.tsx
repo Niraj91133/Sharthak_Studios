@@ -24,7 +24,7 @@ function GalleryImage({ seed, className, isLightbox = false }: { seed: string; c
     ? `https://picsum.photos/seed/${seed}/2400/1600`
     : `https://picsum.photos/seed/${seed}/1600/1200`;
   const src = useMedia(seed, fallback);
-  return <img className={className} src={src} alt="" loading="lazy" draggable={!isLightbox} />;
+  return <img className={className} src={src} alt="" loading="lazy" draggable={false} />;
 }
 
 export default function GallerySection({ tabs, items }: GallerySectionProps) {
@@ -35,10 +35,11 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    const media = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
@@ -60,13 +61,16 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
     return items.filter(item => item.category === activeTab);
   }, [items, activeTab]);
 
+  const mobileTiles = useMemo(() => filteredTiles.slice(0, 12), [filteredTiles]);
+  const activeTiles = isMobile ? mobileTiles : filteredTiles;
+
   useEffect(() => {
     if (lightboxIndex === null) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setLightboxIndex(null);
-      if (event.key === "ArrowRight") setLightboxIndex(curr => curr !== null ? Math.min(filteredTiles.length - 1, curr + 1) : curr);
+      if (event.key === "ArrowRight") setLightboxIndex(curr => curr !== null ? Math.min(activeTiles.length - 1, curr + 1) : curr);
       if (event.key === "ArrowLeft") setLightboxIndex(curr => curr !== null ? Math.max(0, curr - 1) : curr);
     };
     window.addEventListener("keydown", onKeyDown);
@@ -74,80 +78,106 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [filteredTiles.length, lightboxIndex]);
+  }, [activeTiles.length, lightboxIndex]);
 
   const revealClass = revealed ? "is-revealed" : "";
 
   return (
     <section
       ref={sectionRef}
-      className={`gallery-section w-full bg-white px-0 pt-12 pb-0 ${revealClass} overflow-hidden flex flex-col`}
-      style={{ maxHeight: "900px" }}
+      className={`gallery-section w-full bg-black px-0 pt-6 pb-0 ${revealClass} flex flex-col overflow-hidden h-[694px] max-h-[694px] sm:h-auto sm:max-h-none`}
     >
-      <div className="w-full px-0 flex-1 flex flex-col overflow-hidden min-h-0">
+      <div className="w-full px-0 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Category Header - Robust Rectangular Buttons */}
-        <div className="gallery-stagger flex items-center mb-8 overflow-x-auto no-scrollbar scroll-smooth px-6 gap-4 sm:justify-center sm:flex-wrap flex-shrink-0">
-          {tabs.map((tab, idx) => {
-            const isActive = activeTab === tab.label;
+        <div className="gallery-stagger mb-4 px-6 flex-shrink-0">
+          <div
+            className="overflow-x-auto no-scrollbar scroll-smooth"
+            dir="rtl"
+          >
+            <div className="inline-flex items-center gap-3" dir="ltr">
+              {tabs.map((tab, idx) => {
+                const isActive = activeTab === tab.label;
+                return (
+                  <button
+                    key={`tab-${idx}`}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.label);
+                      setLightboxIndex(null);
+                    }}
+                    className={`
+                      flex-shrink-0 h-11 px-6 border border-white/35 text-[10px] font-black tracking-[0.22em] uppercase transition-all duration-300
+                      ${isActive ? "bg-white text-black" : "bg-black text-white/70 hover:bg-white/5 hover:text-white"}
+                    `}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Grid (Portrait-first, no internal scrolling) */}
+        <div className="gallery-stagger grid flex-1 min-h-0 grid-cols-3 auto-rows-[34px] grid-flow-dense gap-0 px-0 pb-0 overflow-hidden sm:hidden">
+          {mobileTiles.map((item, idx) => {
+            const isLandscape = idx === 0 || idx === 9;
+            const isWide = !isLandscape && idx % 7 === 0;
+            const spanClass = isLandscape
+              ? "col-span-3 row-span-6"
+              : isWide
+                ? "col-span-2 row-span-5"
+                : "col-span-1 row-span-5";
+
             return (
               <button
-                key={`tab-${idx}`}
+                key={item.seed}
                 type="button"
-                onClick={() => {
-                  setActiveTab(tab.label);
-                  setLightboxIndex(null);
-                }}
-                className={`
-                  flex-shrink-0 h-12 px-8 sm:h-14 sm:px-12 border-2 border-black text-[10px] sm:text-[11px] font-black tracking-[0.2em] sm:tracking-[0.4em] uppercase transition-all duration-300
-                  ${isActive ? "bg-black text-white" : "bg-white text-black hover:bg-black/5"}
-                `}
+                className={[
+                  "gallery-tile--reveal group relative overflow-hidden bg-white/5 border border-white/10",
+                  spanClass,
+                ].join(" ")}
+                style={{ transitionDelay: `${Math.min(12, idx) * 30}ms` }}
+                onClick={() => setLightboxIndex(idx)}
               >
-                {tab.label}
+                <GalleryImage
+                  seed={item.seed}
+                  className="gallery-img absolute inset-0 h-full w-full object-cover opacity-95 transition-transform duration-700 group-hover:scale-[1.04]"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/10 opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
               </button>
             );
           })}
         </div>
 
-        {/* Dense Masonry Grid - High density, smaller images */}
+        {/* Desktop Dense Grid */}
         <div
-          className="gallery-stagger grid w-full gap-0 overflow-y-auto no-scrollbar pb-20 flex-1"
+          className="gallery-stagger hidden w-full gap-0 pb-24 sm:grid"
           style={{
-            gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : "repeat(8, minmax(0, 1fr))",
-            gridAutoRows: isMobile ? "90px" : "140px",
+            gridTemplateColumns: "repeat(8, minmax(0, 1fr))",
+            gridAutoRows: "140px",
             gridAutoFlow: "dense",
           }}
         >
-          {filteredTiles.map((item, idx) => {
-            const mobileGridStyle = {
-              gridColumn: item.col.includes("4") ? "span 3" : "span 1",
-              gridRow: item.row === "span 3" ? "span 2" : "span 1",
-            };
-            const desktopGridStyle = {
-              gridColumn: item.col,
-              gridRow: item.row,
-            };
-
-            return (
-              <div
-                key={item.seed}
-                className="gallery-tile gallery-tile--reveal relative group cursor-pointer"
-                style={{
-                  ...(isMobile ? mobileGridStyle : desktopGridStyle),
-                  transitionDelay: `${Math.min(15, idx) * 30}ms`,
-                }}
-                onClick={() => setLightboxIndex(idx)}
-              >
-                <div className="gallery-tile__inner h-full w-full bg-black border-[3px] md:border-[6px] border-black overflow-hidden relative">
-                  <GalleryImage
-                    seed={item.seed}
-                    className="gallery-img h-full w-full object-cover opacity-100 transition-all duration-1000 grayscale-0 group-hover:grayscale group-hover:scale-110"
-                  />
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                </div>
-              </div>
-            );
-          })}
+          {filteredTiles.map((item, idx) => (
+            <button
+              key={item.seed}
+              type="button"
+              className="gallery-tile--reveal relative group overflow-hidden bg-white/5 ring-1 ring-white/10"
+              style={{
+                gridColumn: item.col,
+                gridRow: item.row,
+                transitionDelay: `${Math.min(15, idx) * 30}ms`,
+              }}
+              onClick={() => setLightboxIndex(idx)}
+            >
+              <GalleryImage
+                seed={item.seed}
+                className="gallery-img absolute inset-0 h-full w-full object-cover opacity-95 transition-transform duration-700 group-hover:scale-[1.06]"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-black/0 to-black/10 opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
+            </button>
+          ))}
         </div>
       </div>
 
@@ -173,7 +203,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
 
             <div className="max-w-7xl w-full h-full flex items-center justify-center py-10">
               <GalleryImage
-                seed={filteredTiles[lightboxIndex].seed}
+                seed={activeTiles[lightboxIndex].seed}
                 className="max-w-full max-h-full object-contain shadow-2xl"
                 isLightbox={true}
               />
@@ -181,16 +211,16 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
 
             {/* Next Button */}
             <button
-              onClick={(e) => { e.stopPropagation(); setLightboxIndex(curr => Math.min(filteredTiles.length - 1, curr! + 1)); }}
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(curr => Math.min(activeTiles.length - 1, curr! + 1)); }}
               className="absolute right-4 md:right-10 z-[110] p-4 text-white/40 hover:text-white transition-all disabled:opacity-0"
-              disabled={lightboxIndex === filteredTiles.length - 1}
+              disabled={lightboxIndex === activeTiles.length - 1}
             >
               <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6" /></svg>
             </button>
           </div>
 
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/20 text-[10px] font-black tracking-[0.5em] uppercase">
-            {lightboxIndex + 1} / {filteredTiles.length}
+            {lightboxIndex + 1} / {activeTiles.length}
           </div>
         </div>
       )}
