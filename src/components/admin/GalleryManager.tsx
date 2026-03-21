@@ -13,7 +13,7 @@ export default function GalleryManager() {
     const batchInputRef = useRef<HTMLInputElement>(null);
 
     const gallerySlots = useMemo(() =>
-        slots.filter(s => s.section === "Gallery Section"),
+        slots.filter(s => s.section && s.section.includes("GALLERY")),
         [slots]);
 
     const categories = useMemo(() => {
@@ -40,7 +40,7 @@ export default function GalleryManager() {
         const id = `gal-dyn-${Date.now()}`;
         addSlot({
             id,
-            section: "Gallery Section",
+            section: "03. THE COLLECTION (GALLERY)",
             frame: "First Item",
             type: "image",
             currentSrc: "",
@@ -54,7 +54,7 @@ export default function GalleryManager() {
         const id = `gal-dyn-${Date.now()}`;
         addSlot({
             id,
-            section: "Gallery Section",
+            section: "03. THE COLLECTION (GALLERY)",
             frame: "Gallery Item",
             type: "image",
             currentSrc: "",
@@ -78,7 +78,7 @@ export default function GalleryManager() {
                 // 1. Create the slot first
                 await addSlot({
                     id,
-                    section: "Gallery Section",
+                    section: "03. THE COLLECTION (GALLERY)",
                     frame: "Gallery Item",
                     type: "image",
                     currentSrc: "",
@@ -108,8 +108,8 @@ export default function GalleryManager() {
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
                             className={`px-4 py-2 rounded-full text-[10px] font-bold tracking-widest transition-all ${activeCat === cat
-                                    ? "bg-white text-black"
-                                    : "bg-white/5 text-white/40 hover:bg-white/10"
+                                ? "bg-white text-black"
+                                : "bg-white/5 text-white/40 hover:bg-white/10"
                                 }`}
                         >
                             {cat}
@@ -151,8 +151,8 @@ export default function GalleryManager() {
                         onClick={() => batchInputRef.current?.click()}
                         disabled={isBatchUploading}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all ${isBatchUploading
-                                ? "bg-white/20 text-white/40 cursor-wait"
-                                : "bg-white text-black hover:scale-105 active:scale-95"
+                            ? "bg-white/20 text-white/40 cursor-wait"
+                            : "bg-white text-black hover:scale-105 active:scale-95"
                             }`}
                     >
                         {isBatchUploading ? (

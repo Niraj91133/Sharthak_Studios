@@ -1,17 +1,27 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Cloudinary Config - with fallbacks to avoid crashes
+const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dvwznt70j";
+const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || "863345331393656";
+const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-// Route Handlers in App Router do not use 'export const config' for bodyParser.
-// Use 'nextConfig.experimental.serverActions.bodySizeLimit' or similar next.config settings instead.
+if (!apiSecret) {
+  console.error("❌ CLOUDINARY_API_SECRET is missing in environment variables!");
+}
+
+cloudinary.config({
+  cloud_name: cloudName,
+  api_key: apiKey,
+  api_secret: apiSecret,
+});
 
 export async function POST(request: Request) {
   try {
+    if (!apiSecret) {
+      return NextResponse.json({ error: "Cloudinary API Secret is missing in Server Environment Variables. Check .env.local" }, { status: 500 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
@@ -40,7 +50,6 @@ export async function POST(request: Request) {
     const isImage = file.type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heic', 'jpg'].includes(fileExtension);
     const isVideo = file.type.startsWith("video/") || ['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(fileExtension);
 
-    // Optimized Cloudinary settings for high speed and high quality
     if (isImage) {
       uploadOptions = {
         ...uploadOptions,

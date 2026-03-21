@@ -87,6 +87,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const addBlog = async (blog: Blog) => {
         setBlogs(prev => [blog, ...prev]);
+        console.log("Saving blog to Supabase...", blog);
         const { error } = await supabase.from('blogs').upsert({
             id: blog.id,
             title: blog.title,
@@ -96,7 +97,12 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             content_blocks: blog.content,
             created_at: new Date().toISOString()
         });
-        if (error) console.error("Error saving blog:", error);
+        if (error) {
+            console.error("❌ SUPABASE BLOG ERROR:", error.message, error);
+            alert("Error saving blog: " + error.message);
+        } else {
+            console.log("✅ Blog saved successfully!");
+        }
     };
 
     const deleteBlog = async (id: string) => {
