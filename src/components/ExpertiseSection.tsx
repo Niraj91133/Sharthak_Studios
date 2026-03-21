@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useMedia } from "@/hooks/useMedia";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -80,11 +80,18 @@ export default function ExpertiseSection() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const handleNext = () => setActiveIndex((v) => (v + 1) % slideConfigs.length);
-  const handlePrev = () => setActiveIndex((v) => (v - 1 + slideConfigs.length) % slideConfigs.length);
+  const handleNext = useCallback(() => setActiveIndex((v) => (v + 1) % slideConfigs.length), []);
+  const handlePrev = useCallback(() => setActiveIndex((v) => (v - 1 + slideConfigs.length) % slideConfigs.length), []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      handleNext();
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [handleNext]);
 
   return (
-    <section className="relative w-full bg-black text-white py-20 px-0 flex flex-col items-center overflow-hidden" style={{ minHeight: "900px", maxHeight: "1000px" }}>
+    <section className="relative w-full bg-black text-white pt-0 pb-20 px-0 flex flex-col items-center overflow-hidden" style={{ minHeight: "900px", maxHeight: "1000px" }}>
       {/* Search for a similar look: Prata or Bodoni Moda */}
       <link href="https://fonts.googleapis.com/css2?family=Prata&display=swap" rel="stylesheet" />
 

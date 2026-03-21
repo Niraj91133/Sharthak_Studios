@@ -118,6 +118,8 @@ export default function AppContent() {
 
             <GallerySection tabs={galleryTabs} items={galleryItems} />
 
+            <div className="h-6" /> {/* 24px Gap */}
+
             <ExpertiseSection />
 
             <LatestWorkSection />

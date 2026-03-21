@@ -81,7 +81,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   return (
     <section
       ref={sectionRef}
-      className={`gallery-section w-full bg-white px-0 py-12 ${revealClass} overflow-hidden flex flex-col`}
+      className={`gallery-section w-full bg-white px-0 pt-12 pb-0 ${revealClass} overflow-hidden flex flex-col`}
       style={{ maxHeight: "1050px" }}
     >
       <div className="w-full px-0 flex-1 flex flex-col overflow-hidden min-h-0">
