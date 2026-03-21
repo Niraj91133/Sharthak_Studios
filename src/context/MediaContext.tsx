@@ -4,19 +4,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { mediaSlots as initialMediaSlots, MediaSlot } from "@/lib/mediaSlots";
 import { supabase } from "@/lib/supabase";
 
-export interface Blog {
-    id: string;
-    title: string;
-    excerpt: string;
-    content: string; // Systematic HTML string
-    date: string;
-    image: string;
-    category: string;
-}
-
 interface MediaContextType {
     slots: MediaSlot[];
-    blogs: Blog[];
     updateSlot: (id: string, updates: Partial<MediaSlot>) => void;
     resetSlot: (id: string) => Promise<void>;
     getSlot: (id: string) => MediaSlot | undefined;
@@ -24,8 +13,6 @@ interface MediaContextType {
     deleteFile: (id: string) => Promise<void>;
     addSlot: (slot: MediaSlot) => Promise<void>;
     deleteSlot: (id: string) => Promise<void>;
-    addBlog: (blog: Blog) => Promise<void>;
-    deleteBlog: (id: string) => Promise<void>;
     allMedia: { id: string; url: string; name: string; section: string; type: string }[];
     isLoading: boolean;
 }
@@ -34,86 +21,78 @@ const MediaContext = createContext<MediaContextType | undefined>(undefined);
 
 export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [slots, setSlots] = useState<MediaSlot[]>(initialMediaSlots);
-    const [blogs, setBlogs] = useState<Blog[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Fetch on mount
+    // Fetch slots from Supabase on mount
     useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
+        const fetchSlots = async () => {
             try {
-                // Fetch Slots
-                const { data: slotData } = await supabase.from('media_slots').select('*');
-                if (slotData && slotData.length > 0) {
+                const { data, error } = await supabase
+                    .from('media_slots')
+                    .select('*');
+
+                if (error) {
+                    console.warn("Supabase table 'media_slots' not found. Using local initial data.", error);
+                    setIsLoading(false);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    // Start with initial slots and merge DB data
+                    // Also include any slots that are ONLY in the DB
                     const dbSlotMap = new Map();
-                    slotData.forEach(d => dbSlotMap.set(d.id, d));
+                    data.forEach(d => dbSlotMap.set(d.id, d));
+
                     const mergedSlots = initialMediaSlots.map(initial => {
                         const dbSlot = dbSlotMap.get(initial.id);
                         if (dbSlot) {
-                            dbSlotMap.delete(initial.id);
-                            return { ...initial, useOnSite: dbSlot.use_on_site, categoryLabel: dbSlot.category_label || initial.categoryLabel, uploadedFile: dbSlot.uploaded_file_url ? { name: dbSlot.uploaded_file_name, url: dbSlot.uploaded_file_url, size: dbSlot.uploaded_file_size, uploadedAt: dbSlot.uploaded_at } : undefined };
+                            dbSlotMap.delete(initial.id); // Remove so we know what's left
+                            return {
+                                ...initial,
+                                useOnSite: dbSlot.use_on_site,
+                                categoryLabel: dbSlot.category_label || initial.categoryLabel,
+                                uploadedFile: dbSlot.uploaded_file_url ? {
+                                    name: dbSlot.uploaded_file_name,
+                                    url: dbSlot.uploaded_file_url,
+                                    size: dbSlot.uploaded_file_size,
+                                    uploadedAt: dbSlot.uploaded_at
+                                } : undefined
+                            };
                         }
                         return initial;
                     });
+
+                    // Add purely dynamic slots from the DB
                     dbSlotMap.forEach((dbSlot, id) => {
-                        mergedSlots.push({ id, section: dbSlot.section, frame: dbSlot.frame || 'Dynamic', type: dbSlot.type || 'image', currentSrc: dbSlot.uploaded_file_url || '', fallbackSrc: '', useOnSite: dbSlot.use_on_site, categoryLabel: dbSlot.category_label, uploadedFile: dbSlot.uploaded_file_url ? { name: dbSlot.uploaded_file_name, url: dbSlot.uploaded_file_url, size: dbSlot.uploaded_file_size, uploadedAt: dbSlot.uploaded_at } : undefined });
+                        mergedSlots.push({
+                            id,
+                            section: dbSlot.section,
+                            frame: dbSlot.frame || 'Dynamic',
+                            type: dbSlot.type || 'image',
+                            currentSrc: dbSlot.uploaded_file_url || '',
+                            fallbackSrc: '',
+                            useOnSite: dbSlot.use_on_site,
+                            categoryLabel: dbSlot.category_label,
+                            uploadedFile: dbSlot.uploaded_file_url ? {
+                                name: dbSlot.uploaded_file_name,
+                                url: dbSlot.uploaded_file_url,
+                                size: dbSlot.uploaded_file_size,
+                                uploadedAt: dbSlot.uploaded_at
+                            } : undefined
+                        });
                     });
+
                     setSlots(mergedSlots);
                 }
-
-                // Fetch Blogs
-                const { data: blogData, error: blogError } = await supabase.from('blogs').select('*').order('created_at', { ascending: false });
-                if (blogError) {
-                    console.error("❌ SUPABASE FETCH BLOGS ERROR:", blogError);
-                }
-                if (blogData && blogData.length > 0) {
-                    console.log(`✅ Loaded ${blogData.length} blogs from Supabase.`);
-                    setBlogs(blogData.map(b => ({
-                        id: b.id,
-                        title: b.title,
-                        excerpt: b.excerpt,
-                        date: b.created_at,
-                        image: b.image_url,
-                        category: b.category,
-                        content: b.content_blocks || ""
-                    })));
-                } else {
-                    console.log("ℹ️ No blogs found or fetch empty. Using dummy.");
-                    // Seed dummy blogs for demo/initial
-                    setBlogs([
-                        { id: "wedding-light-guide", title: "The Art of Natural Light", excerpt: "Cinemtic guide to lights.", date: "2026-03-15", image: "https://images.unsplash.com/photo-1519741497674-611481863552", category: "TECHNIQUE", content: "<p>Cinematic light guide...</p>" }
-                    ]);
-                }
-            } catch (err) { console.error("Error fetching data:", err); }
-            finally { setIsLoading(false); }
+            } catch (err) {
+                console.error("Error fetching media slots:", err);
+            } finally {
+                setIsLoading(false);
+            }
         };
-        fetchData();
+
+        fetchSlots();
     }, []);
-
-    const addBlog = async (blog: Blog) => {
-        setBlogs(prev => [blog, ...prev]);
-        console.log("Saving blog to Supabase...", blog);
-        const { error } = await supabase.from('blogs').upsert({
-            id: blog.id,
-            title: blog.title,
-            excerpt: blog.excerpt,
-            category: blog.category,
-            image_url: blog.image,
-            content_blocks: blog.content,
-            created_at: new Date().toISOString()
-        });
-        if (error) {
-            console.error("❌ SUPABASE BLOG ERROR:", error.message, error);
-            alert("Error saving blog: " + error.message);
-        } else {
-            console.log("✅ Blog saved successfully!");
-        }
-    };
-
-    const deleteBlog = async (id: string) => {
-        setBlogs(prev => prev.filter(b => b.id !== id));
-        await supabase.from('blogs').delete().eq('id', id);
-    };
 
     const updateSlot = useCallback(async (id: string, updates: Partial<MediaSlot>) => {
         // Update local state
@@ -285,7 +264,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     return (
         <MediaContext.Provider
-            value={{ slots, blogs, updateSlot, resetSlot, getSlot, uploadFile, deleteFile, addSlot, deleteSlot, addBlog, deleteBlog, allMedia, isLoading }}
+            value={{ slots, updateSlot, resetSlot, getSlot, uploadFile, deleteFile, addSlot, deleteSlot, allMedia, isLoading }}
         >
             {children}
         </MediaContext.Provider>

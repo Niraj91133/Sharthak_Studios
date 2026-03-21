@@ -62,108 +62,117 @@ function DynamicExpertiseImage({ slotId, fallback, ...props }: any) {
   return <ExpertiseCard {...props} imageUrl={src} />;
 }
 
+const slideConfigs = [
+  { id: "expertise-01", title: "WEDDING FILMS", fallback: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=1600" },
+  { id: "expertise-02", title: "PRE-WEDDING STORIES", fallback: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=1600" },
+  { id: "expertise-03", title: "CANDID SESSIONS", fallback: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1600" },
+  { id: "expertise-04", title: "FASHION EDITORIALS", fallback: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=1600" },
+];
+
 export default function ExpertiseSection() {
-  const slideConfigs = useMemo(
-    () => [
-      { id: "expertise-01", title: "WEDDING CINEMA", fallback: "https://picsum.photos/seed/expertise-01/1600/1000" },
-      { id: "expertise-02", title: "PRE-WEDDING STORIES", fallback: "https://picsum.photos/seed/expertise-02/1600/1000" },
-      { id: "expertise-03", title: "CANDID MOMENTS", fallback: "https://picsum.photos/seed/expertise-03/1600/1000" },
-      { id: "expertise-04", title: "MODEL PORTFOLIO", fallback: "https://picsum.photos/seed/expertise-04/1600/1000" },
-      { id: "expertise-05", title: "MATERNITY SHOOTS", fallback: "https://picsum.photos/seed/expertise-05/1600/1000" },
-      { id: "expertise-06", title: "BABY JOURNEYS", fallback: "https://picsum.photos/seed/expertise-06/1600/1000" },
-    ],
-    [],
-  );
-
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shiftProgress, setShiftProgress] = useState<0 | 1>(0);
-  const [stepPx, setStepPx] = useState(380);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const t = window.setInterval(() => {
-      if (isAnimating) return;
-      setIsAnimating(true);
-      setShiftProgress(1);
-      window.setTimeout(() => {
-        setActiveIndex((v) => (v + 1) % slideConfigs.length);
-        setShiftProgress(0);
-        setIsAnimating(false);
-      }, 700);
-    }, 5500);
-    return () => window.clearInterval(t);
-  }, [isAnimating, slideConfigs.length]);
-
-  useEffect(() => {
-    const update = () => setStepPx(Math.max(280, Math.min(480, Math.round(window.innerWidth * 0.4))));
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const prevIndex = clampIndex(activeIndex - 1, slideConfigs.length);
-  const nextIndex = clampIndex(activeIndex + 1, slideConfigs.length);
+  const handleNext = () => setActiveIndex((v) => (v + 1) % slideConfigs.length);
+  const handlePrev = () => setActiveIndex((v) => (v - 1 + slideConfigs.length) % slideConfigs.length);
 
   return (
-    <section className="w-full bg-[#050505] py-32 md:py-48 px-0 text-white overflow-hidden border-y border-white/[0.02]">
-      <div className="mx-auto w-full max-w-none space-y-24">
-        {/* Cinematic Header */}
-        <div className="text-center space-y-6 px-6">
-          <span className="text-[10px] font-black tracking-[0.5em] text-white/20 uppercase block mb-2 transition-all">CHOOSE YOUR EXPERTISE</span>
-          <div className="flex flex-col items-center">
-            <h2 className="text-6xl md:text-[8rem] font-black tracking-tightest leading-none text-white uppercase italic lg:-translate-x-12">THE CRAFT</h2>
-            <h2 className="text-6xl md:text-[8rem] font-black tracking-tightest leading-none text-white uppercase italic lg:translate-x-12 opacity-40">DEFINED</h2>
-          </div>
-          <p className="max-w-xl mx-auto text-xs md:text-sm font-medium tracking-wide text-white/30 leading-relaxed uppercase pt-8">
-            From cinematic wedding films to artistic model portfolios, we craft every frame with editorial precision and emotional depth.
-          </p>
-        </div>
+    <section className="relative w-full bg-black text-white py-20 px-0 flex flex-col items-center overflow-hidden" style={{ minHeight: "900px", maxHeight: "1000px" }}>
+      {/* Search for a similar look: Prata or Bodoni Moda */}
+      <link href="https://fonts.googleapis.com/css2?family=Prata&display=swap" rel="stylesheet" />
 
-        <div className="relative w-full flex items-center justify-center overflow-hidden" style={{ height: 620 }}>
-          {[
-            { slot: -1, idx: prevIndex },
-            { slot: 0, idx: activeIndex },
-            { slot: 1, idx: nextIndex },
-          ].map(({ slot, idx }) => {
-            const visualSlot = slot - shiftProgress;
-            const x = visualSlot * stepPx;
-            const isCenter = Math.abs(visualSlot) < 0.3;
-            const dimmed = !isCenter;
+      {/* Header Container */}
+      <div className="text-center z-10 mb-16 px-6">
+        <h2 className="text-4xl md:text-7xl font-normal tracking-wider text-white uppercase mb-2" style={{ fontFamily: "'Prata', serif" }}>
+          CHOOSE YOUR EXPERTISE
+        </h2>
+        <p className="text-[10px] md:text-xs font-bold tracking-[0.4em] text-white/40 uppercase">
+          YOUR DAY WITH OUR EXPERTS
+        </p>
+      </div>
 
-            return (
-              <div
-                key={`${slot}-${idx}`}
-                className="absolute left-1/2 top-0 will-change-transform"
-                style={{
-                  zIndex: isCenter ? 30 : 10,
-                  transition: isAnimating ? "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms" : "none",
-                  transform: `translateX(calc(-50% + ${x}px)) scale(${isCenter ? 1.1 : 0.8})`,
-                }}
+      {/* Main Carousel Viewport */}
+      <div className="relative w-full flex-1 flex items-center justify-center overflow-visible">
+        <div className="relative w-full max-w-[1400px] h-[500px] flex items-center justify-center">
+
+          <AnimatePresence mode="popLayout">
+            {/* Navigational Cards Container */}
+            <div className="relative w-full h-full flex items-center justify-center">
+
+              {/* Previous Side Image */}
+              <motion.div
+                key={`prev-${activeIndex}`}
+                initial={{ opacity: 0, x: -100 }}
+                animate={{ opacity: 0.3, x: isMobile ? -150 : -450, scale: 0.8 }}
+                exit={{ opacity: 0 }}
+                className="absolute z-0 w-[500px] h-[350px] overflow-hidden grayscale pointer-events-none"
               >
-                <DynamicExpertiseImage
-                  slotId={slideConfigs[idx].id}
-                  fallback={slideConfigs[idx].fallback}
-                  title={slideConfigs[idx].title}
-                  index={idx}
-                  overlaySide={visualSlot < -0.3 ? "left" : "right"}
-                  dimmed={dimmed}
-                  onClick={() => { }}
-                />
-              </div>
-            );
-          })}
-        </div>
+                <img src={slideConfigs[(activeIndex - 1 + slideConfigs.length) % slideConfigs.length].fallback} className="w-full h-full object-cover" alt="" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent" />
+              </motion.div>
 
-        {/* Global CTA */}
-        <div className="flex justify-center px-6">
-          <button
-            onClick={() => document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' })}
-            className="group relative px-12 py-5 bg-white text-black text-[11px] font-black tracking-widest uppercase hover:scale-105 active:scale-95 transition-all shadow-2xl overflow-hidden"
-          >
-            <div className="absolute inset-0 -translate-x-full bg-black/10 transition-transform duration-500 group-hover:translate-x-0" />
-            <span className="relative z-10">BOOK AN APPOINTMENT →</span>
-          </button>
+              {/* Main Center Image */}
+              <motion.div
+                key={`main-${activeIndex}`}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute z-20 w-[min(850px,94vw)] h-[400px] md:h-[550px] bg-neutral-900 shadow-2xl overflow-hidden border border-white/5 active:scale-95 transition-transform"
+                onClick={handleNext}
+              >
+                <img
+                  src={slideConfigs[activeIndex].fallback}
+                  className="w-full h-full object-cover"
+                  alt={slideConfigs[activeIndex].title}
+                />
+
+                {/* Subtle Title Overlay */}
+                <div className="absolute inset-x-0 bottom-0 p-8 md:p-12 bg-gradient-to-t from-black/80 to-transparent">
+                  <h3 className="text-2xl md:text-4xl font-normal tracking-widest text-white uppercase italic" style={{ fontFamily: "'Prata', serif" }}>
+                    {slideConfigs[activeIndex].title}
+                  </h3>
+                </div>
+              </motion.div>
+
+              {/* Next Side Image */}
+              <motion.div
+                key={`next-${activeIndex}`}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 0.3, x: isMobile ? 150 : 450, scale: 0.8 }}
+                exit={{ opacity: 0 }}
+                className="absolute z-0 w-[500px] h-[350px] overflow-hidden grayscale pointer-events-none"
+              >
+                <img src={slideConfigs[(activeIndex + 1) % slideConfigs.length].fallback} className="w-full h-full object-cover" alt="" />
+                <div className="absolute inset-0 bg-gradient-to-l from-black via-transparent to-transparent" />
+              </motion.div>
+
+            </div>
+          </AnimatePresence>
+
+          {/* Hidden Navigation Overlays */}
+          <button onClick={handlePrev} className="absolute left-0 top-0 bottom-0 w-24 z-30 cursor-pointer outline-none" aria-label="Previous" />
+          <button onClick={handleNext} className="absolute right-0 top-0 bottom-0 w-24 z-30 cursor-pointer outline-none" aria-label="Next" />
         </div>
+      </div>
+
+      {/* Footer CTA */}
+      <div className="mt-12 z-10">
+        <button
+          className="group flex items-center gap-4 px-12 py-4 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white hover:text-black transition-all duration-500 shadow-xl"
+          onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          <span className="text-[11px] font-black tracking-[0.3em] uppercase">CONTACT US NOW</span>
+          <svg className="w-4 h-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </button>
       </div>
     </section>
   );

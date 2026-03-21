@@ -32,7 +32,6 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const [revealed, setRevealed] = useState(false);
   const [activeTab, setActiveTab] = useState(tabs[0]?.label || "WEDDING");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const dragStartXRef = useRef<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -82,51 +81,46 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   return (
     <section
       ref={sectionRef}
-      className={`gallery-section w-full bg-white px-0 py-24 sm:py-32 ${revealClass} overflow-hidden`}
+      className={`gallery-section w-full bg-white px-0 py-12 ${revealClass} overflow-hidden flex flex-col`}
+      style={{ maxHeight: "1050px" }}
     >
-      <div className="mx-auto w-full max-w-none">
-        {/* Elegant Category Header */}
-        <div className="gallery-stagger flex flex-col items-center gap-12 mb-20 px-6">
-          <div className="text-center space-y-4">
-            <span className="text-[10px] font-black tracking-[0.5em] text-black/30 uppercase">THE COLLECTION</span>
-            <h2 className="text-5xl md:text-8xl font-black tracking-tightest leading-none text-black uppercase italic italic">VISUAL JOURNEYS</h2>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto no-scrollbar pb-4 sm:pb-0 w-full justify-start sm:justify-center">
-            {tabs.map((tab, idx) => {
-              const isActive = activeTab === tab.label;
-              return (
-                <button
-                  key={`tab-${idx}`}
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(tab.label);
-                    setLightboxIndex(null);
-                  }}
-                  className={`
-                        h-12 px-8 whitespace-nowrap text-[10px] font-black tracking-[0.4em] uppercase transition-all duration-500
-                        ${isActive ? "bg-black text-white shadow-2xl scale-105" : "bg-transparent text-black/30 hover:text-black hover:bg-black/5"}
-                        `}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+      <div className="w-full px-0 flex-1 flex flex-col overflow-hidden min-h-0">
+        {/* Category Header - Robust Rectangular Buttons */}
+        <div className="gallery-stagger flex items-center mb-8 overflow-x-auto no-scrollbar scroll-smooth px-6 gap-4 sm:justify-center sm:flex-wrap flex-shrink-0">
+          {tabs.map((tab, idx) => {
+            const isActive = activeTab === tab.label;
+            return (
+              <button
+                key={`tab-${idx}`}
+                type="button"
+                onClick={() => {
+                  setActiveTab(tab.label);
+                  setLightboxIndex(null);
+                }}
+                className={`
+                  flex-shrink-0 h-12 px-8 sm:h-14 sm:px-12 border-2 border-black text-[10px] sm:text-[11px] font-black tracking-[0.2em] sm:tracking-[0.4em] uppercase transition-all duration-300
+                  ${isActive ? "bg-black text-white" : "bg-white text-black hover:bg-black/5"}
+                `}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Dense Professional Grid (Sharp Corners) */}
+        {/* Dense Masonry Grid - High density, smaller images */}
         <div
-          className="gallery-stagger grid w-full gap-1"
+          className="gallery-stagger grid w-full gap-0 overflow-y-auto no-scrollbar pb-20 flex-1"
           style={{
-            gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(6, minmax(0, 1fr))",
-            gridAutoRows: isMobile ? "220px" : "180px",
+            gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : "repeat(8, minmax(0, 1fr))",
+            gridAutoRows: isMobile ? "90px" : "140px",
+            gridAutoFlow: "dense",
           }}
         >
           {filteredTiles.map((item, idx) => {
             const mobileGridStyle = {
-              gridColumn: idx % 3 === 0 ? "span 1" : (idx % 3 === 1 ? "span 1" : "span 2"),
-              gridRow: idx % 4 === 0 ? "span 2" : "span 1",
+              gridColumn: item.col.includes("4") ? "span 3" : "span 1",
+              gridRow: item.row === "span 3" ? "span 2" : "span 1",
             };
             const desktopGridStyle = {
               gridColumn: item.col,
@@ -143,15 +137,13 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                 }}
                 onClick={() => setLightboxIndex(idx)}
               >
-                <div className="gallery-tile__inner h-full w-full bg-black">
+                <div className="gallery-tile__inner h-full w-full bg-black border-[3px] md:border-[6px] border-black overflow-hidden relative">
                   <GalleryImage
                     seed={item.seed}
-                    className="gallery-img h-full w-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 grayscale hover:grayscale-0 contrast-125"
+                    className="gallery-img h-full w-full object-cover opacity-100 transition-all duration-1000 grayscale-0 group-hover:grayscale group-hover:scale-110"
                   />
-                  {/* Minimal Hover Info */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6">
-                    <span className="text-[10px] font-black tracking-[0.3em] text-white uppercase italic">SHARTHAK STUDIO</span>
-                  </div>
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-all duration-500" />
                 </div>
               </div>
             );
@@ -159,23 +151,46 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
         </div>
       </div>
 
-      {/* Lightbox Implementation (Premium Blur) */}
+      {/* Lightbox Implementation */}
       {lightboxIndex !== null && (
-        <div className="lightbox fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4" onClick={() => setLightboxIndex(null)}>
-          <button className="absolute top-10 right-10 z-[110] text-white/40 hover:text-white transition-all">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+        <div className="lightbox fixed inset-0 z-[100] bg-black/98 flex items-center justify-center p-4 sm:p-20" onClick={() => setLightboxIndex(null)}>
+          <button
+            className="absolute top-10 right-10 z-[110] text-white/60 hover:text-white transition-all p-4"
+            onClick={() => setLightboxIndex(null)}
+          >
+            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
           </button>
-          <div className="max-w-6xl w-full aspect-video relative" onClick={e => e.stopPropagation()}>
-            <GalleryImage
-              seed={filteredTiles[lightboxIndex].seed}
-              className="w-full h-full object-contain"
-              isLightbox={true}
-            />
+
+          <div className="relative w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
+            {/* Prev Button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(curr => Math.max(0, curr! - 1)); }}
+              className="absolute left-4 md:left-10 z-[110] p-4 text-white/40 hover:text-white transition-all disabled:opacity-0"
+              disabled={lightboxIndex === 0}
+            >
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18L9 12L15 6" /></svg>
+            </button>
+
+            <div className="max-w-7xl w-full h-full flex items-center justify-center py-10">
+              <GalleryImage
+                seed={filteredTiles[lightboxIndex].seed}
+                className="max-w-full max-h-full object-contain shadow-2xl"
+                isLightbox={true}
+              />
+            </div>
+
+            {/* Next Button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(curr => Math.min(filteredTiles.length - 1, curr! + 1)); }}
+              className="absolute right-4 md:right-10 z-[110] p-4 text-white/40 hover:text-white transition-all disabled:opacity-0"
+              disabled={lightboxIndex === filteredTiles.length - 1}
+            >
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6" /></svg>
+            </button>
           </div>
-          {/* Quick Nav */}
-          <div className="absolute bottom-12 flex gap-12">
-            <button onClick={() => setLightboxIndex(curr => Math.max(0, curr! - 1))} className="text-white font-black tracking-widest text-xs uppercase opacity-40 hover:opacity-100">PREV</button>
-            <button onClick={() => setLightboxIndex(curr => Math.min(filteredTiles.length - 1, curr! + 1))} className="text-white font-black tracking-widest text-xs uppercase opacity-40 hover:opacity-100">NEXT</button>
+
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/20 text-[10px] font-black tracking-[0.5em] uppercase">
+            {lightboxIndex + 1} / {filteredTiles.length}
           </div>
         </div>
       )}
