@@ -19,7 +19,6 @@ const LatestWorkSection = dynamic(() => import("@/components/LatestWorkSection")
 const ExpertiseSection = dynamic(() => import("@/components/ExpertiseSection"), { ssr: false });
 const WhyChooseUsBookFlipSection = dynamic(() => import("@/components/WhyChooseUsBookFlipSection"), { ssr: false });
 const InfiniteStripsCTASection = dynamic(() => import("@/components/InfiniteStripsCTASection"), { ssr: false });
-const CoupleShootGame = dynamic(() => import("@/components/CoupleShootGame"), { ssr: false });
 const AboutMeSection = dynamic(() => import("@/components/AboutMeSection"), { ssr: false });
 
 export default function AppContent() {
@@ -131,8 +130,6 @@ export default function AppContent() {
             <AboutMeSection />
 
             <WhyChooseUsBookFlipSection />
-
-            <CoupleShootGame />
 
             <CameraCTASection />
 
