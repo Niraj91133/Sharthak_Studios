@@ -29,7 +29,20 @@ export default function AdminDashboard() {
             "#00E5FF", // Infinite Strips CTA
         ];
 
-        const filteredGrouping = Object.keys(grouped).filter(title => title !== "08. MAIN HERO SCROLL (BOTTOM)");
+        const VALID_SECTIONS = [
+            "01. MOBILE HERO SECTION",
+            "02. INFINITE STRIPS (DESKTOP)",
+            "03. THE COLLECTION (GALLERY)",
+            "04. CHOOSE YOUR EXPERTISE",
+            "05. INSTAGRAM FEED (LATEST WORK)",
+            "06. ABOUT ME SECTION",
+            "07. WHY CHOOSE US (BOOK FLIP)",
+            "08. STUDIO METRICS"
+        ];
+
+        const filteredGrouping = Object.keys(grouped)
+            .filter(title => VALID_SECTIONS.includes(title))
+            .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
         return filteredGrouping.map((title, i) => ({
             title,

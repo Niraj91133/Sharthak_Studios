@@ -90,6 +90,10 @@ export default function ExpertiseSection() {
     return () => clearInterval(timer);
   }, [handleNext]);
 
+  const activeSlotId = slideConfigs[activeIndex].id;
+  const activeFallback = slideConfigs[activeIndex].fallback;
+  const src = useMedia(activeSlotId, activeFallback);
+
   return (
     <section className="relative w-full bg-black text-white pt-0 pb-20 px-0 flex flex-col items-center overflow-hidden" style={{ minHeight: "900px", maxHeight: "900px" }}>
       {/* Search for a similar look: Prata or Bodoni Moda */}
@@ -131,11 +135,11 @@ export default function ExpertiseSection() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute z-20 w-[min(850px,94vw)] h-[400px] md:h-[550px] bg-neutral-900 shadow-2xl overflow-hidden border border-white/5 active:scale-95 transition-transform"
+                className="absolute z-20 w-[min(850px,94vw)] h-[400px] md:h-[550px] bg-neutral-900 shadow-2xl overflow-hidden border border-white/5 active:scale-95 transition-transform cursor-pointer"
                 onClick={handleNext}
               >
                 <img
-                  src={slideConfigs[activeIndex].fallback}
+                  src={src}
                   className="w-full h-full object-cover"
                   alt={slideConfigs[activeIndex].title}
                 />

@@ -7,8 +7,7 @@ import { useRouter } from "next/navigation";
 import { useMediaContext } from "@/context/MediaContext";
 import { MediaSlot } from "@/lib/mediaSlots";
 
-// Components
-import HeroScroll from "@/components/HeroScroll";
+import MobileHeroSection from "@/components/MobileHeroSection";
 
 import WhyChooseUsSection from "@/components/WhyChooseUsSection";
 
@@ -109,7 +108,10 @@ export default function AppContent() {
 
     return (
         <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
-            <InfiniteStripsCTASection />
+            <MobileHeroSection />
+            <div className="hidden md:block">
+                <InfiniteStripsCTASection />
+            </div>
 
             <div className="h-6" /> {/* 24px Gap */}
 
