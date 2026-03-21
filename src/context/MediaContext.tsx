@@ -4,6 +4,16 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { mediaSlots as initialMediaSlots, MediaSlot } from "@/lib/mediaSlots";
 import { supabase } from "@/lib/supabase";
 
+export type Blog = {
+    id: string;
+    title: string;
+    content: string; // HTML or Markdown
+    image: string;
+    date: string;
+    category: string;
+    excerpt: string;
+};
+
 interface MediaContextType {
     slots: MediaSlot[];
     updateSlot: (id: string, updates: Partial<MediaSlot>) => void;
@@ -13,7 +23,10 @@ interface MediaContextType {
     deleteFile: (id: string) => Promise<void>;
     addSlot: (slot: MediaSlot) => Promise<void>;
     deleteSlot: (id: string) => Promise<void>;
+    addBlog: (blog: Blog) => Promise<void>;
+    deleteBlog: (id: string) => Promise<void>;
     allMedia: { id: string; url: string; name: string; section: string; type: string }[];
+    blogs: Blog[];
     isLoading: boolean;
 }
 
@@ -252,6 +265,27 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (error) console.error("Error deleting slot from database:", error);
     };
 
+    const [blogs, setBlogs] = useState<Blog[]>([
+        {
+            id: '1',
+            title: 'THE ART OF CAPTURING ETERNAL MOMENTS',
+            category: 'TECHNIQUE',
+            date: '2026-03-20',
+            excerpt: 'Exploring the philosophy behind cinematic wedding filmmaking and why every frame matters.',
+            image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1600',
+            content: 'In the heart of every wedding lies a story waiting to be told. Unlike traditional photography, cinematography captures the movement, the sound, and the raw emotion of the day...\n\n# THE CINEMATIC APPROACH\n\nWe believe in a documentary-style approach that allows the day to unfold naturally. No forced poses, no staged smiles—just pure, unadulterated emotion.'
+        },
+        {
+            id: '2',
+            title: 'TOP 5 LOCATIONS FOR PRE-WEDDING SHOOTS IN BIHAR',
+            category: 'LOCATIONS',
+            date: '2026-03-18',
+            excerpt: 'Discover hidden gems in Gaya, Patna, and beyond for your dream pre-wedding story.',
+            image: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=1600',
+            content: 'Bihar is home to rich history and breathtaking landscapes. From the serene banks of the Ganges to the ancient ruins of Nalanda, there are endless possibilities for a cinematic pre-wedding shoot.'
+        }
+    ]);
+
     const allMedia = slots
         .filter((s) => s.uploadedFile)
         .map((s) => ({
@@ -262,9 +296,19 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             type: s.type,
         }));
 
+    const addBlog = async (blog: Blog) => {
+        setBlogs(prev => [...prev, blog]);
+        // Future: Supabase sync for blogs
+    };
+
+    const deleteBlog = async (id: string) => {
+        setBlogs(prev => prev.filter(b => b.id !== id));
+        // Future: Supabase sync for blogs
+    };
+
     return (
         <MediaContext.Provider
-            value={{ slots, updateSlot, resetSlot, getSlot, uploadFile, deleteFile, addSlot, deleteSlot, allMedia, isLoading }}
+            value={{ slots, updateSlot, resetSlot, getSlot, uploadFile, deleteFile, addSlot, deleteSlot, addBlog, deleteBlog, allMedia, blogs, isLoading }}
         >
             {children}
         </MediaContext.Provider>
