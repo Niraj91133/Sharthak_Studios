@@ -62,8 +62,12 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 }
 
                 // Fetch Blogs
-                const { data: blogData } = await supabase.from('blogs').select('*').order('created_at', { ascending: false });
-                if (blogData) {
+                const { data: blogData, error: blogError } = await supabase.from('blogs').select('*').order('created_at', { ascending: false });
+                if (blogError) {
+                    console.error("❌ SUPABASE FETCH BLOGS ERROR:", blogError);
+                }
+                if (blogData && blogData.length > 0) {
+                    console.log(`✅ Loaded ${blogData.length} blogs from Supabase.`);
                     setBlogs(blogData.map(b => ({
                         id: b.id,
                         title: b.title,
@@ -74,6 +78,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                         content: b.content_blocks || []
                     })));
                 } else {
+                    console.log("ℹ️ No blogs found or fetch empty. Using dummy.");
                     // Seed dummy blogs for demo/initial
                     setBlogs([
                         { id: "wedding-light-guide", title: "The Art of Natural Light", excerpt: "Cinemtic guide to lights.", date: "2026-03-15", image: "https://images.unsplash.com/photo-1519741497674-611481863552", category: "TECHNIQUE", content: [] }

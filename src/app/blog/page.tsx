@@ -42,7 +42,7 @@ function BlogListingContent() {
             {/* Main Hero - Reference Inspired Pill Design */}
             <header className="pt-32 pb-12 px-6">
                 <div className="max-w-6xl mx-auto">
-                    {filteredBlogs.length > 0 && (
+                    {filteredBlogs.length > 0 ? (
                         <Link href={`/blog/${filteredBlogs[0].id}`} className="group relative block w-full aspect-[21/9] rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl transform active:scale-[0.98] transition-all">
                             <img
                                 src={filteredBlogs[0].image}
@@ -61,6 +61,8 @@ function BlogListingContent() {
                                 </div>
                             </div>
                         </Link>
+                    ) : (
+                        <div className="w-full aspect-[21/9] bg-white border border-black/5 rounded-[2.5rem] flex items-center justify-center text-black/20 font-black tracking-widest uppercase italic">NO STORIES PUBLISHED YET.</div>
                     )}
                 </div>
             </header>
