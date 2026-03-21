@@ -2,10 +2,15 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useInView, motion, useSpring, useTransform } from "framer-motion";
+import { useMediaContext } from "@/context/MediaContext";
 
-function CountUp({ value, suffix = "" }: { value: number; suffix?: string }) {
+function CountUp({ value }: { value: string }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
+
+  // Extract numeric part from string like "12+" or "99%"
+  const numericValue = parseInt(value, 10) || 0;
+  const cleanSuffix = value.replace(/[0-9]/g, '');
 
   const springValue = useSpring(0, {
     damping: 40,
@@ -15,9 +20,9 @@ function CountUp({ value, suffix = "" }: { value: number; suffix?: string }) {
 
   useEffect(() => {
     if (isInView) {
-      springValue.set(value);
+      springValue.set(numericValue);
     }
-  }, [isInView, springValue, value]);
+  }, [isInView, springValue, numericValue]);
 
   const displayValue = useTransform(springValue, (latest) =>
     Math.floor(latest).toLocaleString()
@@ -26,19 +31,15 @@ function CountUp({ value, suffix = "" }: { value: number; suffix?: string }) {
   return (
     <span ref={ref} className="inline-flex items-center">
       <motion.span>{displayValue}</motion.span>
-      {suffix && <span className="ml-1">{suffix}</span>}
+      {cleanSuffix && <span className="ml-1">{cleanSuffix}</span>}
     </span>
   );
 }
 
-const metrics = [
-  { label: "YEARS OF LEGACY", val: 12, suffix: "+" },
-  { label: "STORIES CAPTURED", val: 750, suffix: "+" },
-  { label: "REELS PRODUCED", val: 3200, suffix: "+" },
-  { label: "CLIENT TRUST", val: 99, suffix: "%" }
-];
-
 export default function WhyChooseUsSection() {
+  const { slots } = useMediaContext();
+  const metrics = slots.filter(s => s.section === "10. STUDIO METRICS");
+
   return (
     <section className="relative w-full overflow-hidden bg-black text-white flex flex-col justify-center items-center px-6 md:px-24" style={{ height: "900px" }}>
 
@@ -65,7 +66,7 @@ export default function WhyChooseUsSection() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0">
           {metrics.map((item, i) => (
             <motion.div
-              key={item.label}
+              key={item.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -73,10 +74,10 @@ export default function WhyChooseUsSection() {
               className={`flex flex-col items-center justify-center p-8 ${i < metrics.length - 1 ? 'md:border-r border-white/5' : ''}`}
             >
               <div className="text-4xl md:text-6xl font-black tracking-tighter mb-3 text-white">
-                <CountUp value={item.val} suffix={item.suffix} />
+                <CountUp value={item.textValue || "0"} />
               </div>
               <div className="text-[9px] md:text-[11px] font-black tracking-[0.4em] text-white/20 uppercase whitespace-nowrap">
-                {item.label}
+                {item.textContent || "LABEL"}
               </div>
             </motion.div>
           ))}

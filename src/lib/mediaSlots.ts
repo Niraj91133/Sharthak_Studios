@@ -2,7 +2,7 @@ export type MediaSlot = {
     id: string;
     section: string;
     frame: string;
-    type: "image" | "video";
+    type: "image" | "video" | "text";
     currentSrc: string;
     uploadedFile?: {
         name: string;
@@ -13,6 +13,8 @@ export type MediaSlot = {
     fallbackSrc: string;
     useOnSite: boolean;
     categoryLabel?: string;
+    textValue?: string; // e.g. "12+"
+    textContent?: string; // e.g. "YEARS OF LEGACY"
 };
 
 export const mediaSlots: MediaSlot[] = [
@@ -125,4 +127,17 @@ export const mediaSlots: MediaSlot[] = [
         fallbackSrc: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=2000",
         useOnSite: false,
     },
+
+    // 10. STUDIO METRICS
+    ...Array.from({ length: 4 }, (_, i) => ({
+        id: `metric-${i + 1}`,
+        section: "10. STUDIO METRICS",
+        frame: `Metric Card ${i + 1}`,
+        type: "text" as const,
+        currentSrc: "",
+        fallbackSrc: "",
+        useOnSite: true,
+        textValue: ["12+", "750+", "3200+", "99%"][i],
+        textContent: ["YEARS OF LEGACY", "STORIES CAPTURED", "REELS PRODUCED", "CLIENT TRUST"][i],
+    })),
 ];

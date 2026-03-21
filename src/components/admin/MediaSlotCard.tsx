@@ -63,68 +63,98 @@ export default function MediaSlotCard({ slot }: MediaSlotCardProps) {
                 </div>
             </div>
 
-            <div className="flex gap-4">
-                {/* Preview */}
-                <div className="w-24 h-18 bg-black rounded-lg overflow-hidden flex-shrink-0 border border-white/5 relative group">
-                    {slot.type === "video" ? (
-                        <video
-                            src={slot.uploadedFile?.url || slot.fallbackSrc}
-                            className="w-full h-full object-cover"
-                            muted
-                            onMouseOver={(e) => e.currentTarget.play()}
-                            onMouseOut={(e) => {
-                                e.currentTarget.pause();
-                                e.currentTarget.currentTime = 0;
-                            }}
-                        />
-                    ) : (
-                        <img
-                            src={slot.uploadedFile?.url || slot.fallbackSrc}
-                            alt={slot.id}
-                            className="w-full h-full object-cover"
-                        />
+            {slot.type !== "text" && (
+                <div className="flex gap-4">
+                    {/* Preview */}
+                    <div className="w-24 h-18 bg-black rounded-lg overflow-hidden flex-shrink-0 border border-white/5 relative group">
+                        {slot.type === "video" ? (
+                            <video
+                                src={slot.uploadedFile?.url || slot.fallbackSrc}
+                                className="w-full h-full object-cover"
+                                muted
+                                onMouseOver={(e) => e.currentTarget.play()}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.pause();
+                                    e.currentTarget.currentTime = 0;
+                                }}
+                            />
+                        ) : (
+                            <img
+                                src={slot.uploadedFile?.url || slot.fallbackSrc}
+                                alt={slot.id}
+                                className="w-full h-full object-cover"
+                            />
+                        )}
+                        {!slot.uploadedFile && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-[8px] font-bold text-white/60">DEFAULT</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Action / Meta */}
+                    <div className="flex-1 min-w-0">
+                        {!slot.uploadedFile ? (
+                            <UploadZone
+                                accept={slot.type === "image" ? "image/*" : "video/*"}
+                                onUpload={handleUpload}
+                                isProcessing={isUploading}
+                            />
+                        ) : (
+                            <div className="h-full flex flex-col justify-between">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] text-white/80 font-medium truncate">
+                                        {slot.uploadedFile.name}
+                                    </p>
+                                    <p className="text-[9px] text-white/30">
+                                        {formatSize(slot.uploadedFile.size)} • {new Date(slot.uploadedFile.uploadedAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => deleteFile(slot.id)}
+                                        className="px-3 py-1.5 border border-white/10 rounded-md text-[9px] uppercase tracking-widest font-bold hover:bg-white/5 hover:border-white/20 transition-all flex items-center gap-2"
+                                    >
+                                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Metric / Text Controls */}
+            {(slot.textValue !== undefined || slot.textContent !== undefined) && (
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/[0.05]">
+                    {slot.textValue !== undefined && (
+                        <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase tracking-widest text-white/30 font-bold ml-1">Value (e.g. 12+)</label>
+                            <input
+                                type="text"
+                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-white/20 transition-colors"
+                                value={slot.textValue}
+                                onChange={(e) => updateSlot(slot.id, { textValue: e.target.value })}
+                            />
+                        </div>
                     )}
-                    {!slot.uploadedFile && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="text-[8px] font-bold text-white/60">DEFAULT</span>
+                    {slot.textContent !== undefined && (
+                        <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase tracking-widest text-white/30 font-bold ml-1">Label (e.g. YEARS)</label>
+                            <input
+                                type="text"
+                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-white/20 transition-colors"
+                                value={slot.textContent}
+                                onChange={(e) => updateSlot(slot.id, { textContent: e.target.value })}
+                            />
                         </div>
                     )}
                 </div>
-
-                {/* Action / Meta */}
-                <div className="flex-1 min-w-0">
-                    {!slot.uploadedFile ? (
-                        <UploadZone
-                            accept={slot.type === "image" ? "image/*" : "video/*"}
-                            onUpload={handleUpload}
-                            isProcessing={isUploading}
-                        />
-                    ) : (
-                        <div className="h-full flex flex-col justify-between">
-                            <div className="space-y-1">
-                                <p className="text-[10px] text-white/80 font-medium truncate">
-                                    {slot.uploadedFile.name}
-                                </p>
-                                <p className="text-[9px] text-white/30">
-                                    {formatSize(slot.uploadedFile.size)} • {new Date(slot.uploadedFile.uploadedAt).toLocaleDateString()}
-                                </p>
-                            </div>
-
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => deleteFile(slot.id)}
-                                    className="px-3 py-1.5 border border-white/10 rounded-md text-[9px] uppercase tracking-widest font-bold hover:bg-white/5 hover:border-white/20 transition-all flex items-center gap-2"
-                                >
-                                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    Clear
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+            )}
 
             {slot.categoryLabel !== undefined && (
                 <div className="pt-2 border-t border-white/[0.03]">
