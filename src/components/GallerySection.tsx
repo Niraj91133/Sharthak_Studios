@@ -176,56 +176,42 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
       return ratiosBySrc[src] || 1;
     });
 
-    const minBaseH = 56;
-    const maxBaseH = 260;
+    const gap = isMobile ? 8 : 10;
+    const preferredRows = isMobile ? 3 : H >= 560 ? 4 : 3;
+    const rowsCount = clamp(preferredRows, 2, 5);
 
-    const build = (baseH: number): LayoutRow[] => {
-      const rows: LayoutRow[] = [];
-      let row: LayoutItem[] = [];
-      let sum = 0;
+    const availableH = Math.max(1, H - gap * (rowsCount - 1));
+    const rowH = availableH / rowsCount;
 
-      for (let i = 0; i < ratios.length; i++) {
-        const w = ratios[i] * baseH;
-        row.push({ idx: i, w });
-        sum += w;
+    // Assign images to rows to balance widths.
+    const rowBuckets: Array<{ items: number[]; width: number }> = Array.from({ length: rowsCount }).map(() => ({
+      items: [],
+      width: 0,
+    }));
 
-        const isLast = i === ratios.length - 1;
-        if (sum >= W || isLast) {
-          const scale = sum > 0 ? W / sum : 1;
-          rows.push({ h: baseH * scale, items: row.map((it) => ({ idx: it.idx, w: it.w * scale })) });
-          row = [];
-          sum = 0;
-        }
+    for (let i = 0; i < ratios.length; i++) {
+      const w = ratios[i] * rowH;
+      let best = 0;
+      for (let r = 1; r < rowBuckets.length; r++) {
+        if (rowBuckets[r].width < rowBuckets[best].width) best = r;
       }
-
-      return rows;
-    };
-
-    // Binary search for baseH so total row heights match container height.
-    let lo = minBaseH;
-    let hi = maxBaseH;
-    let best = (lo + hi) / 2;
-    for (let iter = 0; iter < 18; iter++) {
-      const mid = (lo + hi) / 2;
-      const rows = build(mid);
-      const total = rows.reduce((acc, r) => acc + r.h, 0);
-      best = mid;
-      if (total > H) hi = mid;
-      else lo = mid;
+      rowBuckets[best].items.push(i);
+      rowBuckets[best].width += w;
     }
 
-    const rows = build(best);
-    const total = rows.reduce((acc, r) => acc + r.h, 0) || 1;
-    const k = H / total;
-
-    // Scale heights to match exactly, then normalize widths per row to full width.
-    return rows.map((r) => {
-      const newH = r.h * k;
-      const sum = r.items.reduce((acc, it) => acc + it.w, 0) || 1;
-      const wScale = W / sum;
-      return { h: newH, items: r.items.map((it) => ({ idx: it.idx, w: it.w * wScale })) };
+    return rowBuckets.map((bucket) => {
+      const idxs = bucket.items.length > 0 ? bucket.items : [0];
+      const n = idxs.length;
+      const availableW = Math.max(1, W - gap * (n - 1));
+      const widths = idxs.map((i) => ratios[i] * rowH);
+      const sumW = widths.reduce((a, b) => a + b, 0) || 1;
+      const scale = availableW / sumW;
+      return {
+        h: rowH,
+        items: idxs.map((i, j) => ({ idx: i, w: widths[j] * scale })),
+      };
     });
-  }, [displayTiles, gridSize.h, gridSize.w, ratiosBySrc, resolveSrc]);
+  }, [displayTiles, gridSize.h, gridSize.w, isMobile, ratiosBySrc, resolveSrc]);
 
   const revealClass = revealed ? "is-revealed" : "";
 
@@ -292,13 +278,21 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
         </div>
 
         {/* Perfect-fit 10-image grid */}
-        <div ref={gridRef} className="gallery-stagger w-full flex-1 min-h-0 overflow-hidden">
+        <div ref={gridRef} className="gallery-stagger w-full flex-1 min-h-0 overflow-hidden px-4 sm:px-8 pb-4">
           {layoutRows.length === 0 ? (
             <div className="h-full w-full bg-white/5" />
           ) : (
             <div className="h-full w-full">
               {layoutRows.map((row, rowIdx) => (
-                <div key={rowIdx} className="flex w-full" style={{ height: `${row.h}px` }}>
+                <div
+                  key={rowIdx}
+                  className="flex w-full"
+                  style={{
+                    height: `${row.h}px`,
+                    gap: `${isMobile ? 8 : 10}px`,
+                    marginBottom: rowIdx === layoutRows.length - 1 ? 0 : `${isMobile ? 8 : 10}px`,
+                  }}
+                >
                   {row.items.map((it) => {
                     const tile = displayTiles[it.idx];
                     const src = resolveSrc(tile.seed, false);
@@ -308,11 +302,11 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                         key={tile.seed}
                         type="button"
                         disabled={isPlaceholder}
-                        className="relative overflow-hidden bg-black"
+                        className="relative overflow-hidden bg-black rounded-[8px] sm:rounded-[10px] group"
                         style={{
                           width: `${it.w}px`,
                           height: "100%",
-                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
+                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.22)",
                         }}
                         onClick={() => {
                           if (!isPlaceholder) setLightboxIndex(it.idx);
@@ -330,9 +324,17 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                               loading="lazy"
                               decoding="async"
                               draggable={false}
-                              className="absolute inset-0 h-full w-full object-contain bg-black"
+                              className="absolute inset-0 h-full w-full object-cover blur-[10px] scale-[1.08] opacity-55"
                             />
-                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/12 via-transparent to-black/6 opacity-90" />
+                            <img
+                              src={src}
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                              draggable={false}
+                              className="absolute inset-0 h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+                            />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 opacity-90" />
                           </>
                         )}
                       </button>
