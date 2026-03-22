@@ -193,10 +193,75 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
           </div>
         </div>
 
-        {/* Premium masonry grid (50 items, no distortion, no aggressive cropping) */}
-        <div className="gallery-stagger w-full flex-1 min-h-0 overflow-y-auto no-scrollbar px-4 sm:px-8 pb-6">
+        {/* Mobile: right-to-left horizontal gallery (no vertical scroll) */}
+        <div className="gallery-stagger w-full flex-1 min-h-0 overflow-hidden px-4 pb-6 sm:hidden">
           <div
-            className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 w-full"
+            className="h-full w-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth snap-x snap-mandatory"
+            dir="rtl"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <div className="flex h-full w-max items-stretch" style={{ gap }} dir="ltr">
+              {displayTiles.map((tile) => {
+                const src = resolveSrc(tile.seed, false);
+                const isPlaceholder = !src;
+                return (
+                  <button
+                    key={tile.seed}
+                    type="button"
+                    disabled={isPlaceholder}
+                    className={[
+                      "relative h-full overflow-hidden rounded-[12px] border border-white/20 bg-black/40",
+                      "snap-start flex-shrink-0",
+                      isPlaceholder ? "opacity-60" : "hover:border-white/35",
+                    ].join(" ")}
+                    style={{
+                      width: "78vw",
+                      maxWidth: 380,
+                    }}
+                    onClick={() => {
+                      if (isPlaceholder) return;
+                      const realIndex = realTiles.findIndex((t) => t.seed === tile.seed);
+                      if (realIndex >= 0) setLightboxIndex(realIndex);
+                    }}
+                  >
+                    {isPlaceholder ? (
+                      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black tracking-[0.3em] text-white/30 bg-white/5">
+                        UPLOAD {DISPLAY_COUNT} IMAGES
+                      </div>
+                    ) : (
+                      <>
+                        {/* Soft colorful backdrop */}
+                        <img
+                          src={src}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          draggable={false}
+                          className="absolute inset-0 h-full w-full object-cover blur-[10px] scale-[1.08] opacity-55"
+                        />
+                        {/* True image: fully visible */}
+                        <img
+                          src={src}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          draggable={false}
+                          className="absolute inset-0 h-full w-full object-contain transition-transform duration-500"
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 opacity-90" />
+                      </>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop/tablet: masonry grid (vertical scroll inside section) */}
+        <div className="gallery-stagger hidden w-full flex-1 min-h-0 overflow-y-auto no-scrollbar px-8 pb-6 sm:block">
+          <div
+            className="columns-3 md:columns-4 lg:columns-5 xl:columns-6 w-full"
             style={{ columnGap: gap }}
           >
             {displayTiles.map((tile) => {
