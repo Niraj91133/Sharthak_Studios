@@ -110,15 +110,32 @@ function ReelStats({ reel }: { reel: Reel }) {
 
 function PhoneMockup({ reel }: { reel: Reel }) {
   return (
-    <div className="relative w-[min(260px,72vw)] sm:w-[min(360px,84vw)] md:w-[420px]">
-      <div className="relative aspect-[9/19] w-full rounded-[48px] bg-[#0b0b0b] shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)] ring-1 ring-white/10">
-        <div className="absolute inset-[10px] overflow-hidden rounded-[40px] bg-black">
-          <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-cover" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
-          <ReelStats reel={reel} />
+    <div className="relative w-[min(270px,74vw)] sm:w-[min(380px,86vw)] md:w-[460px]">
+      {/* iPhone 17-style mockup (thin bezel + dynamic island) */}
+      <div className="relative aspect-[9/19.5] w-full rounded-[56px] bg-[#0a0a0a] shadow-[0_50px_140px_-50px_rgba(0,0,0,0.95)] ring-1 ring-white/10">
+        {/* Metallic edge highlight */}
+        <div className="pointer-events-none absolute inset-0 rounded-[56px] bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0)_38%,rgba(255,255,255,0.06)_70%,rgba(255,255,255,0)_100%)]" />
+
+        {/* Side buttons */}
+        <div className="pointer-events-none absolute -left-[2px] top-[20%] h-10 w-[4px] rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute -left-[2px] top-[29%] h-14 w-[4px] rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute -right-[2px] top-[26%] h-20 w-[4px] rounded-full bg-white/10" />
+
+        {/* Screen */}
+        <div className="absolute inset-[10px] overflow-hidden rounded-[46px] bg-black">
+          {/* Reel viewport: exact Instagram Reel ratio (9:16) inside phone */}
+          <div className="absolute inset-x-0 top-1/2 w-full -translate-y-1/2 aspect-[9/16] bg-black">
+            <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-cover" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+            <ReelStats reel={reel} />
+          </div>
+
+          {/* Subtle screen vignette */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,rgba(0,0,0,0)_55%)] opacity-60" />
         </div>
 
-        <div className="pointer-events-none absolute left-1/2 top-[14px] -translate-x-1/2 h-[26px] w-[108px] rounded-full bg-black/85 ring-1 ring-white/10" />
+        {/* Dynamic island */}
+        <div className="pointer-events-none absolute left-1/2 top-[16px] -translate-x-1/2 h-[26px] w-[118px] rounded-full bg-black/90 ring-1 ring-white/10" />
         <div className="pointer-events-none absolute left-1/2 top-[24px] -translate-x-1/2 h-[4px] w-[44px] rounded-full bg-white/10" />
       </div>
     </div>
