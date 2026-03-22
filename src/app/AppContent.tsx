@@ -128,7 +128,7 @@ export default function AppContent() {
                 <InfiniteStripsCTASection />
             </div>
 
-            <div className="h-6" /> {/* 24px Gap */}
+            <div className="h-10" /> {/* 40px Gap */}
 
             <GallerySection tabs={galleryTabs} items={galleryItems} />
 

@@ -105,7 +105,7 @@ export default function ExpertiseSection() {
   useEffect(() => {
     const timer = setInterval(() => {
       handleNext();
-    }, 5000);
+    }, 3500);
     return () => clearInterval(timer);
   }, [handleNext]);
 
