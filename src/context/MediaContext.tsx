@@ -15,6 +15,7 @@ function inferSectionForSlot(id: string, section?: string | null): string {
 
 function loadLocalSlots(): MediaSlot[] | null {
     try {
+        if (typeof window === "undefined") return null;
         const raw = localStorage.getItem(LOCAL_SLOTS_KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw) as unknown;
@@ -27,6 +28,7 @@ function loadLocalSlots(): MediaSlot[] | null {
 
 function saveLocalSlots(slots: MediaSlot[]) {
     try {
+        if (typeof window === "undefined") return;
         localStorage.setItem(LOCAL_SLOTS_KEY, JSON.stringify(slots));
     } catch {
         // ignore storage quota / privacy errors
@@ -64,14 +66,6 @@ function describeSupabaseError(error: unknown): string {
     }
 }
 
-function isSchemaMismatchMessage(message: string) {
-    return /category_label|column|schema|relation|42P01|42703|PGRST/i.test(message);
-}
-
-function shouldShowSupabaseSetupHelp(message: string) {
-    return isSchemaMismatchMessage(message) || message === "Unknown Supabase error" || message === "[object Object]";
-}
-
 export type Blog = {
     id: string;
     title: string;
@@ -84,7 +78,7 @@ export type Blog = {
 
 interface MediaContextType {
     slots: MediaSlot[];
-    updateSlot: (id: string, updates: Partial<MediaSlot>) => void;
+    updateSlot: (id: string, updates: Partial<MediaSlot>) => Promise<void>;
     resetSlot: (id: string) => Promise<void>;
     getSlot: (id: string) => MediaSlot | undefined;
     uploadFile: (id: string, file: File) => Promise<void>;
@@ -102,52 +96,31 @@ const MediaContext = createContext<MediaContextType | undefined>(undefined);
 
 export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [slots, setSlots] = useState<MediaSlot[]>(initialMediaSlots);
-    const [isLoading, setIsLoading] = useState(false);
+    const [blogs, setBlogs] = useState<Blog[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [dbSupportsCategoryLabel, setDbSupportsCategoryLabel] = useState(true);
     const [schemaChecked, setSchemaChecked] = useState(false);
-    const [schemaWarned, setSchemaWarned] = useState(false);
 
-    // Local persistence fallback: if Supabase is misconfigured, don't lose admin changes on refresh.
+    // Initial Data Fetch
     useEffect(() => {
         const cached = loadLocalSlots();
         if (cached && cached.length > 0) {
             setSlots(cached);
         }
-    }, []);
 
-    useEffect(() => {
-        saveLocalSlots(slots);
-    }, [slots]);
-
-    // Fetch slots from Supabase on mount
-    useEffect(() => {
-        const fetchSlots = async () => {
+        const fetchData = async () => {
+            setIsLoading(true);
             try {
-                const { data, error } = await supabase
-                    .from('media_slots')
-                    .select('*');
-
-                if (error) {
-                    console.warn("Supabase table 'media_slots' not found. Using local initial data.", error);
-                    setIsLoading(false);
-                    // Keep whatever we currently have (could be localStorage-backed).
-                    return;
-                }
-
-                if (data && data.length > 0) {
-                    const cached = loadLocalSlots();
-                    const baseSlots = cached && cached.length > 0 ? cached : initialMediaSlots;
-
-                    // Start with initial slots and merge DB data
-                    // Also include any slots that are ONLY in the DB
-                    const dbSlotMap = new Map();
-                    data.forEach(d => dbSlotMap.set(d.id, d));
-                    const needsSectionFix: Array<{ id: string; section: string }> = [];
-
-                    const mergedSlots = baseSlots.map(base => {
+                // 1. Fetch Slots
+                const { data: slotData, error: slotError } = await supabase.from('media_slots').select('*');
+                if (slotError) {
+                    console.warn("Supabase table 'media_slots' error:", describeSupabaseError(slotError));
+                } else if (slotData) {
+                    const dbSlotMap = new Map(slotData.map(d => [d.id, d]));
+                    const mergedSlots = initialMediaSlots.map(base => {
                         const dbSlot = dbSlotMap.get(base.id);
                         if (dbSlot) {
-                            dbSlotMap.delete(base.id); // Remove so we know what's left
+                            dbSlotMap.delete(base.id);
                             return {
                                 ...base,
                                 useOnSite: dbSlot.use_on_site,
@@ -163,15 +136,11 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                         return base;
                     });
 
-                    // Add purely dynamic slots from the DB
+                    // Add purely dynamic slots
                     dbSlotMap.forEach((dbSlot, id) => {
-                        const inferredSection = inferSectionForSlot(id, dbSlot.section);
-                        if ((!dbSlot.section || dbSlot.section === "Unknown") && inferredSection !== (dbSlot.section || "")) {
-                            needsSectionFix.push({ id, section: inferredSection });
-                        }
                         mergedSlots.push({
                             id,
-                            section: inferredSection,
+                            section: inferSectionForSlot(id, dbSlot.section),
                             frame: dbSlot.frame || 'Dynamic',
                             type: dbSlot.type || 'image',
                             currentSrc: dbSlot.uploaded_file_url || '',
@@ -186,301 +155,169 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                             } : undefined
                         });
                     });
-
-                    if (needsSectionFix.length > 0) {
-                        // Best-effort DB self-heal so landing filters can find gallery items next time.
-                        void supabase.from("media_slots").upsert(needsSectionFix);
-                    }
-
                     setSlots(mergedSlots);
                 }
+
+                // 2. Fetch Blogs
+                const { data: blogData, error: blogError } = await supabase
+                    .from('blogs')
+                    .select('*')
+                    .order('date', { ascending: false });
+
+                if (blogError) {
+                    console.warn("Supabase table 'blogs' error:", describeSupabaseError(blogError));
+                } else if (blogData) {
+                    setBlogs(blogData);
+                }
             } catch (err) {
-                console.error("Error fetching media slots:", err);
+                console.error("Data fetch error:", err);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchSlots();
+        fetchData();
     }, []);
 
-    // Detect DB schema capabilities (PostgREST schema cache sometimes lacks new columns until migrated).
+    // Local Sync
     useEffect(() => {
-        let cancelled = false;
+        saveLocalSlots(slots);
+    }, [slots]);
+
+    // Schema Check
+    useEffect(() => {
         const checkSchema = async () => {
             try {
                 const { error } = await supabase.from("media_slots").select("category_label").limit(1);
-                if (cancelled) return;
-                if (error) {
-                    const msg = describeSupabaseError(error);
-                    if (/PGRST204/i.test(msg) && /category_label/i.test(msg)) {
-                        setDbSupportsCategoryLabel(false);
-                    }
+                if (error && error.code === '42703') { // Column not found
+                    setDbSupportsCategoryLabel(false);
                 }
             } catch {
-                // Ignore; keep defaults
+                // Ignore
             } finally {
-                if (!cancelled) setSchemaChecked(true);
+                setSchemaChecked(true);
             }
         };
         checkSchema();
-        return () => {
-            cancelled = true;
-        };
     }, []);
 
-    useEffect(() => {
-        if (!schemaChecked) return;
-        if (dbSupportsCategoryLabel) return;
-        if (schemaWarned) return;
-        setSchemaWarned(true);
-        alert("Supabase DB needs migration: run `setup-supabase.sql` (adds `category_label`). Upload will work, but categories won't persist until you migrate.");
-    }, [dbSupportsCategoryLabel, schemaChecked, schemaWarned]);
-
     const updateSlot = useCallback(async (id: string, updates: Partial<MediaSlot>) => {
-        // Update local state
-        const snapshot = slots;
         setSlots((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
 
-        // Update Supabase
-        const dbUpdates: Record<string, unknown> = {};
-        if (updates.useOnSite !== undefined) dbUpdates.use_on_site = updates.useOnSite;
-        if (updates.categoryLabel !== undefined && dbSupportsCategoryLabel) dbUpdates.category_label = updates.categoryLabel;
-
-        if (Object.keys(dbUpdates).length > 0) {
-            const current = slots.find((s) => s.id === id);
-            const { error } = await supabase
-                .from('media_slots')
-                .upsert({
-                    id,
-                    section: current?.section || "Unknown",
-                    frame: current?.frame || "Unknown",
-                    type: current?.type || "image",
-                    ...dbUpdates
-                });
-
-            if (error) {
-                const message = describeSupabaseError(error);
-                console.error("Error updating slot in Supabase:", message, error);
-                // Roll back optimistic update if DB write failed
-                setSlots(snapshot);
-                if (shouldShowSupabaseSetupHelp(message)) {
-                    alert("Supabase DB schema mismatch. Run `setup-supabase.sql` in Supabase SQL editor (adds `category_label` + disables RLS).");
-                }
+        const current = slots.find((s) => s.id === id);
+        if (current) {
+            const dbUpdates: any = {
+                id,
+                section: current.section,
+                frame: current.frame,
+                type: current.type,
+                use_on_site: updates.useOnSite ?? current.useOnSite,
+                order_index: current.orderIndex ?? 0
+            };
+            if (updates.categoryLabel !== undefined && dbSupportsCategoryLabel) {
+                dbUpdates.category_label = updates.categoryLabel;
             }
+            if (updates.uploadedFile !== undefined) {
+                dbUpdates.uploaded_file_url = updates.uploadedFile?.url;
+                dbUpdates.uploaded_file_name = updates.uploadedFile?.name;
+                dbUpdates.uploaded_file_size = updates.uploadedFile?.size;
+                dbUpdates.uploaded_at = updates.uploadedFile?.uploadedAt;
+            }
+
+            const { error } = await supabase.from('media_slots').upsert(dbUpdates);
+            if (error) console.error("Update sync error:", describeSupabaseError(error));
         }
     }, [dbSupportsCategoryLabel, slots]);
 
     const resetSlot = useCallback(async (id: string) => {
-        const initial = initialMediaSlots.find(s => s.id === id);
-        if (!initial) return;
-
         setSlots((prev) =>
             prev.map((s) =>
-                s.id === id
-                    ? { ...s, uploadedFile: undefined, useOnSite: false, currentSrc: s.fallbackSrc }
-                    : s
+                s.id === id ? { ...s, uploadedFile: undefined, useOnSite: false } : s
             )
         );
-
-        // Reset in Database (Suppresing Cloudinary deletion for reset for now to keep it simple, 
-        // as Cloudinary delete requires public_id which we aren't explicitly tracking yet in a dedicated field,
-        // but it's in the URL)
         await supabase.from('media_slots').upsert({
             id,
-            use_on_site: false,
-            uploaded_file_name: null,
             uploaded_file_url: null,
+            uploaded_file_name: null,
             uploaded_file_size: null,
-            uploaded_at: null
+            uploaded_at: null,
+            use_on_site: false
         });
     }, []);
 
-    const getSlot = useCallback((id: string) => {
-        return slots.find((s) => s.id === id);
-    }, [slots]);
+    const getSlot = useCallback((id: string) => slots.find((s) => s.id === id), [slots]);
 
     const uploadFile = async (id: string, file: File) => {
-        const maxClientFileBytes = 30_485_760; // ~30.5MB
-        if (file.size > maxClientFileBytes) {
-            throw new Error(`File too large. Please upload up to 30MB.`);
-        }
+        let fileToSend = file;
 
-        const upstreamMaxBytes = 9_500_000;
-        let uploadFileToSend = file;
-        // Compress images before uploading to reduce payload while keeping high visual quality.
+        // Compression
         if (file.type.startsWith("image/")) {
             try {
-                uploadFileToSend = await compressImageFile(file, {
-                    // Keep under ~9.5MB to avoid common upstream limits.
-                    maxBytes: upstreamMaxBytes,
-                    // Try to land near 50–70% of original size.
+                fileToSend = await compressImageFile(file, {
+                    maxBytes: 9500000,
                     targetRatio: 0.65,
-                    // Preserve detail while preventing huge dimensions from bloating file size.
                     maxDimension: 2600,
                 });
             } catch (e) {
-                console.warn("Image compression failed.", e);
-                throw e instanceof Error ? e : new Error("Image compression failed.");
+                console.warn("Compression failed, uploading original.");
             }
-        } else if (file.size > upstreamMaxBytes) {
-            // We can't reliably compress videos in-browser without heavy transcoding.
-            throw new Error("Video/file too large. Please upload an image or keep the file under 10MB.");
         }
 
-        // 1. Upload to Cloudinary via our API route
+        // Upload
         const formData = new FormData();
-        formData.append("file", uploadFileToSend);
+        formData.append("file", fileToSend);
 
         const response = await fetch("/api/upload", {
             method: "POST",
             body: formData,
         });
 
-        if (!response.ok) {
-            let message = `Upload failed (HTTP ${response.status})`;
-            try {
-                const errorData = await response.json();
-                message = errorData?.error || message;
-            } catch {
-                try {
-                    const text = await response.text();
-                    if (text) message = text;
-                } catch {
-                    // ignore
-                }
-            }
-            throw new Error(message);
-        }
+        if (!response.ok) throw new Error("Upload failed.");
 
-        const cloudinaryData = await response.json();
-        const publicUrl = cloudinaryData.secure_url;
-
+        const data = await response.json();
         const uploadedFile = {
-            name: uploadFileToSend.name,
-            url: publicUrl,
-            size: uploadFileToSend.size,
+            name: fileToSend.name,
+            url: data.secure_url,
+            size: fileToSend.size,
             uploadedAt: new Date().toISOString(),
         };
 
-        // 2. Update Supabase Database with Cloudinary URL
-        const currentSlot = slots.find(s => s.id === id);
-        const sectionToStore = inferSectionForSlot(id, currentSlot?.section);
-        const { error: dbError } = await supabase
-            .from('media_slots')
-            .upsert({
-                id,
-                section: sectionToStore,
-                frame: currentSlot?.frame || 'Unknown',
-                type: currentSlot?.type || 'image',
-                ...(dbSupportsCategoryLabel ? { category_label: currentSlot?.categoryLabel } : {}),
-                uploaded_file_name: uploadedFile.name,
-                uploaded_file_url: uploadedFile.url,
-                uploaded_file_size: uploadedFile.size,
-                uploaded_at: uploadedFile.uploadedAt,
-                use_on_site: true // Auto-enable on upload
-            });
-
-        if (dbError) {
-            const message = describeSupabaseError(dbError);
-            console.error("❌ SUPABASE DB ERROR:", message, dbError);
-            if (shouldShowSupabaseSetupHelp(message)) {
-                alert("Supabase DB schema mismatch. Run `setup-supabase.sql` in Supabase SQL editor (adds `category_label` + disables RLS).");
-            }
-            throw new Error(message);
-        }
-
-        // 4. Update Local State
-        setSlots((prev) =>
-            prev.map((s) =>
-                s.id === id
-                    ? {
-                        ...s,
-                        uploadedFile,
-                        useOnSite: true,
-                    }
-                    : s
-            )
-        );
+        // Sync to DB
+        await updateSlot(id, { uploadedFile, useOnSite: true });
     };
 
     const deleteFile = async (id: string) => {
-        // We focus on clearing the DB record. Cloudinary deletion is manual or via API if needed,
-        // but keeping it simple for now to avoid complexity with public_ids.
-        await supabase.from('media_slots').upsert({
-            id,
-            uploaded_file_name: null,
-            uploaded_file_url: null,
-            uploaded_file_size: null,
-            uploaded_at: null,
-            use_on_site: false
-        });
-
-        setSlots((prev) =>
-            prev.map((s) =>
-                s.id === id
-                    ? {
-                        ...s,
-                        uploadedFile: undefined,
-                        useOnSite: false,
-                    }
-                    : s
-            )
-        );
+        await resetSlot(id);
     };
 
     const addSlot = async (slot: MediaSlot) => {
         setSlots(prev => [...prev, slot]);
-        const { error } = await supabase.from('media_slots').upsert({
+        await supabase.from('media_slots').upsert({
             id: slot.id,
             section: slot.section,
             frame: slot.frame,
             type: slot.type,
             use_on_site: slot.useOnSite,
-            ...(dbSupportsCategoryLabel ? { category_label: slot.categoryLabel } : {}),
-            uploaded_file_url: slot.uploadedFile?.url,
-            uploaded_file_name: slot.uploadedFile?.name,
-            uploaded_file_size: slot.uploadedFile?.size,
-            uploaded_at: slot.uploadedFile?.uploadedAt
+            category_label: slot.categoryLabel,
+            order_index: slots.length
         });
-        if (error) {
-            const message = describeSupabaseError(error);
-            console.error("Error adding slot to database:", message, error);
-            // Roll back optimistic add if DB write failed
-            setSlots(prev => prev.filter(s => s.id !== slot.id));
-            if (shouldShowSupabaseSetupHelp(message)) {
-                alert("Supabase DB schema mismatch. Run `setup-supabase.sql` in Supabase SQL editor (adds `category_label` + disables RLS).");
-            }
-            throw new Error(message);
-        }
     };
 
     const deleteSlot = async (id: string) => {
         setSlots(prev => prev.filter(s => s.id !== id));
-        const { error } = await supabase.from('media_slots').delete().eq('id', id);
-        if (error) console.error("Error deleting slot from database:", error);
+        await supabase.from('media_slots').delete().eq('id', id);
     };
 
-    const [blogs, setBlogs] = useState<Blog[]>([
-        {
-            id: '1',
-            title: 'THE ART OF CAPTURING ETERNAL MOMENTS',
-            category: 'TECHNIQUE',
-            date: '2026-03-20',
-            excerpt: 'Exploring the philosophy behind cinematic wedding filmmaking and why every frame matters.',
-            image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1600',
-            content: 'In the heart of every wedding lies a story waiting to be told. Unlike traditional photography, cinematography captures the movement, the sound, and the raw emotion of the day...\n\n# THE CINEMATIC APPROACH\n\nWe believe in a documentary-style approach that allows the day to unfold naturally. No forced poses, no staged smiles—just pure, unadulterated emotion.'
-        },
-        {
-            id: '2',
-            title: 'TOP 5 LOCATIONS FOR PRE-WEDDING SHOOTS IN BIHAR',
-            category: 'LOCATIONS',
-            date: '2026-03-18',
-            excerpt: 'Discover hidden gems in Gaya, Patna, and beyond for your dream pre-wedding story.',
-            image: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=1600',
-            content: 'Bihar is home to rich history and breathtaking landscapes. From the serene banks of the Ganges to the ancient ruins of Nalanda, there are endless possibilities for a cinematic pre-wedding shoot.'
-        }
-    ]);
+    const addBlog = async (blog: Blog) => {
+        setBlogs(prev => [blog, ...prev]);
+        const { error } = await supabase.from('blogs').insert([blog]);
+        if (error) console.error("Error adding blog:", describeSupabaseError(error));
+    };
+
+    const deleteBlog = async (id: string) => {
+        setBlogs(prev => prev.filter(b => b.id !== id));
+        await supabase.from('blogs').delete().eq('id', id);
+    };
 
     const allMedia = slots
         .filter((s) => s.uploadedFile)
@@ -491,16 +328,6 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             section: s.section,
             type: s.type,
         }));
-
-    const addBlog = async (blog: Blog) => {
-        setBlogs(prev => [...prev, blog]);
-        // Future: Supabase sync for blogs
-    };
-
-    const deleteBlog = async (id: string) => {
-        setBlogs(prev => prev.filter(b => b.id !== id));
-        // Future: Supabase sync for blogs
-    };
 
     return (
         <MediaContext.Provider
