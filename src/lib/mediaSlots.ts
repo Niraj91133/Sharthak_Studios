@@ -12,6 +12,7 @@ export type MediaSlot = {
     };
     fallbackSrc: string;
     useOnSite: boolean;
+    orderIndex?: number;
     categoryLabel?: string;
     textValue?: string; // e.g. "12+"
     textContent?: string; // e.g. "YEARS OF LEGACY"
@@ -27,6 +28,7 @@ export const mediaSlots: MediaSlot[] = [
         currentSrc: `https://picsum.photos/seed/m-hero-top-${i}/600/400`,
         fallbackSrc: `https://picsum.photos/seed/m-hero-top-${i}/600/400`,
         useOnSite: true,
+        orderIndex: i,
     })),
     ...Array.from({ length: 6 }, (_, i) => ({
         id: `mobile-hero-bot-${String(i + 1).padStart(2, "0")}`,
@@ -36,6 +38,7 @@ export const mediaSlots: MediaSlot[] = [
         currentSrc: `https://picsum.photos/seed/m-hero-bot-${i}/600/400`,
         fallbackSrc: `https://picsum.photos/seed/m-hero-bot-${i}/600/400`,
         useOnSite: true,
+        orderIndex: i + 6,
     })),
 
     // 02. INFINITE STRIPS (DESKTOP)
@@ -51,6 +54,7 @@ export const mediaSlots: MediaSlot[] = [
             currentSrc: `https://picsum.photos/seed/strip-${i}/600/600`,
             fallbackSrc: `https://picsum.photos/seed/strip-${i}/600/600`,
             useOnSite: true,
+            orderIndex: i,
         };
     }),
 
@@ -63,6 +67,7 @@ export const mediaSlots: MediaSlot[] = [
         currentSrc: `https://picsum.photos/seed/gal-${String(i + 1).padStart(2, "0")}/1200/1200`,
         fallbackSrc: `https://picsum.photos/seed/gal-${String(i + 1).padStart(2, "0")}/1200/1200`,
         useOnSite: true,
+        orderIndex: i,
     })),
 
     // 04. CHOOSE YOUR EXPERTISE
@@ -74,6 +79,7 @@ export const mediaSlots: MediaSlot[] = [
         currentSrc: `https://picsum.photos/seed/exp-${i}/1600/1200`,
         fallbackSrc: `https://picsum.photos/seed/exp-${i}/1600/1200`,
         useOnSite: true,
+        orderIndex: i,
     })),
 
     // 05. INSTAGRAM FEED (LATEST WORK)
@@ -85,6 +91,7 @@ export const mediaSlots: MediaSlot[] = [
         currentSrc: `https://picsum.photos/seed/reel-${i}/800/1000`,
         fallbackSrc: `https://picsum.photos/seed/reel-${i}/800/1000`,
         useOnSite: true,
+        orderIndex: i,
     })),
 
     // 06. ABOUT ME SECTION
@@ -96,6 +103,7 @@ export const mediaSlots: MediaSlot[] = [
         currentSrc: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=2000",
         fallbackSrc: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=2000",
         useOnSite: true,
+        orderIndex: 0,
     },
 
     // 07. WHY CHOOSE US (BOOK FLIP)
@@ -111,6 +119,7 @@ export const mediaSlots: MediaSlot[] = [
             currentSrc: `https://picsum.photos/seed/why-${i}/1200/1600`,
             fallbackSrc: `https://picsum.photos/seed/why-${i}/1200/1600`,
             useOnSite: true,
+            orderIndex: i,
         };
     }),
 
@@ -123,6 +132,7 @@ export const mediaSlots: MediaSlot[] = [
         currentSrc: "",
         fallbackSrc: "",
         useOnSite: true,
+        orderIndex: i,
         textValue: ["12+", "750+", "3200+", "99%"][i],
         textContent: ["YEARS OF LEGACY", "STORIES CAPTURED", "REELS PRODUCED", "CLIENT TRUST"][i],
     })),

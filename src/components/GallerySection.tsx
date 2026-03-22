@@ -17,11 +17,13 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
 
   const DESKTOP_DISPLAY_COUNT = 50;
   const MOBILE_GRID_COUNT = 15;
-  const displayCount = isMobile ? MOBILE_GRID_COUNT : DESKTOP_DISPLAY_COUNT;
 
   const sectionRef = useRef<HTMLElement | null>(null);
   const activeMobileBtnRef = useRef<HTMLButtonElement | null>(null);
   const activeDesktopBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+  const displayCount = isMobile ? MOBILE_GRID_COUNT : DESKTOP_DISPLAY_COUNT;
 
   const [revealed, setRevealed] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -29,7 +31,6 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   });
   const [activeTab, setActiveTab] = useState(tabs[0]?.label || "");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (!("matchMedia" in window)) return;
@@ -132,6 +133,27 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
 
   const revealClass = revealed ? "is-revealed" : "";
   const gap = isMobile ? 8 : 10;
+  const mobileAreas = useMemo(() => {
+    // 6 cols × 12 rows = 15 tiles (a–o, excluding p)
+    return [
+      "a a a b b b",
+      "a a a b b b",
+      "a a a b b b",
+      "a a a b b b",
+      "c c d d e e",
+      "c c d d e e",
+      "c c f g h i",
+      "c c f g h i",
+      "c c j j k k",
+      "c c j j k k",
+      "c c l m n o",
+      "c c l m n o",
+    ].map((row) => `"${row}"`).join(" ");
+  }, []);
+  const mobileAreaNames = useMemo(() => {
+    const names = "a b c d e f g h i j k l m n o".split(" ");
+    return names.slice(0, MOBILE_GRID_COUNT);
+  }, []);
 
   return (
     <section
@@ -196,12 +218,16 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
         </div>
 
         {/* Mobile: premium grid (10–15 photos visible within the same frame, no scroll) */}
-        <div className="gallery-stagger w-full flex-1 min-h-0 overflow-hidden px-4 pb-6 sm:hidden">
+        <div className="gallery-stagger w-full flex-1 min-h-0 overflow-hidden px-0 pb-0 sm:hidden">
           <div
-            className="grid h-full w-full grid-cols-3 grid-rows-5"
-            style={{ gap }}
+            className="grid h-full w-full gap-0"
+            style={{
+              gridTemplateAreas: mobileAreas,
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+              gridTemplateRows: "repeat(12, minmax(0, 1fr))",
+            }}
           >
-            {displayTiles.map((tile) => {
+            {displayTiles.map((tile, index) => {
               const src = resolveSrc(tile.seed, false);
               const isPlaceholder = !src;
               return (
@@ -210,9 +236,10 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                   type="button"
                   disabled={isPlaceholder}
                   className={[
-                    "relative overflow-hidden rounded-[10px] border border-white/20 bg-black/40",
+                    "relative overflow-hidden rounded-none bg-black",
                     isPlaceholder ? "opacity-60" : "active:scale-[0.99] transition-transform",
                   ].join(" ")}
+                  style={{ gridArea: mobileAreaNames[index] || "a" }}
                   onClick={() => {
                     if (isPlaceholder) return;
                     const realIndex = realTiles.findIndex((t) => t.seed === tile.seed);
@@ -231,7 +258,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                         loading="lazy"
                         decoding="async"
                         draggable={false}
-                        className="absolute inset-0 h-full w-full object-cover blur-[10px] scale-[1.08] opacity-55"
+                        className="absolute inset-0 h-full w-full object-cover blur-[12px] scale-[1.12] opacity-55"
                       />
                       <img
                         src={src}
@@ -241,7 +268,8 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                         draggable={false}
                         className="absolute inset-0 h-full w-full object-contain"
                       />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 opacity-90" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 opacity-90" />
+                      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)]" />
                     </>
                   )}
                 </button>
@@ -279,7 +307,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                 >
                   {isPlaceholder ? (
                     <div className="w-full aspect-[4/5] flex items-center justify-center text-[10px] font-black tracking-[0.3em] text-white/30 bg-white/5">
-                      UPLOAD {DISPLAY_COUNT} IMAGES
+                      UPLOAD {DESKTOP_DISPLAY_COUNT} IMAGES
                     </div>
                   ) : (
                     <div className="relative w-full">

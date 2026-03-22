@@ -49,3 +49,18 @@ ON storage.objects FOR ALL
 TO public, anon, authenticated 
 USING (bucket_id = 'SHARTHAK_STUDIO') 
 WITH CHECK (bucket_id = 'SHARTHAK_STUDIO');
+
+-- 6. SETUP BLOGS TABLE
+CREATE TABLE IF NOT EXISTS public.blogs (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  category TEXT NOT NULL,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  excerpt TEXT,
+  image TEXT,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+GRANT ALL ON TABLE public.blogs TO anon, authenticated, service_role;
+ALTER TABLE public.blogs DISABLE ROW LEVEL SECURITY;
