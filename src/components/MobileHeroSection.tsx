@@ -133,7 +133,8 @@ function AutoStrip({
     const ratio = ratiosBySrc[src];
     if (!ratio) return 240;
     const w = Math.round(tileH * ratio);
-    return Math.max(72, Math.min(320, w));
+    // Allow wide landscape tiles without cropping.
+    return Math.max(72, Math.min(520, w));
   };
 
   return (
@@ -145,7 +146,10 @@ function AutoStrip({
       ].join(" ")}
       style={marqueeVars}
     >
-      <div className="imgmarquee__track">
+      <div
+        className="imgmarquee__track"
+        style={{ animationPlayState: ready ? "running" : "paused" }}
+      >
         {loop.map((it, idx) => {
           const asset = loopAssets[idx] || { src: it.fallback, isUploaded: false };
           const src = asset.src || it.fallback;
@@ -162,7 +166,7 @@ function AutoStrip({
                   alt=""
                   loading={priority ? "eager" : "lazy"}
                   decoding="async"
-                  className="pointer-events-none h-full w-full select-none object-cover"
+                  className="pointer-events-none h-full w-full select-none object-contain bg-black"
                 />
               ) : (
                 <div className="h-full w-full bg-white/5" />

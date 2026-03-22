@@ -72,6 +72,8 @@ section {
     display: flex;
     width: max-content;
     height: 100%;
+    gap: 0;
+    padding: 0;
     will-change: transform;
     animation: imgmarquee-left 44s linear infinite;
 }
@@ -85,6 +87,7 @@ section {
     flex: 0 0 var(--tile-w);
     height: 100%;
     overflow: hidden;
+    margin: 0;
 }
 
 .imgmarquee::before,
