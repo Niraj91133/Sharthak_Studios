@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { type ComponentProps, useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useMedia } from "@/hooks/useMedia";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
 import { motion, AnimatePresence } from "framer-motion";
 
 function clampIndex(i: number, len: number) {
@@ -13,6 +13,7 @@ function ExpertiseCard({
   overlaySide,
   dimmed,
   imageUrl,
+  fit,
   onClick,
   title,
   index
@@ -20,6 +21,7 @@ function ExpertiseCard({
   overlaySide: "left" | "right" | null;
   dimmed: boolean;
   imageUrl: string;
+  fit?: "cover" | "contain";
   onClick: () => void;
   title: string;
   index: number;
@@ -41,7 +43,11 @@ function ExpertiseCard({
         alt={title}
         fill
         sizes="720px"
-        className="object-cover object-center grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+        className={[
+          fit === "contain" ? "object-contain" : "object-cover",
+          "object-center grayscale group-hover:grayscale-0 transition-all duration-1000",
+          fit === "contain" ? "" : "group-hover:scale-105",
+        ].join(" ")}
         priority={!dimmed}
       />
 
@@ -62,8 +68,8 @@ function DynamicExpertiseImage({
   fallback,
   ...props
 }: { slotId: string; fallback: string } & Omit<ComponentProps<typeof ExpertiseCard>, "imageUrl">) {
-  const src = useMedia(slotId, fallback);
-  return <ExpertiseCard {...props} imageUrl={src} />;
+  const { src, isUploaded } = useMediaAsset(slotId, fallback);
+  return <ExpertiseCard {...props} imageUrl={src} fit={isUploaded ? "contain" : "cover"} />;
 }
 
 const slideConfigs = [
@@ -105,7 +111,7 @@ export default function ExpertiseSection() {
 
   const activeSlotId = slideConfigs[activeIndex].id;
   const activeFallback = slideConfigs[activeIndex].fallback;
-  const src = useMedia(activeSlotId, activeFallback);
+  const { src, isUploaded } = useMediaAsset(activeSlotId, activeFallback);
 
   return (
     <section className="relative w-full bg-black text-white px-0 flex flex-col items-center overflow-hidden h-[694px] max-h-[694px] md:h-[900px] md:max-h-[900px]">
@@ -153,7 +159,7 @@ export default function ExpertiseSection() {
               >
                 <img
                   src={src}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full ${isUploaded ? "object-contain bg-black" : "object-cover"}`}
                   alt={slideConfigs[activeIndex].title}
                 />
 

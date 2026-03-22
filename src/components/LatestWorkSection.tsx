@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Heart } from "lucide-react";
-import { useMedia } from "@/hooks/useMedia";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 const reels = [
   {
@@ -65,12 +65,14 @@ const reels = [
 type Reel = (typeof reels)[number];
 
 function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
-  const src = useMedia(reel.id, reel.fallback);
+  const { src, isUploaded } = useMediaAsset(reel.id, reel.fallback);
+  const safeClass =
+    className?.replace(/\bobject-cover\b/g, "").replace(/\bobject-contain\b/g, "") || "";
   return (
     <img
       src={src}
       alt=""
-      className={className}
+      className={[safeClass, isUploaded ? "object-contain bg-black" : "object-cover"].join(" ")}
       loading="lazy"
       decoding="async"
       draggable={false}

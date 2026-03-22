@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { useMedia } from "@/hooks/useMedia";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 function InlinePhoto({
   src,
@@ -42,7 +42,7 @@ function Page({
   data: AlbumPageData;
   rounded: "left" | "right" | "none";
 }) {
-  const heroSrc = useMedia(data.heroSlotId, data.heroFallback);
+  const { src: heroSrc, isUploaded: heroUploaded } = useMediaAsset(data.heroSlotId, data.heroFallback);
 
   return (
     <div
@@ -73,7 +73,7 @@ function Page({
             src={heroSrc}
             alt=""
             fill
-            className="object-cover"
+            className={heroUploaded ? "object-contain" : "object-cover"}
             sizes="520px"
           />
         </div>
@@ -89,14 +89,14 @@ function Page({
 }
 
 function Tile({ slotId, fallback }: { slotId: string; fallback: string }) {
-  const src = useMedia(slotId, fallback);
+  const { src, isUploaded } = useMediaAsset(slotId, fallback);
   return (
     <div className="relative aspect-[4/3] overflow-hidden rounded-[12px]">
       <Image
         src={src}
         alt=""
         fill
-        className="object-cover"
+        className={isUploaded ? "object-contain" : "object-cover"}
         sizes="180px"
       />
     </div>

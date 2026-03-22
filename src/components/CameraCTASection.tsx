@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useMedia } from "@/hooks/useMedia";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 export default function CameraCTASection() {
-    const bgImage = useMedia("camera-cta-bg", "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=2000");
+    const { src: bgImage, isUploaded } = useMediaAsset(
+        "camera-cta-bg",
+        "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=2000",
+    );
 
     return (
         <section className="relative w-full h-screen min-h-[600px] flex flex-col items-center justify-center overflow-hidden bg-black">
@@ -21,7 +24,7 @@ export default function CameraCTASection() {
                     src={bgImage}
                     alt="Photographer holding camera at a wedding"
                     fill
-                    className="object-cover grayscale"
+                    className={`${isUploaded ? "object-contain" : "object-cover"} grayscale`}
                     priority
                 />
             </motion.div>

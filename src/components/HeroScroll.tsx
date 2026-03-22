@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import Image from "next/image";
-import { useMedia } from "@/hooks/useMedia";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
+import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
 import { useMediaContext } from "@/context/MediaContext";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/dist/ScrollToPlugin";
@@ -65,7 +66,7 @@ type HeroScrollProps = {
 function SlideImage({ index, slideT, priority = false }: { index: number; slideT: number; priority?: boolean }) {
   const slotId = `hero-slide-${String(index + 1).padStart(2, "0")}`;
   const fallback = `https://picsum.photos/seed/sharthak-${String(index + 1).padStart(2, "0")}/2400/1600`;
-  const src = useMedia(slotId, fallback);
+  const { src, isUploaded } = useMediaAsset(slotId, fallback);
 
   const local = index === 0 ? 1 : clamp01(slideT - (index - 1));
   const translateX = index === 0 ? 0 : (1 - local) * 100;
@@ -84,7 +85,10 @@ function SlideImage({ index, slideT, priority = false }: { index: number; slideT
         fill
         priority={priority}
         sizes="100vw"
-        className="object-contain md:object-cover contrast-125 grayscale hover:grayscale-0 transition-all duration-1000"
+        className={[
+          isUploaded ? "object-contain" : "object-contain md:object-cover",
+          "contrast-125 grayscale hover:grayscale-0 transition-all duration-1000",
+        ].join(" ")}
       />
     </div>
   );
@@ -136,9 +140,15 @@ export default function HeroScroll({
   const categoryTranslateY = lerp(10, 0, clamp01(intro * 1.2));
 
   if (isMobile) {
-    const displayImages = heroSlots.length > 0
-      ? heroSlots.map((s) => s.uploadedFile?.url || s.currentSrc)
-      : Array.from({ length: 6 }).map((_, i) => `https://picsum.photos/seed/sharthak-${i}/400/300`);
+    const displayImages: Array<{ src: string; isUploaded: boolean }> = heroSlots.length > 0
+      ? heroSlots.map((s) => ({
+        src: s.uploadedFile?.url ? normalizeMediaUrl(s.uploadedFile.url) : s.currentSrc,
+        isUploaded: Boolean(s.uploadedFile && s.useOnSite),
+      }))
+      : Array.from({ length: 6 }).map((_, i) => ({
+        src: `https://picsum.photos/seed/sharthak-${i}/400/300`,
+        isUploaded: false,
+      }));
 
     return (
       <section className="relative bg-black w-full overflow-hidden" style={{ height: "694px" }}>
@@ -146,14 +156,17 @@ export default function HeroScroll({
           {/* Top Scrolling Strip */}
           <div className="w-full h-[116px] overflow-hidden shrink-0">
             <div className="flex gap-[12px] animate-marquee whitespace-nowrap">
-              {displayImages.concat(displayImages).map((src, i) => (
+              {displayImages.concat(displayImages).map((item, i) => (
                 <div key={i} className="relative w-[174px] h-[116px] flex-shrink-0">
                   <Image
-                    src={src}
+                    src={item.src}
                     alt=""
                     width={174}
                     height={116}
-                    className="rounded-[8px] object-cover contrast-125"
+                    className={[
+                      "rounded-[8px] contrast-125",
+                      item.isUploaded ? "object-contain bg-black" : "object-cover",
+                    ].join(" ")}
                   />
                 </div>
               ))}
@@ -176,14 +189,17 @@ export default function HeroScroll({
           {/* Bottom Scrolling Strip */}
           <div className="w-full h-[116px] overflow-hidden shrink-0">
             <div className="flex gap-[12px] animate-marquee whitespace-nowrap" style={{ animationDirection: "reverse" }}>
-              {displayImages.concat(displayImages).map((src, i) => (
+              {displayImages.concat(displayImages).map((item, i) => (
                 <div key={i} className="relative w-[174px] h-[116px] flex-shrink-0">
                   <Image
-                    src={src}
+                    src={item.src}
                     alt=""
                     width={174}
                     height={116}
-                    className="rounded-[8px] object-cover contrast-125"
+                    className={[
+                      "rounded-[8px] contrast-125",
+                      item.isUploaded ? "object-contain bg-black" : "object-cover",
+                    ].join(" ")}
                   />
                 </div>
               ))}

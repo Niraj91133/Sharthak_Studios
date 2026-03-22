@@ -1,9 +1,12 @@
 "use client";
 
-import { useMedia } from "@/hooks/useMedia";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 export default function AboutMeSection() {
-    const src = useMedia("about-me-photo", "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=2000");
+    const { src, isUploaded } = useMediaAsset(
+        "about-me-photo",
+        "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=2000",
+    );
 
     return (
         <section className="relative w-full bg-black flex items-center justify-center p-0 overflow-hidden" style={{ height: "900px" }}>
@@ -13,7 +16,10 @@ export default function AboutMeSection() {
                 <div className="relative h-full w-full overflow-hidden group">
                     <img
                         src={src}
-                        className="w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100"
+                        className={[
+                            "w-full h-full object-center grayscale hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100",
+                            isUploaded ? "object-contain bg-black" : "object-cover",
+                        ].join(" ")}
                         alt="Sonu Sharthak"
                     />
                     {/* Artistic Shadow Fade to Black */}

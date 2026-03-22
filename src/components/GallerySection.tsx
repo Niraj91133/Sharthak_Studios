@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useMedia } from "@/hooks/useMedia";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 type GalleryTab = {
   label: string;
@@ -23,8 +23,19 @@ function GalleryImage({ seed, className, isLightbox = false }: { seed: string; c
   const fallback = isLightbox
     ? `https://picsum.photos/seed/${seed}/2400/1600`
     : `https://picsum.photos/seed/${seed}/1600/1200`;
-  const src = useMedia(seed, fallback);
-  return <img className={className} src={src} alt="" loading="lazy" draggable={false} />;
+  const { src, isUploaded } = useMediaAsset(seed, fallback);
+  const fitClass = isUploaded ? "object-contain bg-black" : "object-cover";
+  const safeClass = className?.replace(/\bobject-cover\b/g, "").replace(/\bobject-contain\b/g, "") || "";
+  const noZoom = isUploaded ? safeClass.replace(/\bgroup-hover:scale-\[[^\]]+\]\b/g, "") : safeClass;
+  return (
+    <img
+      className={`${noZoom} ${fitClass}`}
+      src={src}
+      alt=""
+      loading="lazy"
+      draggable={false}
+    />
+  );
 }
 
 export default function GallerySection({ tabs, items }: GallerySectionProps) {

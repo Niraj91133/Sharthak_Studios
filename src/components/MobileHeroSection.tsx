@@ -4,14 +4,15 @@ import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useMediaContext } from "@/context/MediaContext";
 import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
 
-function resolveSrc(
+function resolveAsset(
   slots: ReturnType<typeof useMediaContext>["slots"],
   slotId: string,
   fallback: string,
 ) {
   const slot = slots.find((s) => s.id === slotId);
-  if (slot?.uploadedFile && slot.useOnSite) return normalizeMediaUrl(slot.uploadedFile.url);
-  return fallback;
+  const isUploaded = Boolean(slot?.uploadedFile && slot.useOnSite);
+  const src = isUploaded ? normalizeMediaUrl(slot!.uploadedFile!.url) : fallback;
+  return { src, isUploaded };
 }
 
 function usePreloadedImages(srcs: string[], timeoutMs = 1200) {
@@ -70,11 +71,11 @@ function AutoStrip({
     [],
   );
 
-  const loopSrcs = useMemo(
-    () => loop.map((it) => resolveSrc(slots, it.id, it.fallback)),
+  const loopAssets = useMemo(
+    () => loop.map((it) => resolveAsset(slots, it.id, it.fallback)),
     [loop, slots],
   );
-  const ready = usePreloadedImages(loopSrcs);
+  const ready = usePreloadedImages(loopAssets.map((a) => a.src));
 
   return (
     <div
@@ -87,7 +88,8 @@ function AutoStrip({
     >
       <div className="imgmarquee__track">
         {loop.map((it, idx) => {
-          const src = loopSrcs[idx] || it.fallback;
+          const asset = loopAssets[idx] || { src: it.fallback, isUploaded: false };
+          const src = asset.src || it.fallback;
           const priority = idx < 2;
           return (
             <div key={`${it.id}-${idx}`} className="imgmarquee__tile bg-white/5">
@@ -97,7 +99,10 @@ function AutoStrip({
                   alt=""
                   loading={priority ? "eager" : "lazy"}
                   decoding="async"
-                  className="pointer-events-none h-full w-full select-none object-cover"
+                  className={[
+                    "pointer-events-none h-full w-full select-none",
+                    asset.isUploaded ? "object-contain bg-black" : "object-cover",
+                  ].join(" ")}
                 />
               ) : (
                 <div className="h-full w-full bg-white/5" />

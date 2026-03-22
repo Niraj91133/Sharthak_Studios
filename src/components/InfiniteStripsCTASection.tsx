@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { useMedia } from "@/hooks/useMedia";
+import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 function DynamicStripTile({ slotId, fallback, idx }: { slotId: string; fallback: string; idx: number }) {
-  const src = useMedia(slotId, fallback);
+  const { src, isUploaded } = useMediaAsset(slotId, fallback);
   return (
     <div className="imgmarquee__tile">
       <img
@@ -17,7 +17,7 @@ function DynamicStripTile({ slotId, fallback, idx }: { slotId: string; fallback:
           inset: 0,
           width: "100%",
           height: "100%",
-          objectFit: "cover",
+          objectFit: isUploaded ? "contain" : "cover",
           display: "block",
         }}
       />
