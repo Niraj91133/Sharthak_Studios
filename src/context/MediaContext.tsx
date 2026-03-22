@@ -7,6 +7,12 @@ import { compressImageFile } from "@/lib/compressImage";
 
 const LOCAL_SLOTS_KEY = "sharthak_media_slots_v1";
 
+function inferSectionForSlot(id: string, section?: string | null): string {
+    if (section && section !== "Unknown") return section;
+    if (id.startsWith("gal-dyn-")) return "03. THE COLLECTION (GALLERY)";
+    return section || "Unknown";
+}
+
 function loadLocalSlots(): MediaSlot[] | null {
     try {
         const raw = localStorage.getItem(LOCAL_SLOTS_KEY);
@@ -136,6 +142,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     // Also include any slots that are ONLY in the DB
                     const dbSlotMap = new Map();
                     data.forEach(d => dbSlotMap.set(d.id, d));
+                    const needsSectionFix: Array<{ id: string; section: string }> = [];
 
                     const mergedSlots = baseSlots.map(base => {
                         const dbSlot = dbSlotMap.get(base.id);
@@ -158,9 +165,13 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
                     // Add purely dynamic slots from the DB
                     dbSlotMap.forEach((dbSlot, id) => {
+                        const inferredSection = inferSectionForSlot(id, dbSlot.section);
+                        if ((!dbSlot.section || dbSlot.section === "Unknown") && inferredSection !== (dbSlot.section || "")) {
+                            needsSectionFix.push({ id, section: inferredSection });
+                        }
                         mergedSlots.push({
                             id,
-                            section: dbSlot.section,
+                            section: inferredSection,
                             frame: dbSlot.frame || 'Dynamic',
                             type: dbSlot.type || 'image',
                             currentSrc: dbSlot.uploaded_file_url || '',
@@ -175,6 +186,11 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                             } : undefined
                         });
                     });
+
+                    if (needsSectionFix.length > 0) {
+                        // Best-effort DB self-heal so landing filters can find gallery items next time.
+                        void supabase.from("media_slots").upsert(needsSectionFix);
+                    }
 
                     setSlots(mergedSlots);
                 }
@@ -349,11 +365,12 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         // 2. Update Supabase Database with Cloudinary URL
         const currentSlot = slots.find(s => s.id === id);
+        const sectionToStore = inferSectionForSlot(id, currentSlot?.section);
         const { error: dbError } = await supabase
             .from('media_slots')
             .upsert({
                 id,
-                section: currentSlot?.section || 'Unknown',
+                section: sectionToStore,
                 frame: currentSlot?.frame || 'Unknown',
                 type: currentSlot?.type || 'image',
                 ...(dbSupportsCategoryLabel ? { category_label: currentSlot?.categoryLabel } : {}),
