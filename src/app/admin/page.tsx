@@ -6,6 +6,7 @@ import { useMediaContext } from "@/context/MediaContext";
 import SectionCard from "@/components/admin/SectionCard";
 import GlobalMediaPanel from "@/components/admin/GlobalMediaPanel";
 import GalleryManager from "@/components/admin/GalleryManager";
+import BlogManager from "@/components/admin/BlogManager";
 
 export default function AdminDashboard() {
     const { slots } = useMediaContext();
@@ -153,6 +154,10 @@ export default function AdminDashboard() {
                                     />
                                 )
                             ))}
+
+                            <div className="pt-12 mt-12 border-t border-white/5">
+                                <BlogManager />
+                            </div>
                         </div>
                     </div>
                 </div>
