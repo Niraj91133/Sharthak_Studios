@@ -19,11 +19,8 @@ const WhyChooseUsBookFlipSection = dynamic(() => import("@/components/WhyChooseU
 const InfiniteStripsCTASection = dynamic(() => import("@/components/InfiniteStripsCTASection"), { ssr: false });
 const AboutMeSection = dynamic(() => import("@/components/AboutMeSection"), { ssr: false });
 
-declare global {
-    interface Window {
-        lenis?: Lenis | null;
-    }
-}
+// Note: We use type casting for window.lenis below to avoid conflicts with 
+// third-party global declarations found in some environments.
 
 export default function AppContent() {
     const router = useRouter();
@@ -40,7 +37,7 @@ export default function AppContent() {
         });
 
         // Expose lenis globally for components like HeroScroll to use
-        window.lenis = lenis;
+        (window as any).lenis = lenis;
 
         // Sync GSAP with Lenis RAF
         function raf(time: number) {
@@ -52,7 +49,7 @@ export default function AppContent() {
 
         return () => {
             lenis.destroy();
-            window.lenis = null;
+            (window as any).lenis = null;
         };
     }, []);
 

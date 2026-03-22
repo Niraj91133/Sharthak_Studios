@@ -77,6 +77,14 @@ export default function AdminDashboard() {
                         </button>
 
                         <Link
+                            href="/blog"
+                            target="_blank"
+                            className="px-6 py-2 border border-white/20 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all text-white/60 hover:text-white"
+                        >
+                            Journal Page
+                        </Link>
+
+                        <Link
                             href="/"
                             className="px-6 py-2 bg-white text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
                         >
