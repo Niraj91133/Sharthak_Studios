@@ -68,22 +68,28 @@ export default function AppContent() {
 
     const galleryTabs = useMemo(() => {
         const gallerySlots = slots.filter((s: MediaSlot) => s.section.includes("GALLERY"));
-        const set = new Set(gallerySlots.map((s: MediaSlot) => s.categoryLabel).filter(Boolean));
-        // Always include baseline categories, plus any custom categories created in admin.
-        ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"].forEach(c => set.add(c));
-        return Array.from(set).map(cat => ({ label: cat as string }));
+        // Only show categories that were created/used from Admin (dynamic ids) or have an uploaded asset.
+        const set = new Set(
+            gallerySlots
+                .filter((s: MediaSlot) => s.id.startsWith("gal-dyn-") || Boolean(s.uploadedFile))
+                .map((s: MediaSlot) => s.categoryLabel)
+                .filter(Boolean),
+        );
+        return Array.from(set).map((cat) => ({ label: cat as string }));
     }, [slots]);
 
     const galleryItems = useMemo(() => {
         const gallerySlots = slots.filter((s: MediaSlot) => s.section.includes("GALLERY"));
-        // Show uploaded + LIVE items first so admin uploads appear immediately in the 900px gallery frame.
-        const sorted = [...gallerySlots].sort((a, b) => {
-            const score = (x: MediaSlot) => (x.uploadedFile && x.useOnSite ? 2 : x.uploadedFile ? 1 : 0);
-            return score(b) - score(a);
-        });
+        // Only show uploaded + LIVE items on landing.
+        const sorted = gallerySlots
+            .filter((s: MediaSlot) => Boolean(s.uploadedFile && s.useOnSite))
+            .sort((a, b) => {
+                const aTime = a.uploadedFile?.uploadedAt ? Date.parse(a.uploadedFile.uploadedAt) : 0;
+                const bTime = b.uploadedFile?.uploadedAt ? Date.parse(b.uploadedFile.uploadedAt) : 0;
+                return bTime - aTime;
+            });
 
         return sorted.map((s: MediaSlot, i: number) => {
-            const mod = i % 10;
             let col = "span 2";
             let row = "span 2";
 

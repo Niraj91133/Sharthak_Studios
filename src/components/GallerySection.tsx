@@ -48,6 +48,10 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const [activeTab, setActiveTab] = useState(tabs[0]?.label || "WEDDING");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const mobileTabsRef = useRef<HTMLDivElement | null>(null);
+  const desktopTabsRef = useRef<HTMLDivElement | null>(null);
+  const activeMobileBtnRef = useRef<HTMLButtonElement | null>(null);
+  const activeDesktopBtnRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!("matchMedia" in window)) return;
@@ -91,6 +95,18 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const activeTiles = isMobile ? mobileTiles : filteredTiles;
 
   useEffect(() => {
+    // Keep the selected tab visible on mobile/desktop without manual scrolling.
+    const scrollToActive = (btn: HTMLButtonElement | null) => {
+      if (!btn) return;
+      requestAnimationFrame(() => {
+        btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      });
+    };
+    scrollToActive(activeMobileBtnRef.current);
+    scrollToActive(activeDesktopBtnRef.current);
+  }, [activeTab]);
+
+  useEffect(() => {
     if (lightboxIndex === null) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -115,12 +131,12 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
     >
       <div className="w-full px-0 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Category Header - Robust Rectangular Buttons */}
-        <div className="gallery-stagger mb-4 px-6 flex-shrink-0 sm:hidden">
+        <div className="gallery-stagger mb-4 px-6 flex-shrink-0 sm:hidden w-full">
           <div
-            className="overflow-x-auto no-scrollbar scroll-smooth"
-            dir="rtl"
+            ref={mobileTabsRef}
+            className="w-full overflow-x-auto no-scrollbar scroll-smooth"
           >
-            <div className="inline-flex items-center gap-3" dir="ltr">
+            <div className="flex w-max min-w-full items-center justify-center gap-3 px-1">
               {tabs.map((tab, idx) => {
                 const isActive = activeTab === tab.label;
                 return (
@@ -131,6 +147,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                       setActiveTab(tab.label);
                       setLightboxIndex(null);
                     }}
+                    ref={isActive ? activeMobileBtnRef : undefined}
                     className={`
                       flex-shrink-0 h-11 px-6 border border-white/35 text-[10px] font-black tracking-[0.22em] uppercase transition-all duration-300
                       ${isActive ? "bg-white text-black" : "bg-black text-white/70 hover:bg-white/5 hover:text-white"}
@@ -146,8 +163,8 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
 
         {/* Desktop Category Header (Centered, scrolls when overflow) */}
         <div className="gallery-stagger mb-4 hidden sm:block px-10 flex-shrink-0">
-          <div className="overflow-x-auto no-scrollbar scroll-smooth">
-            <div className="mx-auto inline-flex w-max items-center justify-center gap-4 px-2">
+          <div ref={desktopTabsRef} className="w-full overflow-x-auto no-scrollbar scroll-smooth">
+            <div className="flex w-max min-w-full items-center justify-center gap-4 px-2">
               {tabs.map((tab, idx) => {
                 const isActive = activeTab === tab.label;
                 return (
@@ -158,6 +175,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                       setActiveTab(tab.label);
                       setLightboxIndex(null);
                     }}
+                    ref={isActive ? activeDesktopBtnRef : undefined}
                     className={`
                       flex-shrink-0 h-12 px-10 border border-white/30 text-[11px] font-black tracking-[0.35em] uppercase transition-all duration-300
                       ${isActive ? "bg-white text-black" : "bg-black text-white/70 hover:bg-white/5 hover:text-white"}
@@ -165,8 +183,8 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                   >
                     {tab.label}
                   </button>
-                );
-              })}
+              );
+            })}
             </div>
           </div>
         </div>
