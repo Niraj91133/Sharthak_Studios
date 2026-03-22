@@ -15,7 +15,9 @@ function clamp(n: number, min: number, max: number) {
 export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const { getSlot } = useMediaContext();
 
-  const DISPLAY_COUNT = 50;
+  const DESKTOP_DISPLAY_COUNT = 50;
+  const MOBILE_GRID_COUNT = 15;
+  const displayCount = isMobile ? MOBILE_GRID_COUNT : DESKTOP_DISPLAY_COUNT;
 
   const sectionRef = useRef<HTMLElement | null>(null);
   const activeMobileBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -82,14 +84,14 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const filtered = useMemo(() => items.filter((it) => it.category === activeTab), [activeTab, items]);
 
   const displayTiles = useMemo(() => {
-    const base = filtered.slice(0, DISPLAY_COUNT);
-    if (base.length >= DISPLAY_COUNT) return base;
+    const base = filtered.slice(0, displayCount);
+    if (base.length >= displayCount) return base;
     const padded = [...base];
-    for (let i = base.length; i < DISPLAY_COUNT; i++) {
+    for (let i = base.length; i < displayCount; i++) {
       padded.push({ seed: `placeholder-${activeTab}-${i}`, col: "span 2", row: "span 2", category: activeTab });
     }
     return padded;
-  }, [DISPLAY_COUNT, activeTab, filtered]);
+  }, [activeTab, displayCount, filtered]);
 
   const realTiles = useMemo(() => {
     return displayTiles
@@ -193,68 +195,58 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
           </div>
         </div>
 
-        {/* Mobile: right-to-left horizontal gallery (no vertical scroll) */}
+        {/* Mobile: premium grid (10–15 photos visible within the same frame, no scroll) */}
         <div className="gallery-stagger w-full flex-1 min-h-0 overflow-hidden px-4 pb-6 sm:hidden">
           <div
-            className="h-full w-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth snap-x snap-mandatory"
-            dir="rtl"
-            style={{ WebkitOverflowScrolling: "touch" }}
+            className="grid h-full w-full grid-cols-3 grid-rows-5"
+            style={{ gap }}
           >
-            <div className="flex h-full w-max items-stretch" style={{ gap }} dir="ltr">
-              {displayTiles.map((tile) => {
-                const src = resolveSrc(tile.seed, false);
-                const isPlaceholder = !src;
-                return (
-                  <button
-                    key={tile.seed}
-                    type="button"
-                    disabled={isPlaceholder}
-                    className={[
-                      "relative h-full overflow-hidden rounded-[12px] border border-white/20 bg-black/40",
-                      "snap-start flex-shrink-0",
-                      isPlaceholder ? "opacity-60" : "hover:border-white/35",
-                    ].join(" ")}
-                    style={{
-                      width: "78vw",
-                      maxWidth: 380,
-                    }}
-                    onClick={() => {
-                      if (isPlaceholder) return;
-                      const realIndex = realTiles.findIndex((t) => t.seed === tile.seed);
-                      if (realIndex >= 0) setLightboxIndex(realIndex);
-                    }}
-                  >
-                    {isPlaceholder ? (
-                      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black tracking-[0.3em] text-white/30 bg-white/5">
-                        UPLOAD {DISPLAY_COUNT} IMAGES
-                      </div>
-                    ) : (
-                      <>
-                        {/* Soft colorful backdrop */}
-                        <img
-                          src={src}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          draggable={false}
-                          className="absolute inset-0 h-full w-full object-cover blur-[10px] scale-[1.08] opacity-55"
-                        />
-                        {/* True image: fully visible */}
-                        <img
-                          src={src}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          draggable={false}
-                          className="absolute inset-0 h-full w-full object-contain transition-transform duration-500"
-                        />
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 opacity-90" />
-                      </>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            {displayTiles.map((tile) => {
+              const src = resolveSrc(tile.seed, false);
+              const isPlaceholder = !src;
+              return (
+                <button
+                  key={tile.seed}
+                  type="button"
+                  disabled={isPlaceholder}
+                  className={[
+                    "relative overflow-hidden rounded-[10px] border border-white/20 bg-black/40",
+                    isPlaceholder ? "opacity-60" : "active:scale-[0.99] transition-transform",
+                  ].join(" ")}
+                  onClick={() => {
+                    if (isPlaceholder) return;
+                    const realIndex = realTiles.findIndex((t) => t.seed === tile.seed);
+                    if (realIndex >= 0) setLightboxIndex(realIndex);
+                  }}
+                >
+                  {isPlaceholder ? (
+                    <div className="absolute inset-0 flex items-center justify-center text-[9px] font-black tracking-[0.28em] text-white/30 bg-white/5 uppercase">
+                      Upload {displayCount}
+                    </div>
+                  ) : (
+                    <>
+                      <img
+                        src={src}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        draggable={false}
+                        className="absolute inset-0 h-full w-full object-cover blur-[10px] scale-[1.08] opacity-55"
+                      />
+                      <img
+                        src={src}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        draggable={false}
+                        className="absolute inset-0 h-full w-full object-contain"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 opacity-90" />
+                    </>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
