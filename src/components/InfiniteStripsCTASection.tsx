@@ -4,22 +4,16 @@ import { useMemo } from "react";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 function DynamicStripTile({ slotId, fallback, idx }: { slotId: string; fallback: string; idx: number }) {
-  const { src, isUploaded } = useMediaAsset(slotId, fallback);
+  const { src } = useMediaAsset(slotId, fallback);
   return (
-    <div className="imgmarquee__tile">
+    <div className="imgmarquee__tile bg-black" style={{ flex: "0 0 auto" }}>
       <img
         src={src}
         alt=""
         loading={idx < 3 ? "eager" : "lazy"}
         decoding="async"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: isUploaded ? "contain" : "cover",
-          display: "block",
-        }}
+        className="h-full w-auto object-contain bg-black block"
+        draggable={false}
       />
     </div>
   );
