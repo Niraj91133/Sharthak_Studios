@@ -110,11 +110,11 @@ function ReelStats({ reel }: { reel: Reel }) {
 
 function PhoneMockup({ reel }: { reel: Reel }) {
   return (
-    <div className="relative w-[min(220px,62vw)] sm:w-[min(340px,78vw)] md:w-[410px]">
+    <div className="relative w-[min(210px,58vw)] sm:w-[min(320px,74vw)] md:w-[390px]">
       {/* iPhone 17-style mockup (thin bezel + dynamic island) */}
-      <div className="relative aspect-[9/18.5] w-full rounded-[52px] bg-[#0a0a0a] shadow-[0_50px_140px_-50px_rgba(0,0,0,0.95)] ring-1 ring-white/10">
+      <div className="relative aspect-[9/18] w-full rounded-[50px] bg-[#0a0a0a] shadow-[0_50px_140px_-50px_rgba(0,0,0,0.95)] ring-1 ring-white/10">
         {/* Metallic edge highlight */}
-        <div className="pointer-events-none absolute inset-0 rounded-[52px] bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0)_38%,rgba(255,255,255,0.06)_70%,rgba(255,255,255,0)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 rounded-[50px] bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0)_38%,rgba(255,255,255,0.06)_70%,rgba(255,255,255,0)_100%)]" />
 
         {/* Side buttons */}
         <div className="pointer-events-none absolute -left-[2px] top-[20%] h-10 w-[4px] rounded-full bg-white/10" />
@@ -122,7 +122,7 @@ function PhoneMockup({ reel }: { reel: Reel }) {
         <div className="pointer-events-none absolute -right-[2px] top-[26%] h-20 w-[4px] rounded-full bg-white/10" />
 
         {/* Screen */}
-        <div className="absolute inset-[9px] overflow-hidden rounded-[44px] bg-black">
+        <div className="absolute inset-[9px] overflow-hidden rounded-[42px] bg-black">
           {/* Reel viewport: exact Instagram Reel ratio (9:16) inside phone */}
           <div className="absolute inset-x-0 top-1/2 w-full -translate-y-1/2 aspect-[9/16] bg-black">
             <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-cover" />
@@ -178,8 +178,8 @@ export default function LatestWorkSection() {
   const next = useMemo(() => reels[(index + 1) % reels.length], [index]);
 
   return (
-    <section className="relative w-full bg-black text-white flex flex-col items-center overflow-hidden border-t border-white/5 h-[654px] max-h-[654px] sm:h-[900px] sm:max-h-[900px] pt-10 pb-10 sm:pt-20 sm:pb-20">
-      <div className="w-full max-w-7xl px-6 sm:px-8 flex flex-col md:flex-row justify-between items-center mb-6 sm:mb-12 gap-6 sm:gap-8 z-10 text-center md:text-left flex-shrink-0">
+    <section className="relative w-full bg-black text-white flex flex-col items-center overflow-hidden border-t border-white/5 h-[654px] max-h-[654px] sm:h-[900px] sm:max-h-[900px] pt-8 pb-8 sm:pt-16 sm:pb-16">
+      <div className="w-full max-w-7xl px-6 sm:px-8 flex flex-col md:flex-row justify-between items-center mb-5 sm:mb-10 gap-6 sm:gap-8 z-10 text-center md:text-left flex-shrink-0">
         <div className="space-y-2">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tightest uppercase italic leading-none">
             INSTAGRAM FEED
@@ -217,7 +217,7 @@ export default function LatestWorkSection() {
         </div>
       </div>
 
-      <div className="w-full max-w-7xl px-6 sm:px-8 mt-8 sm:mt-12 flex justify-center flex-shrink-0">
+      <div className="w-full max-w-7xl px-6 sm:px-8 mt-6 sm:mt-10 flex justify-center flex-shrink-0">
         <div className="flex items-center gap-6 sm:gap-8">
           <button
             onClick={handlePrev}
