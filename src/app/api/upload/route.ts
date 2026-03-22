@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
+import type { UploadApiErrorResponse, UploadApiOptions, UploadApiResponse } from "cloudinary";
 
 cloudinary.config({
     cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
         const fileName = file.name || "upload";
         const publicId = safePublicId(fileName);
 
-        let uploadOptions: any = {
+        let uploadOptions: UploadApiOptions = {
             folder: "sharthak_studio",
             public_id: publicId,
             resource_type: "auto",
@@ -76,20 +77,22 @@ export async function POST(request: Request) {
         }
 
         // Upload to Cloudinary
-        const result = await new Promise((resolve, reject) => {
+        const result = await new Promise<UploadApiResponse>((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 uploadOptions,
-                (error, result) => {
+                (error?: UploadApiErrorResponse, result?: UploadApiResponse) => {
                     if (error) reject(error);
-                    else resolve(result);
+                    else if (result) resolve(result);
+                    else reject(new Error("Upload failed: empty response"));
                 }
             );
             uploadStream.end(buffer);
         });
 
         return NextResponse.json(result);
-    } catch (error: any) {
+    } catch (error) {
         console.error("Cloudinary Upload Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const message = error instanceof Error ? error.message : "Upload failed";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

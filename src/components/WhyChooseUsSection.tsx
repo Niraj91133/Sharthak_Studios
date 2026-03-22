@@ -33,7 +33,9 @@ function FlipNumber({ value }: { value: string }) {
       const timer = setTimeout(() => setDisplayValue(value), 200);
       return () => clearTimeout(timer);
     } else {
-      setDisplayValue("0"); // Reset when out of view to re-animate next time
+      // Reset when out of view to re-animate next time (async to avoid cascading renders)
+      const raf = requestAnimationFrame(() => setDisplayValue("0"));
+      return () => cancelAnimationFrame(raf);
     }
   }, [isInView, value]);
 

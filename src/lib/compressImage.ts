@@ -10,13 +10,6 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-async function loadBitmap(file: File): Promise<ImageBitmap> {
-  if ("createImageBitmap" in globalThis) {
-    return await createImageBitmap(file);
-  }
-  throw new Error("Image compression is not supported in this browser.");
-}
-
 async function canvasToBlob(
   canvas: HTMLCanvasElement,
   type: string,
@@ -34,9 +27,55 @@ async function canvasToBlob(
   });
 }
 
+let cachedOutputType: string | null = null;
 function pickOutputType(): string {
-  // Prefer modern formats; browser will fall back if unsupported.
-  return "image/webp";
+  if (cachedOutputType) return cachedOutputType;
+
+  // Detect WebP support. If unsupported, Safari returns PNG for "image/webp" data URLs.
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+  const dataUrl = canvas.toDataURL("image/webp");
+  cachedOutputType = dataUrl.startsWith("data:image/webp") ? "image/webp" : "image/jpeg";
+  return cachedOutputType;
+}
+
+type LoadedSource = {
+  source: CanvasImageSource;
+  width: number;
+  height: number;
+  close?: () => void;
+};
+
+async function loadSource(file: File): Promise<LoadedSource> {
+  if ("createImageBitmap" in globalThis) {
+    const bitmap = await createImageBitmap(file);
+    return {
+      source: bitmap,
+      width: bitmap.width,
+      height: bitmap.height,
+      close: () => bitmap.close?.(),
+    };
+  }
+
+  // Older Safari/iOS fallback: decode via HTMLImageElement.
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("Failed to decode image in this browser."));
+      el.src = url;
+    });
+
+    return {
+      source: img,
+      width: img.naturalWidth || img.width || 1,
+      height: img.naturalHeight || img.height || 1,
+    };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 export async function compressImageFile(
@@ -59,10 +98,9 @@ export async function compressImageFile(
   let bestBlobSize = Number.POSITIVE_INFINITY;
 
   for (const scaleStep of scaleSteps) {
-    const bitmap = await loadBitmap(file);
-
-    const originalW = bitmap.width;
-    const originalH = bitmap.height;
+    const loaded = await loadSource(file);
+    const originalW = loaded.width;
+    const originalH = loaded.height;
 
     const stepMaxDimension = Math.max(640, Math.round(maxDimension * scaleStep));
     const maxDim = Math.max(originalW, originalH);
@@ -80,11 +118,17 @@ export async function compressImageFile(
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(bitmap, 0, 0, outW, outH);
-    bitmap.close?.();
+    ctx.drawImage(loaded.source, 0, 0, outW, outH);
+    loaded.close?.();
 
     for (const q of qualities) {
-      const blob = await canvasToBlob(canvas, outType, q);
+      let blob: Blob;
+      try {
+        blob = await canvasToBlob(canvas, outType, q);
+      } catch {
+        // If WebP encoding fails (or isn't supported), fall back to JPEG.
+        blob = await canvasToBlob(canvas, "image/jpeg", q);
+      }
       if (blob.size < bestBlobSize) {
         bestBlob = blob;
         bestBlobSize = blob.size;
@@ -111,6 +155,8 @@ export async function compressImageFile(
   }
 
   const baseName = file.name.replace(/\.[^/.]+$/, "");
-  const outName = `${baseName}.webp`;
-  return new File([bestBlob], outName, { type: outType, lastModified: Date.now() });
+  const finalType = bestBlob.type || outType;
+  const ext = finalType === "image/webp" ? "webp" : "jpg";
+  const outName = `${baseName}.${ext}`;
+  return new File([bestBlob], outName, { type: finalType, lastModified: Date.now() });
 }

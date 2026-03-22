@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useMediaContext } from "@/context/MediaContext";
+import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
 
 interface MediaStripProps {
     section: string;
@@ -30,13 +31,13 @@ export default function MediaStrip({ section }: MediaStripProps) {
                     >
                         {slot.type === "video" ? (
                             <video
-                                src={slot.uploadedFile?.url}
+                                src={slot.uploadedFile?.url ? normalizeMediaUrl(slot.uploadedFile.url) : undefined}
                                 className="w-full h-full object-cover"
                                 muted
                             />
                         ) : (
                             <img
-                                src={slot.uploadedFile?.url}
+                                src={slot.uploadedFile?.url ? normalizeMediaUrl(slot.uploadedFile.url) : undefined}
                                 alt={slot.id}
                                 className="w-full h-full object-cover"
                             />

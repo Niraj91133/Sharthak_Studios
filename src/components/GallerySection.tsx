@@ -29,22 +29,36 @@ function GalleryImage({ seed, className, isLightbox = false }: { seed: string; c
 
 export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(() => {
+    // Older iOS Safari doesn't support IntersectionObserver; reveal immediately.
+    if (typeof window === "undefined") return false;
+    return !("IntersectionObserver" in window);
+  });
   const [activeTab, setActiveTab] = useState(tabs[0]?.label || "WEDDING");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (!("matchMedia" in window)) return;
     const media = window.matchMedia("(max-width: 639px)");
     const update = () => setIsMobile(media.matches);
     update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+
+    // Safari/iOS < 14 uses addListener/removeListener
+    if (typeof media.addEventListener === "function") media.addEventListener("change", update);
+    else if (typeof media.addListener === "function") media.addListener(update);
+
+    return () => {
+      if (typeof media.removeEventListener === "function") media.removeEventListener("change", update);
+      else if (typeof media.removeListener === "function") media.removeListener(update);
+    };
   }, []);
 
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
+
+    if (!("IntersectionObserver" in window)) return;
 
     const io = new IntersectionObserver(
       ([entry]) => {

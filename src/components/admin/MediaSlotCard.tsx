@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { MediaSlot } from "@/lib/mediaSlots";
 import { useMediaContext } from "@/context/MediaContext";
+import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
 import UploadZone from "./UploadZone";
 
 interface MediaSlotCardProps {
@@ -69,7 +70,8 @@ export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProp
                     {/* Preview */}
                     <div className="w-24 h-18 bg-black rounded-lg overflow-hidden flex-shrink-0 border border-white/5 relative group">
                         {(() => {
-                            const previewSrc = slot.uploadedFile?.url || slot.fallbackSrc || null;
+                            const previewSrcRaw = slot.uploadedFile?.url || slot.fallbackSrc || null;
+                            const previewSrc = previewSrcRaw ? normalizeMediaUrl(previewSrcRaw) : null;
                             if (!previewSrc) {
                                 return (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/40">

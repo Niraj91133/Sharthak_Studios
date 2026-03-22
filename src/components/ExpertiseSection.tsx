@@ -78,11 +78,19 @@ export default function ExpertiseSection() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (!("matchMedia" in window)) return;
     const media = window.matchMedia("(max-width: 767px)");
     const update = () => setIsMobile(media.matches);
     update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+
+    // Safari/iOS < 14 uses addListener/removeListener
+    if (typeof media.addEventListener === "function") media.addEventListener("change", update);
+    else if (typeof media.addListener === "function") media.addListener(update);
+
+    return () => {
+      if (typeof media.removeEventListener === "function") media.removeEventListener("change", update);
+      else if (typeof media.removeListener === "function") media.removeListener(update);
+    };
   }, []);
 
   const handleNext = useCallback(() => setActiveIndex((v) => (v + 1) % slideConfigs.length), []);

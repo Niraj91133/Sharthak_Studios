@@ -1,6 +1,7 @@
 "use client";
 
 import { useMediaContext } from "@/context/MediaContext";
+import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
 
 /**
  * useMedia hook to get the current source for a media slot.
@@ -12,7 +13,7 @@ export function useMedia(slotId: string, fallback: string): string {
     const slot = getSlot(slotId);
 
     if (slot?.uploadedFile && slot.useOnSite) {
-        return slot.uploadedFile.url;
+        return normalizeMediaUrl(slot.uploadedFile.url);
     }
 
     return fallback;
