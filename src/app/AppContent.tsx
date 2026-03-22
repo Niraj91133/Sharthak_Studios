@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo, useEffect } from "react";
 import Lenis from "lenis";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -19,12 +19,6 @@ const WhyChooseUsBookFlipSection = dynamic(() => import("@/components/WhyChooseU
 const InfiniteStripsCTASection = dynamic(() => import("@/components/InfiniteStripsCTASection"), { ssr: false });
 const AboutMeSection = dynamic(() => import("@/components/AboutMeSection"), { ssr: false });
 
-declare global {
-    interface Window {
-        lenis?: Lenis | null;
-    }
-}
-
 export default function AppContent() {
     const router = useRouter();
 
@@ -39,9 +33,6 @@ export default function AppContent() {
             infinite: false,
         });
 
-        // Expose lenis globally for components like HeroScroll to use
-        window.lenis = lenis;
-
         // Sync GSAP with Lenis RAF
         function raf(time: number) {
             lenis.raf(time);
@@ -52,7 +43,6 @@ export default function AppContent() {
 
         return () => {
             lenis.destroy();
-            window.lenis = null;
         };
     }, []);
 
@@ -128,7 +118,7 @@ export default function AppContent() {
                 <InfiniteStripsCTASection />
             </div>
 
-            <div className="h-10" /> {/* 40px Gap */}
+            <div className="h-6" /> {/* 24px Gap */}
 
             <GallerySection tabs={galleryTabs} items={galleryItems} />
 
