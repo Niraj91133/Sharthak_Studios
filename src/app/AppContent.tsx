@@ -63,16 +63,20 @@ export default function AppContent() {
     const galleryTabs = useMemo(() => {
         const gallerySlots = slots.filter((s: MediaSlot) => s.section.includes("GALLERY"));
         const set = new Set(gallerySlots.map((s: MediaSlot) => s.categoryLabel).filter(Boolean));
-        // Fallback to defaults if no custom ones added
-        if (set.size === 0) {
-            ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"].forEach(c => set.add(c));
-        }
+        // Always include baseline categories, plus any custom categories created in admin.
+        ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"].forEach(c => set.add(c));
         return Array.from(set).map(cat => ({ label: cat as string }));
     }, [slots]);
 
     const galleryItems = useMemo(() => {
         const gallerySlots = slots.filter((s: MediaSlot) => s.section.includes("GALLERY"));
-        return gallerySlots.map((s: MediaSlot, i: number) => {
+        // Show uploaded + LIVE items first so admin uploads appear immediately in the 900px gallery frame.
+        const sorted = [...gallerySlots].sort((a, b) => {
+            const score = (x: MediaSlot) => (x.uploadedFile && x.useOnSite ? 2 : x.uploadedFile ? 1 : 0);
+            return score(b) - score(a);
+        });
+
+        return sorted.map((s: MediaSlot, i: number) => {
             const mod = i % 10;
             let col = "span 2";
             let row = "span 2";

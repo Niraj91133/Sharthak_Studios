@@ -128,7 +128,7 @@ export default function AdminDashboard() {
 
                         <div className="space-y-4">
                             {sections.map((section) => (
-                                section.title === "Gallery Section" ? (
+                                section.title.includes("(GALLERY)") ? (
                                     <div key={section.title} className="space-y-4">
                                         <div className="flex items-center gap-2 px-2">
                                             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: section.accentColor }} />

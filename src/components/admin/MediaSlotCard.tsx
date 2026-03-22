@@ -20,7 +20,7 @@ export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProp
             await uploadFile(slot.id, file);
         } catch (e) {
             console.error(e);
-            alert("Failed to upload file.");
+            alert(e instanceof Error ? e.message : "Failed to upload file.");
         } finally {
             setIsUploading(false);
         }
@@ -68,24 +68,37 @@ export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProp
                 <div className="flex gap-4">
                     {/* Preview */}
                     <div className="w-24 h-18 bg-black rounded-lg overflow-hidden flex-shrink-0 border border-white/5 relative group">
-                        {slot.type === "video" ? (
-                            <video
-                                src={slot.uploadedFile?.url || slot.fallbackSrc}
-                                className="w-full h-full object-cover"
-                                muted
-                                onMouseOver={(e) => e.currentTarget.play()}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.pause();
-                                    e.currentTarget.currentTime = 0;
-                                }}
-                            />
-                        ) : (
-                            <img
-                                src={slot.uploadedFile?.url || slot.fallbackSrc}
-                                alt={slot.id}
-                                className="w-full h-full object-cover"
-                            />
-                        )}
+                        {(() => {
+                            const previewSrc = slot.uploadedFile?.url || slot.fallbackSrc || null;
+                            if (!previewSrc) {
+                                return (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                        <span className="text-[8px] font-bold text-white/30">NO MEDIA</span>
+                                    </div>
+                                );
+                            }
+                            if (slot.type === "video") {
+                                return (
+                                    <video
+                                        src={previewSrc}
+                                        className="w-full h-full object-cover"
+                                        muted
+                                        onMouseOver={(e) => e.currentTarget.play()}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.pause();
+                                            e.currentTarget.currentTime = 0;
+                                        }}
+                                    />
+                                );
+                            }
+                            return (
+                                <img
+                                    src={previewSrc}
+                                    alt={slot.id}
+                                    className="w-full h-full object-cover"
+                                />
+                            );
+                        })()}
                         {!slot.uploadedFile && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span className="text-[8px] font-bold text-white/60">DEFAULT</span>

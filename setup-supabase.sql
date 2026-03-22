@@ -14,11 +14,15 @@ CREATE TABLE IF NOT EXISTS public.media_slots (
   frame TEXT NOT NULL,
   type TEXT NOT NULL,
   use_on_site BOOLEAN DEFAULT false,
+  category_label TEXT,
   uploaded_file_name TEXT,
   uploaded_file_url TEXT,
   uploaded_file_size BIGINT,
   uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- If the table already existed from an older version, ensure newer columns exist.
+ALTER TABLE public.media_slots ADD COLUMN IF NOT EXISTS category_label TEXT;
 
 -- 3. OPEN TABLE PERMISSIONS
 GRANT ALL ON TABLE public.media_slots TO anon, authenticated, service_role;

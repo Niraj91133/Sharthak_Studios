@@ -7,11 +7,26 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+function safePublicId(fileName: string) {
+    const base = (fileName || "upload").replace(/\.[^/.]+$/, "");
+    const slug = base
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80);
+    return slug || `upload-${Date.now()}`;
+}
+
 // Route Handlers in App Router do not use 'export const config' for bodyParser.
 // Use 'nextConfig.experimental.serverActions.bodySizeLimit' or similar next.config settings instead.
 
 export async function POST(request: Request) {
     try {
+        if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            return NextResponse.json({ error: "Cloudinary env vars missing. Check .env.local" }, { status: 500 });
+        }
+
         const formData = await request.formData();
         const file = formData.get("file") as File;
 
@@ -25,15 +40,15 @@ export async function POST(request: Request) {
         }
 
         const bytes = await file.arrayBuffer();
-        let buffer = Buffer.from(new Uint8Array(bytes));
-        let fileName = file.name;
-        // Remove extension from filename for public_id
-        const publicId = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
+        const buffer = Buffer.from(new Uint8Array(bytes));
+        const fileName = file.name || "upload";
+        const publicId = safePublicId(fileName);
 
         let uploadOptions: any = {
             folder: "sharthak_studio",
             public_id: publicId,
             resource_type: "auto",
+            overwrite: true,
         };
 
         const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';

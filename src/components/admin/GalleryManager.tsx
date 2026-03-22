@@ -30,7 +30,7 @@ export default function GalleryManager() {
         gallerySlots.filter(s => s.categoryLabel === activeCat),
         [gallerySlots, activeCat]);
 
-    const handleAddCategory = () => {
+    const handleAddCategory = async () => {
         if (!newCategoryName.trim()) return;
         const cat = newCategoryName.trim().toUpperCase();
         setActiveCategory(cat);
@@ -38,30 +38,38 @@ export default function GalleryManager() {
         setIsAddingCategory(false);
 
         const id = `gal-dyn-${Date.now()}`;
-        addSlot({
-            id,
-            section: "03. THE COLLECTION (GALLERY)",
-            frame: "First Item",
-            type: "image",
-            currentSrc: "",
-            fallbackSrc: "",
-            useOnSite: true,
-            categoryLabel: cat
-        });
+        try {
+            await addSlot({
+                id,
+                section: "03. THE COLLECTION (GALLERY)",
+                frame: "First Item",
+                type: "image",
+                currentSrc: "",
+                fallbackSrc: "",
+                useOnSite: true,
+                categoryLabel: cat
+            });
+        } catch (e) {
+            alert(e instanceof Error ? e.message : "Failed to add category.");
+        }
     };
 
-    const handleAddImage = (category: string) => {
+    const handleAddImage = async (category: string) => {
         const id = `gal-dyn-${Date.now()}`;
-        addSlot({
-            id,
-            section: "03. THE COLLECTION (GALLERY)",
-            frame: "Gallery Item",
-            type: "image",
-            currentSrc: "",
-            fallbackSrc: "",
-            useOnSite: true,
-            categoryLabel: category
-        });
+        try {
+            await addSlot({
+                id,
+                section: "03. THE COLLECTION (GALLERY)",
+                frame: "Gallery Item",
+                type: "image",
+                currentSrc: "",
+                fallbackSrc: "",
+                useOnSite: true,
+                categoryLabel: category
+            });
+        } catch (e) {
+            alert(e instanceof Error ? e.message : "Failed to add image slot.");
+        }
     };
 
     const handleBatchUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,7 +100,7 @@ export default function GalleryManager() {
             }
         } catch (error) {
             console.error("Batch upload failed:", error);
-            alert("Some files failed to upload.");
+            alert(error instanceof Error ? error.message : "Some files failed to upload.");
         } finally {
             setIsBatchUploading(false);
             if (batchInputRef.current) batchInputRef.current.value = "";

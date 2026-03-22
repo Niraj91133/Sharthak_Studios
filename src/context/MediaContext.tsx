@@ -3,6 +3,68 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { mediaSlots as initialMediaSlots, MediaSlot } from "@/lib/mediaSlots";
 import { supabase } from "@/lib/supabase";
+import { compressImageFile } from "@/lib/compressImage";
+
+const LOCAL_SLOTS_KEY = "sharthak_media_slots_v1";
+
+function loadLocalSlots(): MediaSlot[] | null {
+    try {
+        const raw = localStorage.getItem(LOCAL_SLOTS_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as unknown;
+        if (!Array.isArray(parsed)) return null;
+        return parsed as MediaSlot[];
+    } catch {
+        return null;
+    }
+}
+
+function saveLocalSlots(slots: MediaSlot[]) {
+    try {
+        localStorage.setItem(LOCAL_SLOTS_KEY, JSON.stringify(slots));
+    } catch {
+        // ignore storage quota / privacy errors
+    }
+}
+
+function describeSupabaseError(error: unknown): string {
+    if (!error) return "Unknown Supabase error";
+    if (error instanceof Error && error.message) return error.message;
+    const maybe = typeof error === "object" && error !== null ? (error as Record<string, unknown>) : null;
+    const message = maybe && typeof maybe["message"] === "string" ? (maybe["message"] as string) : "";
+    const details = maybe && typeof maybe["details"] === "string" ? (maybe["details"] as string) : "";
+    const hint = maybe && typeof maybe["hint"] === "string" ? (maybe["hint"] as string) : "";
+    const code = maybe && typeof maybe["code"] === "string" ? (maybe["code"] as string) : "";
+    const errorDescription =
+        maybe && typeof maybe["error_description"] === "string" ? (maybe["error_description"] as string) : "";
+
+    if (message || details || hint || code || errorDescription) {
+        return [message, errorDescription, details, hint, code].filter(Boolean).join(" • ");
+    }
+
+    try {
+        if (typeof error === "object" && error !== null) {
+            const names = Object.getOwnPropertyNames(error);
+            const parts = names
+                .slice(0, 12)
+                .map((n) => `${n}=${String((error as Record<string, unknown>)[n])}`);
+            const joined = parts.filter(Boolean).join(" • ");
+            if (joined) return joined;
+        }
+        const json = JSON.stringify(error);
+        return json && json !== "{}" ? json : String(error);
+    } catch {
+        return String(error);
+    }
+}
+
+function isSchemaMismatchMessage(message: string) {
+    return /category_label|column|schema|relation|42P01|42703|PGRST/i.test(message);
+}
+
+function shouldShowSupabaseSetupHelp(message: string) {
+    return isSchemaMismatchMessage(message) || message === "Unknown Supabase error" || message === "[object Object]";
+}
 
 export type Blog = {
     id: string;
@@ -35,6 +97,21 @@ const MediaContext = createContext<MediaContextType | undefined>(undefined);
 export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [slots, setSlots] = useState<MediaSlot[]>(initialMediaSlots);
     const [isLoading, setIsLoading] = useState(false);
+    const [dbSupportsCategoryLabel, setDbSupportsCategoryLabel] = useState(true);
+    const [schemaChecked, setSchemaChecked] = useState(false);
+    const [schemaWarned, setSchemaWarned] = useState(false);
+
+    // Local persistence fallback: if Supabase is misconfigured, don't lose admin changes on refresh.
+    useEffect(() => {
+        const cached = loadLocalSlots();
+        if (cached && cached.length > 0) {
+            setSlots(cached);
+        }
+    }, []);
+
+    useEffect(() => {
+        saveLocalSlots(slots);
+    }, [slots]);
 
     // Fetch slots from Supabase on mount
     useEffect(() => {
@@ -47,23 +124,27 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 if (error) {
                     console.warn("Supabase table 'media_slots' not found. Using local initial data.", error);
                     setIsLoading(false);
+                    // Keep whatever we currently have (could be localStorage-backed).
                     return;
                 }
 
                 if (data && data.length > 0) {
+                    const cached = loadLocalSlots();
+                    const baseSlots = cached && cached.length > 0 ? cached : initialMediaSlots;
+
                     // Start with initial slots and merge DB data
                     // Also include any slots that are ONLY in the DB
                     const dbSlotMap = new Map();
                     data.forEach(d => dbSlotMap.set(d.id, d));
 
-                    const mergedSlots = initialMediaSlots.map(initial => {
-                        const dbSlot = dbSlotMap.get(initial.id);
+                    const mergedSlots = baseSlots.map(base => {
+                        const dbSlot = dbSlotMap.get(base.id);
                         if (dbSlot) {
-                            dbSlotMap.delete(initial.id); // Remove so we know what's left
+                            dbSlotMap.delete(base.id); // Remove so we know what's left
                             return {
-                                ...initial,
+                                ...base,
                                 useOnSite: dbSlot.use_on_site,
-                                categoryLabel: dbSlot.category_label || initial.categoryLabel,
+                                categoryLabel: dbSlot.category_label || base.categoryLabel,
                                 uploadedFile: dbSlot.uploaded_file_url ? {
                                     name: dbSlot.uploaded_file_name,
                                     url: dbSlot.uploaded_file_url,
@@ -72,7 +153,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                                 } : undefined
                             };
                         }
-                        return initial;
+                        return base;
                     });
 
                     // Add purely dynamic slots from the DB
@@ -107,23 +188,72 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         fetchSlots();
     }, []);
 
+    // Detect DB schema capabilities (PostgREST schema cache sometimes lacks new columns until migrated).
+    useEffect(() => {
+        let cancelled = false;
+        const checkSchema = async () => {
+            try {
+                const { error } = await supabase.from("media_slots").select("category_label").limit(1);
+                if (cancelled) return;
+                if (error) {
+                    const msg = describeSupabaseError(error);
+                    if (/PGRST204/i.test(msg) && /category_label/i.test(msg)) {
+                        setDbSupportsCategoryLabel(false);
+                    }
+                }
+            } catch {
+                // Ignore; keep defaults
+            } finally {
+                if (!cancelled) setSchemaChecked(true);
+            }
+        };
+        checkSchema();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!schemaChecked) return;
+        if (dbSupportsCategoryLabel) return;
+        if (schemaWarned) return;
+        setSchemaWarned(true);
+        alert("Supabase DB needs migration: run `setup-supabase.sql` (adds `category_label`). Upload will work, but categories won't persist until you migrate.");
+    }, [dbSupportsCategoryLabel, schemaChecked, schemaWarned]);
+
     const updateSlot = useCallback(async (id: string, updates: Partial<MediaSlot>) => {
         // Update local state
+        const snapshot = slots;
         setSlots((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
 
         // Update Supabase
-        const dbUpdates: any = {};
+        const dbUpdates: Record<string, unknown> = {};
         if (updates.useOnSite !== undefined) dbUpdates.use_on_site = updates.useOnSite;
-        if (updates.categoryLabel !== undefined) dbUpdates.category_label = updates.categoryLabel;
+        if (updates.categoryLabel !== undefined && dbSupportsCategoryLabel) dbUpdates.category_label = updates.categoryLabel;
 
         if (Object.keys(dbUpdates).length > 0) {
+            const current = slots.find((s) => s.id === id);
             const { error } = await supabase
                 .from('media_slots')
-                .upsert({ id, ...dbUpdates });
+                .upsert({
+                    id,
+                    section: current?.section || "Unknown",
+                    frame: current?.frame || "Unknown",
+                    type: current?.type || "image",
+                    ...dbUpdates
+                });
 
-            if (error) console.error("Error updating slot in Supabase:", error);
+            if (error) {
+                const message = describeSupabaseError(error);
+                console.error("Error updating slot in Supabase:", message, error);
+                // Roll back optimistic update if DB write failed
+                setSlots(snapshot);
+                if (shouldShowSupabaseSetupHelp(message)) {
+                    alert("Supabase DB schema mismatch. Run `setup-supabase.sql` in Supabase SQL editor (adds `category_label` + disables RLS).");
+                }
+            }
         }
-    }, []);
+    }, [dbSupportsCategoryLabel, slots]);
 
     const resetSlot = useCallback(async (id: string) => {
         const initial = initialMediaSlots.find(s => s.id === id);
@@ -155,9 +285,36 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [slots]);
 
     const uploadFile = async (id: string, file: File) => {
+        const maxClientFileBytes = 30_485_760; // ~30.5MB
+        if (file.size > maxClientFileBytes) {
+            throw new Error(`File too large. Please upload up to 30MB.`);
+        }
+
+        const upstreamMaxBytes = 9_500_000;
+        let uploadFileToSend = file;
+        // Compress images before uploading to reduce payload while keeping high visual quality.
+        if (file.type.startsWith("image/")) {
+            try {
+                uploadFileToSend = await compressImageFile(file, {
+                    // Keep under ~9.5MB to avoid common upstream limits.
+                    maxBytes: upstreamMaxBytes,
+                    // Try to land near 50–70% of original size.
+                    targetRatio: 0.65,
+                    // Preserve detail while preventing huge dimensions from bloating file size.
+                    maxDimension: 2600,
+                });
+            } catch (e) {
+                console.warn("Image compression failed.", e);
+                throw e instanceof Error ? e : new Error("Image compression failed.");
+            }
+        } else if (file.size > upstreamMaxBytes) {
+            // We can't reliably compress videos in-browser without heavy transcoding.
+            throw new Error("Video/file too large. Please upload an image or keep the file under 10MB.");
+        }
+
         // 1. Upload to Cloudinary via our API route
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", uploadFileToSend);
 
         const response = await fetch("/api/upload", {
             method: "POST",
@@ -165,17 +322,28 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || "Upload failed");
+            let message = `Upload failed (HTTP ${response.status})`;
+            try {
+                const errorData = await response.json();
+                message = errorData?.error || message;
+            } catch {
+                try {
+                    const text = await response.text();
+                    if (text) message = text;
+                } catch {
+                    // ignore
+                }
+            }
+            throw new Error(message);
         }
 
         const cloudinaryData = await response.json();
         const publicUrl = cloudinaryData.secure_url;
 
         const uploadedFile = {
-            name: file.name,
+            name: uploadFileToSend.name,
             url: publicUrl,
-            size: file.size,
+            size: uploadFileToSend.size,
             uploadedAt: new Date().toISOString(),
         };
 
@@ -188,7 +356,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 section: currentSlot?.section || 'Unknown',
                 frame: currentSlot?.frame || 'Unknown',
                 type: currentSlot?.type || 'image',
-                category_label: currentSlot?.categoryLabel,
+                ...(dbSupportsCategoryLabel ? { category_label: currentSlot?.categoryLabel } : {}),
                 uploaded_file_name: uploadedFile.name,
                 uploaded_file_url: uploadedFile.url,
                 uploaded_file_size: uploadedFile.size,
@@ -197,10 +365,12 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             });
 
         if (dbError) {
-            console.error("❌ SUPABASE DB ERROR:", dbError.message, dbError);
-            if (dbError.code === '42P01') {
-                alert("Database Table 'media_slots' missing! Please run the SQL script in setup-supabase.sql in your Supabase Dashboard.");
+            const message = describeSupabaseError(dbError);
+            console.error("❌ SUPABASE DB ERROR:", message, dbError);
+            if (shouldShowSupabaseSetupHelp(message)) {
+                alert("Supabase DB schema mismatch. Run `setup-supabase.sql` in Supabase SQL editor (adds `category_label` + disables RLS).");
             }
+            throw new Error(message);
         }
 
         // 4. Update Local State
@@ -250,13 +420,22 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             frame: slot.frame,
             type: slot.type,
             use_on_site: slot.useOnSite,
-            category_label: slot.categoryLabel,
+            ...(dbSupportsCategoryLabel ? { category_label: slot.categoryLabel } : {}),
             uploaded_file_url: slot.uploadedFile?.url,
             uploaded_file_name: slot.uploadedFile?.name,
             uploaded_file_size: slot.uploadedFile?.size,
             uploaded_at: slot.uploadedFile?.uploadedAt
         });
-        if (error) console.error("Error adding slot to database:", error);
+        if (error) {
+            const message = describeSupabaseError(error);
+            console.error("Error adding slot to database:", message, error);
+            // Roll back optimistic add if DB write failed
+            setSlots(prev => prev.filter(s => s.id !== slot.id));
+            if (shouldShowSupabaseSetupHelp(message)) {
+                alert("Supabase DB schema mismatch. Run `setup-supabase.sql` in Supabase SQL editor (adds `category_label` + disables RLS).");
+            }
+            throw new Error(message);
+        }
     };
 
     const deleteSlot = async (id: string) => {
