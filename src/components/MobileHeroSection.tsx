@@ -1,30 +1,55 @@
 "use client";
 
-import { type CSSProperties, useMemo } from "react";
-import { useMedia } from "@/hooks/useMedia";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
+import { useMediaContext } from "@/context/MediaContext";
+import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
 
-function StripImage({
-  slotId,
-  fallback,
-  priority,
-}: {
-  slotId: string;
-  fallback: string;
-  priority?: boolean;
-}) {
-  const src = useMedia(slotId, fallback);
+function resolveSrc(
+  slots: ReturnType<typeof useMediaContext>["slots"],
+  slotId: string,
+  fallback: string,
+) {
+  const slot = slots.find((s) => s.id === slotId);
+  if (slot?.uploadedFile && slot.useOnSite) return normalizeMediaUrl(slot.uploadedFile.url);
+  return fallback;
+}
 
-  return (
-    <div className="imgmarquee__tile bg-white/5">
-      <img
-        src={src}
-        alt=""
-        loading={priority ? "eager" : "lazy"}
-        decoding="async"
-        className="pointer-events-none h-full w-full select-none object-cover"
-      />
-    </div>
-  );
+function usePreloadedImages(srcs: string[], timeoutMs = 1200) {
+  const key = useMemo(() => srcs.join("|"), [srcs]);
+  const [readyKey, setReadyKey] = useState<string>("");
+  const isReady = readyKey === key;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const unique = Array.from(new Set(srcs)).filter(Boolean);
+    if (unique.length === 0) {
+      queueMicrotask(() => {
+        if (!cancelled) setReadyKey(key);
+      });
+      return;
+    }
+
+    const loadOne = (src: string) =>
+      new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = src;
+      });
+
+    const timeout = new Promise<void>((resolve) => setTimeout(resolve, timeoutMs));
+
+    Promise.race([Promise.allSettled(unique.map(loadOne)).then(() => undefined), timeout]).then(() => {
+      if (!cancelled) setReadyKey(key);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [key, srcs, timeoutMs]);
+
+  return isReady;
 }
 
 function AutoStrip({
@@ -34,6 +59,7 @@ function AutoStrip({
   items: Array<{ id: string; fallback: string }>;
   reverse?: boolean;
 }) {
+  const { slots } = useMediaContext();
   const loop = [...items, ...items];
   const marqueeVars = useMemo(
     () =>
@@ -43,6 +69,12 @@ function AutoStrip({
       }) as CSSProperties,
     [],
   );
+
+  const loopSrcs = useMemo(
+    () => loop.map((it) => resolveSrc(slots, it.id, it.fallback)),
+    [loop, slots],
+  );
+  const ready = usePreloadedImages(loopSrcs);
 
   return (
     <div
@@ -54,14 +86,25 @@ function AutoStrip({
       style={marqueeVars}
     >
       <div className="imgmarquee__track">
-        {loop.map((it, idx) => (
-          <StripImage
-            key={`${it.id}-${idx}`}
-            slotId={it.id}
-            fallback={it.fallback}
-            priority={idx < 2}
-          />
-        ))}
+        {loop.map((it, idx) => {
+          const src = loopSrcs[idx] || it.fallback;
+          const priority = idx < 2;
+          return (
+            <div key={`${it.id}-${idx}`} className="imgmarquee__tile bg-white/5">
+              {ready ? (
+                <img
+                  src={src}
+                  alt=""
+                  loading={priority ? "eager" : "lazy"}
+                  decoding="async"
+                  className="pointer-events-none h-full w-full select-none object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-white/5" />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
