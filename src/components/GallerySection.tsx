@@ -12,14 +12,12 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-type LayoutItem = { idx: number; w: number };
-type LayoutRow = { h: number; items: LayoutItem[] };
-
 export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const { getSlot } = useMediaContext();
 
+  const DISPLAY_COUNT = 50;
+
   const sectionRef = useRef<HTMLElement | null>(null);
-  const gridRef = useRef<HTMLDivElement | null>(null);
   const activeMobileBtnRef = useRef<HTMLButtonElement | null>(null);
   const activeDesktopBtnRef = useRef<HTMLButtonElement | null>(null);
 
@@ -30,8 +28,6 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const [activeTab, setActiveTab] = useState(tabs[0]?.label || "");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [gridSize, setGridSize] = useState({ w: 0, h: 0 });
-  const [ratiosBySrc, setRatiosBySrc] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!("matchMedia" in window)) return;
@@ -70,28 +66,13 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
     scrollToActive(activeDesktopBtnRef.current);
   }, [activeTab]);
 
-  useEffect(() => {
-    if (lightboxIndex === null) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setLightboxIndex(null);
-      if (event.key === "ArrowRight") setLightboxIndex((curr) => (curr === null ? curr : Math.min(9, curr + 1)));
-      if (event.key === "ArrowLeft") setLightboxIndex((curr) => (curr === null ? curr : Math.max(0, curr - 1)));
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prev;
-    };
-  }, [lightboxIndex]);
-
   const resolveSrc = useMemo(() => {
     return (seed: string, isLightbox: boolean) => {
       if (!seed || seed.startsWith("placeholder-")) return "";
       const fallback = isLightbox
         ? `https://picsum.photos/seed/${seed}/2400/1600`
         : `https://picsum.photos/seed/${seed}/1600/1200`;
+
       const slot = getSlot(seed);
       if (slot?.uploadedFile && slot.useOnSite) return normalizeMediaUrl(slot.uploadedFile.url);
       return fallback;
@@ -101,119 +82,54 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   const filtered = useMemo(() => items.filter((it) => it.category === activeTab), [activeTab, items]);
 
   const displayTiles = useMemo(() => {
-    const ten = filtered.slice(0, 10);
-    if (ten.length >= 10) return ten;
-    const padded = [...ten];
-    for (let i = ten.length; i < 10; i++) {
+    const base = filtered.slice(0, DISPLAY_COUNT);
+    if (base.length >= DISPLAY_COUNT) return base;
+    const padded = [...base];
+    for (let i = base.length; i < DISPLAY_COUNT; i++) {
       padded.push({ seed: `placeholder-${activeTab}-${i}`, col: "span 2", row: "span 2", category: activeTab });
     }
     return padded;
-  }, [activeTab, filtered]);
+  }, [DISPLAY_COUNT, activeTab, filtered]);
 
-  useEffect(() => {
-    const el = gridRef.current;
-    if (!el) return;
-
-    const update = () => {
-      const rect = el.getBoundingClientRect();
-      const w = Math.round(rect.width);
-      const h = Math.round(rect.height);
-      if (w && h) setGridSize({ w, h });
-    };
-    update();
-
-    if ("ResizeObserver" in window) {
-      const ro = new ResizeObserver(() => update());
-      ro.observe(el);
-      return () => ro.disconnect();
-    }
-
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const srcs = displayTiles.map((t) => resolveSrc(t.seed, false)).filter(Boolean);
-    const unique = Array.from(new Set(srcs));
-    if (unique.length === 0) {
-      queueMicrotask(() => {
-        if (!cancelled) setRatiosBySrc({});
-      });
-      return;
-    }
-
-    const next: Record<string, number> = {};
-    const loadOne = (src: string) =>
-      new Promise<void>((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          const w = img.naturalWidth || 1;
-          const h = img.naturalHeight || 1;
-          next[src] = clamp(w / h, 0.35, 3.2);
-          resolve();
-        };
-        img.onerror = () => resolve();
-        img.src = src;
-      });
-
-    Promise.allSettled(unique.map(loadOne)).then(() => {
-      if (!cancelled) setRatiosBySrc(next);
-    });
-
-    return () => {
-      cancelled = true;
-    };
+  const realTiles = useMemo(() => {
+    return displayTiles
+      .map((t) => ({ seed: t.seed, src: resolveSrc(t.seed, false) }))
+      .filter((t) => Boolean(t.src));
   }, [displayTiles, resolveSrc]);
 
-  const layoutRows: LayoutRow[] = useMemo(() => {
-    const W = gridSize.w;
-    const H = gridSize.h;
-    if (!W || !H) return [];
+  const clampedLightboxIndex = lightboxIndex === null
+    ? null
+    : clamp(lightboxIndex, 0, Math.max(0, realTiles.length - 1));
 
-    const ratios = displayTiles.map((t) => {
-      const src = resolveSrc(t.seed, false);
-      return ratiosBySrc[src] || 1;
-    });
+  useEffect(() => {
+    if (clampedLightboxIndex === null) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
-    const gap = isMobile ? 8 : 10;
-    const preferredRows = isMobile ? 3 : H >= 560 ? 4 : 3;
-    const rowsCount = clamp(preferredRows, 2, 5);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLightboxIndex(null);
+      if (event.key === "ArrowRight") setLightboxIndex((curr) => (curr === null ? curr : curr + 1));
+      if (event.key === "ArrowLeft") setLightboxIndex((curr) => (curr === null ? curr : curr - 1));
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prev;
+    };
+  }, [clampedLightboxIndex]);
 
-    const availableH = Math.max(1, H - gap * (rowsCount - 1));
-    const rowH = availableH / rowsCount;
-
-    // Assign images to rows to balance widths.
-    const rowBuckets: Array<{ items: number[]; width: number }> = Array.from({ length: rowsCount }).map(() => ({
-      items: [],
-      width: 0,
-    }));
-
-    for (let i = 0; i < ratios.length; i++) {
-      const w = ratios[i] * rowH;
-      let best = 0;
-      for (let r = 1; r < rowBuckets.length; r++) {
-        if (rowBuckets[r].width < rowBuckets[best].width) best = r;
-      }
-      rowBuckets[best].items.push(i);
-      rowBuckets[best].width += w;
+  // Keep index in range as data changes.
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const max = Math.max(0, realTiles.length - 1);
+    if (lightboxIndex < 0 || lightboxIndex > max) {
+      const next = clamp(lightboxIndex, 0, max);
+      queueMicrotask(() => setLightboxIndex(next));
     }
-
-    return rowBuckets.map((bucket) => {
-      const idxs = bucket.items.length > 0 ? bucket.items : [0];
-      const n = idxs.length;
-      const availableW = Math.max(1, W - gap * (n - 1));
-      const widths = idxs.map((i) => ratios[i] * rowH);
-      const sumW = widths.reduce((a, b) => a + b, 0) || 1;
-      const scale = availableW / sumW;
-      return {
-        h: rowH,
-        items: idxs.map((i, j) => ({ idx: i, w: widths[j] * scale })),
-      };
-    });
-  }, [displayTiles, gridSize.h, gridSize.w, isMobile, ratiosBySrc, resolveSrc]);
+  }, [lightboxIndex, realTiles.length]);
 
   const revealClass = revealed ? "is-revealed" : "";
+  const gap = isMobile ? 8 : 10;
 
   return (
     <section
@@ -277,78 +193,59 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
           </div>
         </div>
 
-        {/* Perfect-fit 10-image grid */}
-        <div ref={gridRef} className="gallery-stagger w-full flex-1 min-h-0 overflow-hidden px-4 sm:px-8 pb-4">
-          {layoutRows.length === 0 ? (
-            <div className="h-full w-full bg-white/5" />
-          ) : (
-            <div className="h-full w-full">
-              {layoutRows.map((row, rowIdx) => (
-                <div
-                  key={rowIdx}
-                  className="flex w-full"
-                  style={{
-                    height: `${row.h}px`,
-                    gap: `${isMobile ? 8 : 10}px`,
-                    marginBottom: rowIdx === layoutRows.length - 1 ? 0 : `${isMobile ? 8 : 10}px`,
+        {/* Premium masonry grid (50 items, no distortion, no aggressive cropping) */}
+        <div className="gallery-stagger w-full flex-1 min-h-0 overflow-y-auto no-scrollbar px-4 sm:px-8 pb-6">
+          <div
+            className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 w-full"
+            style={{ columnGap: gap }}
+          >
+            {displayTiles.map((tile) => {
+              const src = resolveSrc(tile.seed, false);
+              const isPlaceholder = !src;
+              return (
+                <button
+                  key={tile.seed}
+                  type="button"
+                  disabled={isPlaceholder}
+                  className={[
+                    "group w-full text-left",
+                    "break-inside-avoid",
+                    "rounded-[10px] border border-white/20 bg-black/40 overflow-hidden",
+                    isPlaceholder ? "opacity-60" : "hover:border-white/35",
+                  ].join(" ")}
+                  style={{ marginBottom: gap }}
+                  onClick={() => {
+                    if (isPlaceholder) return;
+                    const realIndex = realTiles.findIndex((t) => t.seed === tile.seed);
+                    if (realIndex >= 0) setLightboxIndex(realIndex);
                   }}
                 >
-                  {row.items.map((it) => {
-                    const tile = displayTiles[it.idx];
-                    const src = resolveSrc(tile.seed, false);
-                    const isPlaceholder = tile.seed.startsWith("placeholder-") || !src;
-                    return (
-                      <button
-                        key={tile.seed}
-                        type="button"
-                        disabled={isPlaceholder}
-                        className="relative overflow-hidden bg-black rounded-[8px] sm:rounded-[10px] group"
-                        style={{
-                          width: `${it.w}px`,
-                          height: "100%",
-                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.22)",
-                        }}
-                        onClick={() => {
-                          if (!isPlaceholder) setLightboxIndex(it.idx);
-                        }}
-                      >
-                        {isPlaceholder ? (
-                          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black tracking-[0.3em] text-white/30">
-                            UPLOAD 10 IMAGES
-                          </div>
-                        ) : (
-                          <>
-                            <img
-                              src={src}
-                              alt=""
-                              loading="lazy"
-                              decoding="async"
-                              draggable={false}
-                              className="absolute inset-0 h-full w-full object-cover blur-[10px] scale-[1.08] opacity-55"
-                            />
-                            <img
-                              src={src}
-                              alt=""
-                              loading="lazy"
-                              decoding="async"
-                              draggable={false}
-                              className="absolute inset-0 h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
-                            />
-                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 opacity-90" />
-                          </>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          )}
+                  {isPlaceholder ? (
+                    <div className="w-full aspect-[4/5] flex items-center justify-center text-[10px] font-black tracking-[0.3em] text-white/30 bg-white/5">
+                      UPLOAD {DISPLAY_COUNT} IMAGES
+                    </div>
+                  ) : (
+                    <div className="relative w-full">
+                      <img
+                        src={src}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        draggable={false}
+                        className="w-full h-auto block transition duration-500 group-hover:brightness-110"
+                      />
+                      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-black/10" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Lightbox */}
-      {lightboxIndex !== null && (
+      {clampedLightboxIndex !== null && (
         <div
           className="lightbox fixed inset-0 z-[100] bg-black/98 flex items-center justify-center p-4 sm:p-20"
           onClick={() => setLightboxIndex(null)}
@@ -366,10 +263,10 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setLightboxIndex((curr) => (curr === null ? curr : Math.max(0, curr - 1)));
+                setLightboxIndex((curr) => (curr === null ? curr : curr - 1));
               }}
               className="absolute left-4 md:left-10 z-[110] p-4 text-white/40 hover:text-white transition-all disabled:opacity-0"
-              disabled={lightboxIndex === 0}
+              disabled={clampedLightboxIndex === 0}
             >
               <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M15 18L9 12L15 6" />
@@ -378,7 +275,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
 
             <div className="max-w-7xl w-full h-full flex items-center justify-center py-10">
               <img
-                src={resolveSrc(displayTiles[lightboxIndex]?.seed || "", true)}
+                src={resolveSrc(realTiles[clampedLightboxIndex]?.seed || "", true)}
                 className="max-w-full max-h-full object-contain shadow-2xl bg-black"
                 alt=""
                 draggable={false}
@@ -388,10 +285,10 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setLightboxIndex((curr) => (curr === null ? curr : Math.min(9, curr + 1)));
+                setLightboxIndex((curr) => (curr === null ? curr : curr + 1));
               }}
               className="absolute right-4 md:right-10 z-[110] p-4 text-white/40 hover:text-white transition-all disabled:opacity-0"
-              disabled={lightboxIndex === 9}
+              disabled={clampedLightboxIndex >= realTiles.length - 1}
             >
               <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M9 18l6-6-6-6" />

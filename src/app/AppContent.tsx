@@ -26,7 +26,6 @@ declare global {
 }
 
 export default function AppContent() {
-    const lenisRef = useRef<Lenis | null>(null);
     const router = useRouter();
 
     useEffect(() => {
