@@ -19,37 +19,21 @@ export default function LeadCapturePopup() {
         const isSubmittedPrev = localStorage.getItem("sharthak_lead_submitted");
         if (isSubmittedPrev) return;
 
-        const closedAt = localStorage.getItem("sharthak_lead_closed_at");
-        if (closedAt) {
-            const diff = Date.now() - parseInt(closedAt);
-            if (diff < 120000) { // 2 minutes not passed
-                // Set a timer to show it after the remaining time
-                const remaining = 120000 - diff;
-                setTimeout(() => setIsOpen(true), remaining);
-                return;
-            }
-        }
-
-        // Show after 5 seconds if not submitted/recently closed
+        // Show after 1.5 seconds if not submitted
         const timer = setTimeout(() => {
             setIsOpen(true);
-        }, 5000);
+        }, 1500);
+
         return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
-        checkAndShow();
+        return checkAndShow();
     }, [checkAndShow]);
 
     const handleClose = () => {
         setIsOpen(false);
-        localStorage.setItem("sharthak_lead_closed_at", Date.now().toString());
-
-        // Re-trigger show after 2 mins if they are still on page
-        setTimeout(() => {
-            const isSubmittedPrev = localStorage.getItem("sharthak_lead_submitted");
-            if (!isSubmittedPrev) setIsOpen(true);
-        }, 120000);
+        // We removed the closed_at logic to allow it to show on next refresh as requested
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +53,7 @@ export default function LeadCapturePopup() {
             if (error) throw error;
 
             // 2. Email Sync
-            fetch('/api/send-lead-email', {
+            const emailResponse = await fetch('/api/send-lead-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -78,7 +62,14 @@ export default function LeadCapturePopup() {
                     event_name: formData.eventName,
                     event_date: formData.eventDate
                 })
-            }).catch(e => console.error("Email sync failed:", e));
+            });
+
+            if (!emailResponse.ok) {
+                const errorData = await emailResponse.json();
+                console.error("Email sync failed:", errorData.error);
+            } else {
+                console.log("Email sync successful");
+            }
 
             setIsSubmitted(true);
             localStorage.setItem("sharthak_lead_submitted", "true");

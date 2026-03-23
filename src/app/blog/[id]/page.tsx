@@ -62,30 +62,83 @@ function BlogPostContent() {
             </header>
 
             {/* Meta, Title & Subtitle - Aligned Below the Photo */}
-            <section className="max-w-4xl mx-auto px-6 pt-12 pb-6">
-                <div className="flex flex-wrap items-center gap-3 mb-6">
-                    <span className="text-[10px] font-black tracking-widest text-black/30 uppercase">
+            <section className="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center">
+                <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                    <span className="text-[10px] font-black tracking-[0.4em] text-black/40 uppercase bg-black/[0.03] px-3 py-1 rounded-full border border-black/5">
                         {blog.category}
                     </span>
-                    <span className="w-1 h-1 bg-black/10 rounded-full" />
-                    <span className="text-[10px] font-black tracking-widest text-black/30 uppercase">
+                    <span className="w-1.5 h-1.5 bg-black/10 rounded-full" />
+                    <span className="text-[10px] font-black tracking-[0.4em] text-black/40 uppercase">
                         {new Date(blog.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </span>
                 </div>
 
-                <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-[1.1] uppercase text-black mb-6">
+                <h1 className="text-4xl md:text-6xl font-black tracking-tightest leading-[1.05] uppercase text-black mb-10 max-w-3xl mx-auto">
                     {blog.title}
                 </h1>
 
-                <p className="text-base md:text-lg text-black/40 font-medium tracking-wide max-w-2xl leading-relaxed">
+                <div className="w-12 h-1.5 bg-black/10 mx-auto mb-10 rounded-full" />
+
+                <p className="text-lg md:text-xl text-black/50 font-medium tracking-tight max-w-2xl mx-auto leading-relaxed italic">
                     {blog.excerpt}
                 </p>
 
-                <div className="h-px w-full bg-black/5 mt-10" />
+                <div className="h-px w-24 bg-black/5 mx-auto mt-16" />
             </section>
 
             {/* HTML Content Render */}
-            <main className="max-w-4xl mx-auto px-6 py-4">
+            <main className="max-w-3xl mx-auto px-6 py-12">
+                <style jsx global>{`
+                    .systematic-rich-text {
+                        font-size: 1.125rem;
+                        line-height: 1.8;
+                        color: #1a1a1a;
+                        font-family: inherit;
+                        text-align: left; /* Keep body text left for readability */
+                    }
+                    .systematic-rich-text p {
+                        margin-bottom: 2rem;
+                        letter-spacing: -0.01em;
+                    }
+                    .systematic-rich-text h2, 
+                    .systematic-rich-text h3 {
+                        color: black;
+                        font-weight: 900;
+                        text-transform: uppercase;
+                        letter-spacing: -0.05em;
+                        margin-top: 4rem;
+                        margin-bottom: 1.5rem;
+                        text-align: center; /* Center headers */
+                    }
+                    .systematic-rich-text h2 { font-size: 2rem; }
+                    .systematic-rich-text h3 { font-size: 1.5rem; }
+                    .systematic-rich-text img {
+                        width: 100%;
+                        height: auto;
+                        border-radius: 0;
+                        margin: 4rem 0;
+                        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+                    }
+                    .systematic-rich-text blockquote {
+                        border-left: 0;
+                        padding: 2rem;
+                        background: #fdfdfd;
+                        border: 1px solid #f0f0f0;
+                        font-style: italic;
+                        font-size: 1.25rem;
+                        color: #555;
+                        text-align: center;
+                        margin: 3rem 0;
+                    }
+                    .systematic-rich-text ul, 
+                    .systematic-rich-text ol {
+                        margin-bottom: 2rem;
+                        padding-left: 1.5rem;
+                    }
+                    .systematic-rich-text li {
+                        margin-bottom: 0.5rem;
+                    }
+                `}</style>
                 <div
                     className="systematic-rich-text"
                     dangerouslySetInnerHTML={{ __html: blog.content }}

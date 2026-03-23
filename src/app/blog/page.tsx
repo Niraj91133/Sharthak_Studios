@@ -49,15 +49,20 @@ function BlogListingContent() {
                                 alt={filteredBlogs[0].title}
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             />
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12">
-                                <div className="max-w-3xl space-y-3">
-                                    <span className="px-3 py-1 bg-black/50 backdrop-blur rounded-full text-[7px] font-black tracking-[0.4em] text-white/40 uppercase border border-white/10 inline-block">FEATURED BLOG</span>
-                                    <h1 className="text-2xl md:text-3xl font-black tracking-tightest leading-none text-white uppercase">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col items-center justify-end p-8 md:p-16 text-center">
+                                <div className="max-w-3xl space-y-6">
+                                    <span className="px-5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[8px] font-black tracking-[0.5em] text-white/60 uppercase border border-white/10 inline-block shadow-2xl">
+                                        FEATURED STORY
+                                    </span>
+                                    <h1 className="text-3xl md:text-5xl font-black tracking-tightest leading-none text-white uppercase drop-shadow-2xl">
                                         {filteredBlogs[0].title}
                                     </h1>
-                                    <p className="text-[9px] md:text-xs text-white/30 max-w-xl font-medium line-clamp-1 uppercase tracking-widest leading-loose">
+                                    <p className="text-[10px] md:text-xs text-white/50 max-w-xl mx-auto font-bold uppercase tracking-[0.2em] leading-loose drop-shadow-lg">
                                         {filteredBlogs[0].excerpt}
                                     </p>
+                                    <div className="pt-4">
+                                        <div className="h-10 w-px bg-white/20 mx-auto" />
+                                    </div>
                                 </div>
                             </div>
                         </Link>
@@ -67,14 +72,14 @@ function BlogListingContent() {
                 </div>
             </header>
 
-            {/* Filter Tabs */}
-            <div className="max-w-6xl mx-auto px-6 mt-16 mb-20">
-                <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+            {/* Filter Tabs - Centered */}
+            <div className="max-w-6xl mx-auto px-6 mt-20 mb-20">
+                <div className="flex justify-center gap-4 flex-wrap">
                     {categories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
-                            className={`px-6 py-2 rounded-full text-[8.5px] font-black tracking-[0.3em] uppercase transition-all shadow-sm ${activeCategory === cat ? "bg-black text-white" : "bg-white text-black/30 hover:bg-black/5 border border-black/5"
+                            className={`px-8 py-3 rounded-full text-[9px] font-black tracking-[0.3em] uppercase transition-all shadow-sm ${activeCategory === cat ? "bg-black text-white scale-105" : "bg-white text-black/30 hover:bg-black/5 border border-black/5"
                                 }`}
                         >
                             {cat}
