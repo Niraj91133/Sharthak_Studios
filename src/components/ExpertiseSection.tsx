@@ -72,7 +72,9 @@ function DynamicExpertiseImage({
   return <ExpertiseCard {...props} imageUrl={src} fit={isUploaded ? "contain" : "cover"} />;
 }
 
-const slideConfigs = [
+import { useMediaContext } from "@/context/MediaContext";
+
+const fallbackSlides = [
   { id: "expertise-01", title: "WEDDING FILMS", fallback: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=1600" },
   { id: "expertise-02", title: "PRE-WEDDING STORIES", fallback: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=1600" },
   { id: "expertise-03", title: "CANDID SESSIONS", fallback: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1600" },
@@ -80,8 +82,21 @@ const slideConfigs = [
 ];
 
 export default function ExpertiseSection() {
+  const { slots } = useMediaContext();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  const dynamicSlides = useMemo(() => {
+    const sectionSlots = slots.filter(s => s.section === "04. CHOOSE YOUR EXPERTISE");
+    if (sectionSlots.length === 0) return fallbackSlides;
+
+    return sectionSlots.map(s => ({
+      id: s.id,
+      title: s.categoryLabel || s.frame.toUpperCase(),
+      fallback: s.fallbackSrc,
+      slot: s
+    }));
+  }, [slots]);
 
   useEffect(() => {
     if (!("matchMedia" in window)) return;
@@ -89,7 +104,6 @@ export default function ExpertiseSection() {
     const update = () => setIsMobile(media.matches);
     update();
 
-    // Safari/iOS < 14 uses addListener/removeListener
     if (typeof media.addEventListener === "function") media.addEventListener("change", update);
     else if (typeof media.addListener === "function") media.addListener(update);
 
@@ -99,8 +113,8 @@ export default function ExpertiseSection() {
     };
   }, []);
 
-  const handleNext = useCallback(() => setActiveIndex((v) => (v + 1) % slideConfigs.length), []);
-  const handlePrev = useCallback(() => setActiveIndex((v) => (v - 1 + slideConfigs.length) % slideConfigs.length), []);
+  const handleNext = useCallback(() => setActiveIndex((v) => (v + 1) % dynamicSlides.length), [dynamicSlides.length]);
+  const handlePrev = useCallback(() => setActiveIndex((v) => (v - 1 + dynamicSlides.length) % dynamicSlides.length), [dynamicSlides.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -109,9 +123,8 @@ export default function ExpertiseSection() {
     return () => clearInterval(timer);
   }, [handleNext]);
 
-  const activeSlotId = slideConfigs[activeIndex].id;
-  const activeFallback = slideConfigs[activeIndex].fallback;
-  const { src, isUploaded } = useMediaAsset(activeSlotId, activeFallback);
+  const activeSlide = dynamicSlides[activeIndex];
+  const { src, isUploaded } = useMediaAsset(activeSlide.id, activeSlide.fallback);
 
   return (
     <section className="relative w-full bg-black text-white px-0 flex flex-col items-center overflow-hidden h-[694px] max-h-[694px] md:h-[900px] md:max-h-[900px]">
@@ -144,7 +157,7 @@ export default function ExpertiseSection() {
                 exit={{ opacity: 0 }}
                 className="absolute z-0 w-[260px] h-[190px] sm:w-[360px] sm:h-[260px] md:w-[500px] md:h-[350px] overflow-hidden grayscale pointer-events-none"
               >
-                <img src={slideConfigs[(activeIndex - 1 + slideConfigs.length) % slideConfigs.length].fallback} className="w-full h-full object-cover" alt="" />
+                <img src={dynamicSlides[(activeIndex - 1 + dynamicSlides.length) % dynamicSlides.length].fallback} className="w-full h-full object-cover" alt="" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent" />
               </motion.div>
 
@@ -160,13 +173,13 @@ export default function ExpertiseSection() {
                 <img
                   src={src}
                   className={`w-full h-full ${isUploaded ? "object-contain bg-black" : "object-cover"}`}
-                  alt={slideConfigs[activeIndex].title}
+                  alt={activeSlide.title}
                 />
 
                 {/* Subtle Title Overlay */}
                 <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 md:p-12 bg-gradient-to-t from-black/80 to-transparent">
                   <h3 className="text-lg sm:text-2xl md:text-4xl font-normal tracking-widest text-white uppercase italic" style={{ fontFamily: "'Prata', serif" }}>
-                    {slideConfigs[activeIndex].title}
+                    {activeSlide.title}
                   </h3>
                 </div>
               </motion.div>
@@ -179,7 +192,7 @@ export default function ExpertiseSection() {
                 exit={{ opacity: 0 }}
                 className="absolute z-0 w-[260px] h-[190px] sm:w-[360px] sm:h-[260px] md:w-[500px] md:h-[350px] overflow-hidden grayscale pointer-events-none"
               >
-                <img src={slideConfigs[(activeIndex + 1) % slideConfigs.length].fallback} className="w-full h-full object-cover" alt="" />
+                <img src={dynamicSlides[(activeIndex + 1) % dynamicSlides.length].fallback} className="w-full h-full object-cover" alt="" />
                 <div className="absolute inset-0 bg-gradient-to-l from-black via-transparent to-transparent" />
               </motion.div>
 

@@ -4,8 +4,9 @@ import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Heart } from "lucide-react";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
+import { useMediaContext } from "@/context/MediaContext";
 
-const reels = [
+const fallbackReels = [
   {
     id: "latest-work-01",
     title: "Eternal Vows",
@@ -62,7 +63,7 @@ const reels = [
   },
 ] as const;
 
-type Reel = (typeof reels)[number];
+type Reel = typeof fallbackReels[number];
 
 function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
   const { src, isUploaded } = useMediaAsset(reel.id, reel.fallback);
@@ -168,14 +169,29 @@ function SideReel({ reel, side }: { reel: Reel; side: "left" | "right" }) {
 }
 
 export default function LatestWorkSection() {
+  const { slots } = useMediaContext();
   const [index, setIndex] = useState(0);
 
-  const handleNext = useCallback(() => setIndex((v) => (v + 1) % reels.length), []);
-  const handlePrev = useCallback(() => setIndex((v) => (v - 1 + reels.length) % reels.length), []);
+  const reels = useMemo(() => {
+    const sectionSlots = slots.filter(s => s.section === "05. INSTAGRAM FEED (LATEST WORK)");
+    if (sectionSlots.length === 0) return fallbackReels;
 
-  const active = reels[index];
-  const prev = useMemo(() => reels[(index - 1 + reels.length) % reels.length], [index]);
-  const next = useMemo(() => reels[(index + 1) % reels.length], [index]);
+    return sectionSlots.map(s => ({
+      id: s.id,
+      title: s.categoryLabel || s.frame.toUpperCase(),
+      time: "0:30",
+      likes: "10K",
+      views: "100K",
+      fallback: s.fallbackSrc,
+    }));
+  }, [slots]);
+
+  const handleNext = useCallback(() => setIndex((v) => (v + 1) % reels.length), [reels.length]);
+  const handlePrev = useCallback(() => setIndex((v) => (v - 1 + reels.length) % reels.length), [reels.length]);
+
+  const active = reels[index] || fallbackReels[0];
+  const prev = useMemo(() => reels[(index - 1 + reels.length) % reels.length], [index, reels]);
+  const next = useMemo(() => reels[(index + 1) % reels.length], [index, reels]);
 
   return (
     <section className="relative w-full bg-black text-white flex flex-col items-center overflow-hidden border-t border-white/5 h-[654px] max-h-[654px] sm:h-[900px] sm:max-h-[900px] pt-8 pb-8 sm:pt-16 sm:pb-16">
