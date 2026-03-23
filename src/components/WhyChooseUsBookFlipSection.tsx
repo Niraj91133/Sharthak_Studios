@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
 
 function InlinePhoto({
@@ -183,18 +184,20 @@ export default function WhyChooseUsBookFlipSection() {
   );
 
   const [leftIndex, setLeftIndex] = useState(0);
-  const [isFlipping, setIsFlipping] = useState(false);
+  const [direction, setDirection] = useState<1 | -1>(1);
 
   const rightIndex = (leftIndex + 1) % pages.length;
   const nextIndex = (leftIndex + 2) % pages.length;
 
-  const flipNext = () => {
-    if (isFlipping) return;
-    setIsFlipping(true);
-    window.setTimeout(() => {
-      setLeftIndex(rightIndex);
-      setIsFlipping(false);
-    }, 720);
+  const slideVariants = {
+    enter: (dir: 1 | -1) => ({ x: dir > 0 ? 70 : -70, opacity: 0, scale: 0.985 }),
+    center: { x: 0, opacity: 1, scale: 1 },
+    exit: (dir: 1 | -1) => ({ x: dir > 0 ? -70 : 70, opacity: 0, scale: 0.985 }),
+  };
+
+  const goNext = (step: 1 | 2) => {
+    setDirection(1);
+    setLeftIndex((i) => (i + step) % pages.length);
   };
 
   return (
@@ -237,113 +240,73 @@ export default function WhyChooseUsBookFlipSection() {
                 boxShadow: "0 40px 90px rgba(0,0,0,0.10)",
               }}
             >
-              {/* Mobile: single page flip */}
-              <div className="relative min-h-[640px] md:hidden">
-                <div className="absolute inset-0">
-                  <Page data={pages[rightIndex]} rounded="none" />
-                </div>
-                <button
-                  type="button"
-                  onClick={flipNext}
-                  className="absolute inset-0 text-left"
-                  aria-label="Turn page"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    transformOrigin: "left center",
-                    transition: "transform 720ms cubic-bezier(0.22, 1, 0.36, 1)",
-                    transform: isFlipping ? "rotateY(-180deg)" : "rotateY(0deg)",
-                  }}
-                >
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden",
-                    }}
+              {/* Mobile: slide page */}
+              <div className="relative min-h-[640px] md:hidden overflow-hidden">
+                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                  <motion.button
+                    key={`m-${leftIndex}`}
+                    type="button"
+                    onClick={() => goNext(1)}
+                    aria-label="Next page"
+                    className="absolute inset-0 text-left"
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <Page data={pages[leftIndex]} rounded="none" />
-                  </div>
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      transform: "rotateY(180deg)",
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden",
-                    }}
-                  >
-                    <Page data={pages[rightIndex]} rounded="none" />
-                  </div>
-                </button>
+                  </motion.button>
+                </AnimatePresence>
               </div>
 
-              {/* Desktop: album spread + right page turn */}
-              <div className="relative hidden min-h-[640px] grid-cols-2 md:grid">
-                <div className="relative">
-                  <Page data={pages[leftIndex]} rounded="left" />
-                  <div
-                    className="pointer-events-none absolute right-0 top-0 h-full w-[18px]"
-                    style={{
-                      background:
-                        "linear-gradient(270deg, rgba(0,0,0,0.10), rgba(0,0,0,0))",
-                      opacity: 0.25,
-                    }}
-                  />
-                </div>
-
-                <div className="relative">
-                  <div className="absolute inset-0">
-                    <Page data={pages[nextIndex]} rounded="right" />
-                  </div>
-
-                  <button
+              {/* Desktop: slide spread (two pages) */}
+              <div className="relative hidden min-h-[640px] md:block overflow-hidden">
+                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                  <motion.button
+                    key={`d-${leftIndex}`}
                     type="button"
-                    onClick={flipNext}
+                    onClick={() => goNext(2)}
+                    aria-label="Next spread"
                     className="absolute inset-0 text-left"
-                    aria-label="Turn page"
-                    style={{
-                      transformStyle: "preserve-3d",
-                      transformOrigin: "left center",
-                      transition: "transform 720ms cubic-bezier(0.22, 1, 0.36, 1)",
-                      transform: isFlipping ? "rotateY(-180deg)" : "rotateY(0deg)",
-                      borderTopRightRadius: 16,
-                      borderBottomRightRadius: 16,
-                    }}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        backfaceVisibility: "hidden",
-                        WebkitBackfaceVisibility: "hidden",
-                      }}
-                    >
-                      <Page data={pages[rightIndex]} rounded="right" />
+                    <div className="grid min-h-[640px] grid-cols-2">
+                      <div className="relative">
+                        <Page data={pages[leftIndex]} rounded="left" />
+                        <div
+                          className="pointer-events-none absolute right-0 top-0 h-full w-[18px]"
+                          style={{
+                            background:
+                              "linear-gradient(270deg, rgba(0,0,0,0.10), rgba(0,0,0,0))",
+                            opacity: 0.25,
+                          }}
+                        />
+                      </div>
+                      <div className="relative">
+                        <Page data={pages[rightIndex]} rounded="right" />
+                        <div
+                          className="pointer-events-none absolute left-0 top-0 hidden h-full w-[1px] md:block"
+                          style={{ background: "rgba(0,0,0,0.08)" }}
+                        />
+                        <div
+                          className="pointer-events-none absolute left-0 top-0 hidden h-full w-[18px] md:block"
+                          style={{
+                            background:
+                              "linear-gradient(90deg, rgba(0,0,0,0.10), rgba(0,0,0,0))",
+                            opacity: 0.22,
+                          }}
+                        />
+                      </div>
                     </div>
-
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        transform: "rotateY(180deg)",
-                        backfaceVisibility: "hidden",
-                        WebkitBackfaceVisibility: "hidden",
-                      }}
-                    >
-                      <Page data={pages[nextIndex]} rounded="right" />
-                    </div>
-                  </button>
-
-                  <div
-                    className="pointer-events-none absolute left-0 top-0 hidden h-full w-[1px] md:block"
-                    style={{ background: "rgba(0,0,0,0.08)" }}
-                  />
-                  <div
-                    className="pointer-events-none absolute left-0 top-0 hidden h-full w-[18px] md:block"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, rgba(0,0,0,0.10), rgba(0,0,0,0))",
-                      opacity: 0.22,
-                    }}
-                  />
-                </div>
+                  </motion.button>
+                </AnimatePresence>
               </div>
             </div>
 
@@ -361,7 +324,7 @@ export default function WhyChooseUsBookFlipSection() {
             </div>
 
             <div className="mt-2 text-center text-[13px] font-semibold tracking-[0.04em] text-black/45">
-              Click the page to turn →
+              Tap / click to slide →
             </div>
           </div>
         </div>
