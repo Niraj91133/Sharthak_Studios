@@ -6,13 +6,18 @@ import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
 
 type GalleryTab = { label: string };
 type GalleryItem = { seed: string; col: string; row: string; category: string };
-type GallerySectionProps = { tabs: GalleryTab[]; items: GalleryItem[] };
+type GallerySectionProps = {
+  tabs: GalleryTab[];
+  items: GalleryItem[];
+  activeTabOverride?: string;
+  onTabChange?: (tab: string) => void;
+};
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-export default function GallerySection({ tabs, items }: GallerySectionProps) {
+export default function GallerySection({ tabs, items, activeTabOverride, onTabChange }: GallerySectionProps) {
   const { getSlot } = useMediaContext();
 
   const DESKTOP_DISPLAY_COUNT = 50;
@@ -30,6 +35,18 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
     return !("IntersectionObserver" in window);
   });
   const [activeTab, setActiveTab] = useState(tabs[0]?.label || "");
+
+  useEffect(() => {
+    if (activeTabOverride && activeTabOverride !== activeTab) {
+      setActiveTab(activeTabOverride);
+    }
+  }, [activeTabOverride]);
+
+  const handleTabClick = (label: string) => {
+    setActiveTab(label);
+    setLightboxIndex(null);
+    if (onTabChange) onTabChange(label);
+  };
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -158,6 +175,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
   return (
     <section
       ref={sectionRef}
+      id="gallery-section"
       className={`gallery-section w-full bg-black px-0 pt-6 pb-0 ${revealClass} flex flex-col overflow-hidden h-fit sm:h-[900px] sm:max-h-[900px]`}
     >
       <div className="w-full px-0 flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -171,10 +189,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                   <button
                     key={`tab-${idx}`}
                     type="button"
-                    onClick={() => {
-                      setActiveTab(tab.label);
-                      setLightboxIndex(null);
-                    }}
+                    onClick={() => handleTabClick(tab.label)}
                     ref={isActive ? activeMobileBtnRef : undefined}
                     className={[
                       "flex-shrink-0 h-11 px-6 border border-white/35 text-[10px] font-black tracking-[0.22em] uppercase transition-all duration-300",
@@ -199,10 +214,7 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                   <button
                     key={`tab-desktop-${idx}`}
                     type="button"
-                    onClick={() => {
-                      setActiveTab(tab.label);
-                      setLightboxIndex(null);
-                    }}
+                    onClick={() => handleTabClick(tab.label)}
                     ref={isActive ? activeDesktopBtnRef : undefined}
                     className={[
                       "flex-shrink-0 h-12 px-10 border border-white/30 text-[11px] font-black tracking-[0.35em] uppercase transition-all duration-300",

@@ -19,6 +19,19 @@ export type MediaSlot = {
 };
 
 export const mediaSlots: MediaSlot[] = [
+    // 00. SERVICE CATEGORIES (Horizontal Cards)
+    ...Array.from({ length: 8 }, (_, i) => ({
+        id: `service-card-${String(i + 1).padStart(2, "0")}`,
+        section: "00. SERVICE CATEGORIES",
+        frame: `Service Card ${i + 1}`,
+        type: "image" as const,
+        currentSrc: `https://picsum.photos/seed/service-${i}/800/1000`,
+        fallbackSrc: `https://picsum.photos/seed/service-${i}/800/1000`,
+        useOnSite: true,
+        orderIndex: i,
+        categoryLabel: ["WEDDING", "PRE-WEDDING", "BIRTHDAY", "PRODUCT", "BABY", "VIDEOGRAPHY", "REELS", "WEDDING FILMS"][i] || "NEW CATEGORY",
+    })),
+
     // 01. MOBILE HERO SECTION
     ...Array.from({ length: 6 }, (_, i) => ({
         id: `mobile-hero-top-${String(i + 1).padStart(2, "0")}`,

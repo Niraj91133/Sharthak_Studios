@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import Lenis from "lenis";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import { MediaSlot } from "@/lib/mediaSlots";
 import MobileHeroSection from "@/components/MobileHeroSection";
 import WhyChooseUsSection from "@/components/WhyChooseUsSection";
 import LeadCapturePopup from "@/components/LeadCapturePopup";
+import ServiceCardsSection from "@/components/ServiceCardsSection";
 
 // Lazy-loaded sections for performance and stability
 const GallerySection = dynamic(() => import("@/components/GallerySection"), { ssr: false });
@@ -21,6 +22,15 @@ const AboutMeSection = dynamic(() => import("@/components/AboutMeSection"), { ss
 
 export default function AppContent() {
     const router = useRouter();
+    const [galleryTab, setGalleryTab] = useState("ALL");
+
+    const handleServiceClick = (category: string) => {
+        setGalleryTab(category.toUpperCase());
+        const gallery = document.getElementById("gallery-section");
+        if (gallery) {
+            gallery.scrollIntoView({ behavior: "smooth" });
+        }
+    };
 
     useEffect(() => {
         const lenis = new Lenis({
@@ -55,7 +65,7 @@ export default function AppContent() {
             .filter(Boolean);
 
         const set = new Set(categories);
-        const uniqueCats = Array.from(set).map((cat) => ({ label: cat as string }));
+        const uniqueCats = Array.from(set).map((cat) => ({ label: (cat as string).toUpperCase() }));
 
         return [{ label: "ALL" }, ...uniqueCats];
     }, [slots]);
@@ -78,7 +88,7 @@ export default function AppContent() {
                 seed: s.id,
                 col: "span 2", // Placeholder, masonry ignores this
                 row: "span 2",
-                category: s.categoryLabel || "WEDDING"
+                category: (s.categoryLabel || "WEDDING").toUpperCase()
             };
             items.push(item);
 
@@ -107,13 +117,19 @@ export default function AppContent() {
         <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
             <LeadCapturePopup />
             <MobileHeroSection />
+            <ServiceCardsSection slots={slots} onCardClick={handleServiceClick} />
             <div className="hidden md:block">
                 <InfiniteStripsCTASection />
             </div>
 
             <div className="h-6" />
 
-            <GallerySection tabs={galleryTabs} items={galleryItems} />
+            <GallerySection
+                tabs={galleryTabs}
+                items={galleryItems}
+                activeTabOverride={galleryTab}
+                onTabChange={setGalleryTab}
+            />
 
             <div className="h-6" />
 
