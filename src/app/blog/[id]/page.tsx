@@ -50,54 +50,75 @@ function BlogPostContent() {
                 </div>
             </nav>
 
-            {/* Featured Photo - Narrow Panorama (Height Reduced) */}
-            <header className="pt-16">
-                <div className="w-full h-[300px] md:h-[450px] bg-black overflow-hidden relative">
+            {/* Sharp Panoramic Banner (No Radius) */}
+            <header className="pt-16 max-w-[1400px] mx-auto px-6">
+                <div className="relative group w-full h-[350px] md:h-[500px] bg-black overflow-hidden">
                     <img
                         src={blog.image}
                         alt={blog.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover opacity-90 transition-transform duration-[2000ms] group-hover:scale-105"
                     />
+
+                    {/* Overlay 'Go back' */}
+                    <Link
+                        href="/blog"
+                        className="absolute top-8 left-8 flex items-center gap-3 text-white/80 hover:text-white transition-all bg-black/20 backdrop-blur-md px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] border border-white/10"
+                    >
+                        ← GO BACK
+                    </Link>
+
+                    {/* Navigation Links inside Banner (Desktop) */}
+                    <div className="absolute top-8 right-8 hidden md:flex items-center gap-8">
+                        {['JOURNAL', 'GALLERY', 'FILMS', 'STUDIO'].map(item => (
+                            <Link key={item} href={`/#${item.toLowerCase()}`} className="text-[10px] font-black tracking-[0.2em] text-white/60 hover:text-white transition-colors uppercase">
+                                {item}
+                            </Link>
+                        ))}
+                    </div>
                 </div>
             </header>
 
-            {/* Meta, Title & Subtitle - Aligned Below the Photo */}
-            <section className="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center">
-                <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                    <span className="text-[10px] font-black tracking-[0.4em] text-black/40 uppercase bg-black/[0.03] px-3 py-1 rounded-full border border-black/5">
-                        {blog.category}
-                    </span>
-                    <span className="w-1.5 h-1.5 bg-black/10 rounded-full" />
-                    <span className="text-[10px] font-black tracking-[0.4em] text-black/40 uppercase">
-                        {new Date(blog.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </span>
+            {/* Meta & Title Section - High Contrast Minimalist */}
+            <section className="max-w-4xl mx-auto px-6 pt-16 pb-12">
+                <div className="space-y-4 mb-10">
+                    <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-black tracking-[0.4em] text-black uppercase">
+                            {blog.category}
+                        </span>
+                        <div className="h-px flex-1 bg-black/5" />
+                        <span className="text-[10px] font-black tracking-[0.4em] text-black/30 uppercase">
+                            SHARTHAK STUDIO • {new Date(blog.date).getFullYear()}
+                        </span>
+                    </div>
+                    <h1 className="text-4xl md:text-7xl font-black tracking-tightest leading-[0.95] uppercase text-black italic">
+                        {blog.title}
+                    </h1>
                 </div>
 
-                <h1 className="text-4xl md:text-6xl font-black tracking-tightest leading-[1.05] uppercase text-black mb-10 max-w-3xl mx-auto">
-                    {blog.title}
-                </h1>
-
-                <div className="w-12 h-1.5 bg-black/10 mx-auto mb-10 rounded-full" />
-
-                <p className="text-lg md:text-xl text-black/50 font-medium tracking-tight max-w-2xl mx-auto leading-relaxed italic">
+                <p className="text-lg md:text-2xl text-black/60 font-medium tracking-tight leading-relaxed max-w-3xl">
                     {blog.excerpt}
                 </p>
 
-                <div className="h-px w-24 bg-black/5 mx-auto mt-16" />
+                <div className="mt-12 group flex items-center gap-4 text-[10px] font-black tracking-[0.4em] text-black/20 uppercase cursor-default">
+                    <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center text-[18px] text-black font-serif italic pr-0.5">
+                        i
+                    </div>
+                    Updated {new Date(blog.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </div>
             </section>
 
-            {/* HTML Content Render - Contained in a Frame */}
-            <main className="max-w-[720px] mx-auto px-10 py-16 bg-[#fafafa]/30 border-x border-black/[0.02] shadow-[0_0_100px_rgba(0,0,0,0.02)]">
+            {/* HTML Content Render - Sharp Typography */}
+            <main className="max-w-[840px] mx-auto px-6 md:px-12 py-20">
                 <style jsx global>{`
                     .systematic-rich-text {
-                        font-size: 1.15rem;
-                        line-height: 1.9;
-                        color: #1a1a1a;
+                        font-size: 1.1rem;
+                        line-height: 1.8;
+                        color: #222;
                         font-family: inherit;
                         text-align: left;
                     }
                     .systematic-rich-text p {
-                        margin-bottom: 2.5rem;
+                        margin-bottom: 2.25rem;
                         letter-spacing: -0.01em;
                     }
                     .systematic-rich-text h2, 
@@ -105,40 +126,56 @@ function BlogPostContent() {
                         color: black;
                         font-weight: 900;
                         text-transform: uppercase;
-                        letter-spacing: -0.05em;
-                        margin-top: 5rem;
+                        letter-spacing: -0.04em;
+                        margin-top: 4.5rem;
                         margin-bottom: 1.5rem;
-                        text-align: center;
+                        padding-bottom: 1rem;
+                        border-bottom: 1px solid rgba(0,0,0,0.05);
+                        position: relative;
                     }
-                    .systematic-rich-text h2 { font-size: 2.25rem; }
-                    .systematic-rich-text h3 { font-size: 1.75rem; }
+                    .systematic-rich-text h2::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -1px;
+                        left: 0;
+                        width: 40px;
+                        height: 1px;
+                        background: black;
+                    }
+                    .systematic-rich-text h2 { font-size: 2rem; italic: true; }
+                    .systematic-rich-text h3 { font-size: 1.5rem; }
                     .systematic-rich-text img {
                         width: 100%;
                         height: auto;
-                        border-radius: 0;
-                        margin: 5rem 0;
-                        box-shadow: 0 40px 100px rgba(0,0,0,0.08);
+                        border-radius: 0 !important;
+                        margin: 4rem 0;
+                        transition: opacity 0.5s;
                     }
                     .systematic-rich-text blockquote {
-                        border-left: 0;
-                        padding: 3rem;
-                        background: #fff;
-                        border: 1px solid #f0f0f0;
+                        border-left: 2px solid black;
+                        padding: 0 0 0 2rem;
                         font-style: italic;
-                        font-size: 1.35rem;
-                        color: #444;
-                        text-align: center;
+                        font-size: 1.5rem;
+                        color: #111;
                         margin: 4rem 0;
-                        position: relative;
                     }
                     .systematic-rich-text ul, 
                     .systematic-rich-text ol {
                         margin-bottom: 2.5rem;
                         padding-left: 1.5rem;
-                        list-style-type: square;
                     }
                     .systematic-rich-text li {
-                        margin-bottom: 1rem;
+                        margin-bottom: 0.75rem;
+                        list-style-type: none;
+                        position: relative;
+                        padding-left: 1.5rem;
+                    }
+                    .systematic-rich-text li::before {
+                        content: '→';
+                        position: absolute;
+                        left: 0;
+                        color: black;
+                        font-weight: 900;
                     }
                 `}</style>
                 <div
@@ -149,17 +186,17 @@ function BlogPostContent() {
 
             {/* Horizontal Scroll Recent Blogs */}
             <section className="mt-24 border-t border-black/5 pt-16 mb-12">
-                <div className="max-w-6xl mx-auto px-6">
+                <div className="max-w-7xl mx-auto px-6 md:px-12">
                     <div className="flex items-center justify-between mb-12">
-                        <h3 className="text-[10px] font-black tracking-[0.4em] text-black/30 uppercase">LATEST BLOGS</h3>
+                        <h3 className="text-[10px] font-black tracking-[0.4em] text-black/30 uppercase italic">CONTINUE READING</h3>
                         <div className="flex gap-4">
                             <button
                                 onClick={() => scrollRef.current?.scrollBy({ left: -400, behavior: 'smooth' })}
-                                className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm"
+                                className="w-12 h-12 border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm"
                             >←</button>
                             <button
                                 onClick={() => scrollRef.current?.scrollBy({ left: 400, behavior: 'smooth' })}
-                                className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm"
+                                className="w-12 h-12 border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm"
                             >→</button>
                         </div>
                     </div>
@@ -169,30 +206,34 @@ function BlogPostContent() {
                         className="flex gap-8 overflow-x-auto no-scrollbar pb-12 snap-x"
                     >
                         {otherBlogs.length > 0 ? otherBlogs.map(b => (
-                            <Link key={b.id} href={`/blog/${b.id}`} className="flex-shrink-0 w-[240px] md:w-[320px] group space-y-4 snap-start">
-                                <div className="aspect-video bg-black/5 overflow-hidden">
+                            <Link key={b.id} href={`/blog/${b.id}`} className="flex-shrink-0 w-[280px] md:w-[380px] group space-y-6 snap-start">
+                                <div className="aspect-[4/5] bg-black/5 overflow-hidden">
                                     <img src={b.image} alt={b.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                                 </div>
-                                <div className="space-y-2">
-                                    <h4 className="text-sm font-black leading-tight uppercase tracking-tight group-hover:text-black/50 transition-colors line-clamp-2">
+                                <div className="space-y-3">
+                                    <h4 className="text-xl md:text-2xl font-black leading-tight uppercase tracking-tight group-hover:text-black/50 transition-colors line-clamp-2 italic">
                                         {b.title}
                                     </h4>
+                                    <div className="h-0.5 w-10 bg-black/5" />
                                 </div>
                             </Link>
-                        )) : null}
+                        )) : (
+                            <div className="text-[10px] font-black tracking-[0.4em] text-black/10 uppercase py-20">NO MORE STORIES YET.</div>
+                        )}
                     </div>
                 </div>
             </section>
 
             {/* Simple Studio Footer */}
-            <footer className="py-20 bg-black text-white text-center px-6">
-                <div className="max-w-2xl mx-auto space-y-6">
-                    <h2 className="text-xl md:text-2xl font-black tracking-tightest uppercase">STUDIO BLOGS • BIHAR</h2>
-                    <Link href="/#contact" className="inline-block px-10 py-4 bg-white text-black text-[9px] font-black uppercase tracking-widest rounded-full hover:scale-105 active:scale-95 transition-all shadow-2xl">
-                        BOOK YOUR JOURNEY
+            <footer className="mt-40 border-t border-black/5 py-32 bg-white text-black text-center px-6">
+                <div className="max-w-2xl mx-auto space-y-10">
+                    <h2 className="text-3xl md:text-5xl font-black tracking-tightest uppercase italic leading-none opacity-10">SHARTHAK STUDIO • JOURNAL</h2>
+                    <div className="h-px w-20 bg-black/5 mx-auto" />
+                    <Link href="/#contact" className="inline-block h-14 px-12 border border-black bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-transparent hover:text-black transition-all shadow-xl rounded-none">
+                        START YOUR STORY
                     </Link>
-                    <p className="text-[8px] tracking-[0.4em] text-white/20 uppercase font-bold pt-8">
-                        © {new Date().getFullYear()} ALL RIGHTS RESERVED
+                    <p className="text-[9px] tracking-[0.6em] text-black/10 uppercase font-black pt-12">
+                        GAYA • BIHAR • EST 2024
                     </p>
                 </div>
             </footer>
