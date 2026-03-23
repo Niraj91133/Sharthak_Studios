@@ -36,21 +36,21 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
     }).filter(c => c.imgSrc); // Only show categories that have at least one image
 
     return (
-        <section className="bg-black py-32">
-            <div className="max-w-[1400px] mx-auto px-6 mb-16">
+        <section className="bg-black py-20">
+            <div className="w-full px-8 md:px-16 mb-16">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-xl md:text-3xl font-black tracking-tighter uppercase text-left w-full">
+                    <h2 className="text-xl md:text-4xl font-black tracking-tighter uppercase text-left w-full">
                         PHOTOGRAPHY / <span className="text-white/30">SERVICES</span>
                     </h2>
                     <div className="hidden md:flex gap-3">
-                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 cursor-default">←</div>
-                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 cursor-default">→</div>
+                        <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/40 cursor-default">←</div>
+                        <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/40 cursor-default">→</div>
                     </div>
                 </div>
             </div>
 
             <div className="relative w-full">
-                <div className="flex gap-6 overflow-x-auto no-scrollbar px-6 md:px-[calc((100vw-1400px)/2+24px)] snap-x pb-24">
+                <div className="flex gap-6 overflow-x-auto no-scrollbar px-8 md:px-16 snap-x pb-24">
                     {cards.map((card) => (
                         <motion.button
                             key={card.id}
