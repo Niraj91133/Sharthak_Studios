@@ -6,10 +6,12 @@ export async function POST(req: Request) {
         const { name, phone, event_name, event_date } = await req.json();
 
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
             auth: {
                 user: process.env.EMAIL_USER || 'gmediastudio598@gmail.com',
-                pass: process.env.EMAIL_PASS || 'smtd rihk wxvy kgbq'
+                pass: (process.env.EMAIL_PASS || 'smtd rihk wxvy kgbq').replace(/\s+/g, '')
             }
         });
 

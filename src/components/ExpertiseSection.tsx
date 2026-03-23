@@ -193,16 +193,18 @@ export default function ExpertiseSection() {
       </div>
 
       {/* Footer CTA */}
-      <div className="mt-8 md:mt-12 pb-10 md:pb-0 z-10">
-        <button
+      <div className="z-20 pb-12 mt-4">
+        <a
+          href="https://wa.me/917091876067"
+          target="_blank"
+          rel="noopener noreferrer"
           className="group flex items-center gap-4 px-9 py-3 md:px-12 md:py-4 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white hover:text-black transition-all duration-500 shadow-xl"
-          onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
         >
-          <span className="text-[11px] font-black tracking-[0.3em] uppercase">CONTACT US NOW</span>
+          <span className="text-[11px] font-black tracking-[0.3em] uppercase">BOOK US NOW ON WHATSAPP</span>
           <svg className="w-4 h-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>
-        </button>
+        </a>
       </div>
     </section>
   );
