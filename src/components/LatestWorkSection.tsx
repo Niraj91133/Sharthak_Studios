@@ -6,7 +6,16 @@ import { Eye, Heart } from "lucide-react";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
 import { useMediaContext } from "@/context/MediaContext";
 
-const fallbackReels = [
+type Reel = {
+  id: string;
+  title: string;
+  time: string;
+  likes: string;
+  views: string;
+  fallback: string;
+};
+
+const fallbackReels: Reel[] = [
   {
     id: "latest-work-01",
     title: "Eternal Vows",
@@ -61,9 +70,7 @@ const fallbackReels = [
     fallback:
       "https://images.unsplash.com/photo-1529634897861-1fe71c0421d2?auto=format&fit=crop&q=80&w=1200",
   },
-] as const;
-
-type Reel = typeof fallbackReels[number];
+];
 
 function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
   const { src, isUploaded } = useMediaAsset(reel.id, reel.fallback);

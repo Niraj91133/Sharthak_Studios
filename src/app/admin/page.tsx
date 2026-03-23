@@ -20,32 +20,33 @@ export default function AdminDashboard() {
         loading: boolean;
     }>({ usedBytes: null, limitBytes: null, usedPct: null, loading: true });
 
-    type UsageResponse =
-        | { ok: true; storage?: { usedBytes?: unknown; limitBytes?: unknown; usedPct?: unknown } }
-        | { ok: false; error?: string }
-        | Record<string, unknown>;
+    const isRecord = (v: unknown): v is Record<string, unknown> =>
+        typeof v === "object" && v !== null && !Array.isArray(v);
 
     useEffect(() => {
         let cancelled = false;
         const run = async () => {
             try {
                 const res = await fetch("/api/cloudinary/usage");
-                const data = (await res.json()) as UsageResponse;
+                const json: unknown = await res.json();
                 if (cancelled) return;
-                if (!res.ok || !("ok" in data) || data.ok !== true) {
+                const data = isRecord(json) ? json : {};
+                const ok = res.ok && data.ok === true;
+                if (!ok) {
                     setStorage({
                         usedBytes: null,
                         limitBytes: null,
                         usedPct: null,
-                        error: ("error" in data && typeof data.error === "string") ? data.error : "Failed to load storage status",
+                        error: typeof data.error === "string" ? data.error : "Failed to load storage status",
                         loading: false,
                     });
                     return;
                 }
 
-                const usedBytes = typeof data.storage?.usedBytes === "number" ? data.storage.usedBytes : null;
-                const limitBytes = typeof data.storage?.limitBytes === "number" ? data.storage.limitBytes : null;
-                const usedPct = typeof data.storage?.usedPct === "number" ? data.storage.usedPct : null;
+                const storageObj = isRecord(data.storage) ? data.storage : {};
+                const usedBytes = typeof storageObj.usedBytes === "number" ? storageObj.usedBytes : null;
+                const limitBytes = typeof storageObj.limitBytes === "number" ? storageObj.limitBytes : null;
+                const usedPct = typeof storageObj.usedPct === "number" ? storageObj.usedPct : null;
                 setStorage({
                     usedBytes,
                     limitBytes,

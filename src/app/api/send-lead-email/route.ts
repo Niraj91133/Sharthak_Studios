@@ -5,19 +5,28 @@ export async function POST(req: Request) {
     try {
         const { name, phone, event_name, event_date } = await req.json();
 
+        const emailUser = process.env.EMAIL_USER;
+        const emailPass = process.env.EMAIL_PASS;
+        if (!emailUser || !emailPass) {
+            return NextResponse.json(
+                { error: 'Email env vars missing (EMAIL_USER, EMAIL_PASS)' },
+                { status: 500 }
+            );
+        }
+
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
             secure: true,
             auth: {
-                user: process.env.EMAIL_USER || 'gmediastudio598@gmail.com',
-                pass: (process.env.EMAIL_PASS || 'smtd rihk wxvy kgbq').replace(/\s+/g, '')
+                user: emailUser,
+                pass: emailPass.replace(/\s+/g, '')
             }
         });
 
         const mailOptions = {
-            from: `"Sharthak Studio Bot" <${process.env.EMAIL_USER || 'gmediastudio598@gmail.com'}>`, // sender address
-            to: process.env.EMAIL_USER || 'gmediastudio598@gmail.com', // list of receivers
+            from: `"Sharthak Studio Bot" <${emailUser}>`, // sender address
+            to: emailUser, // list of receivers
             subject: `✨ New Photography Lead: ${name}`, // Subject line
             html: `
                 <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 600px; color: #333;">
