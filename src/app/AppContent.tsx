@@ -117,12 +117,15 @@ export default function AppContent() {
         <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
             <LeadCapturePopup />
             <MobileHeroSection />
-            <ServiceCardsSection slots={slots} onCardClick={handleServiceClick} />
             <div className="hidden md:block">
                 <InfiniteStripsCTASection />
             </div>
 
-            <div className="h-6" />
+            <div className="h-32" />
+
+            <ServiceCardsSection slots={slots} onCardClick={handleServiceClick} />
+
+            <div className="h-12" />
 
             <GallerySection
                 tabs={galleryTabs}
