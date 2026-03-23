@@ -64,3 +64,16 @@ CREATE TABLE IF NOT EXISTS public.blogs (
 
 GRANT ALL ON TABLE public.blogs TO anon, authenticated, service_role;
 ALTER TABLE public.blogs DISABLE ROW LEVEL SECURITY;
+
+-- 7. SETUP LEADS TABLE
+CREATE TABLE IF NOT EXISTS public.leads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  event_name TEXT,
+  event_date DATE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+GRANT ALL ON TABLE public.leads TO anon, authenticated, service_role;
+ALTER TABLE public.leads DISABLE ROW LEVEL SECURITY;

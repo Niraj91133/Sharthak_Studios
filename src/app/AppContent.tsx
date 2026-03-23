@@ -9,6 +9,7 @@ import { MediaSlot } from "@/lib/mediaSlots";
 
 import MobileHeroSection from "@/components/MobileHeroSection";
 import WhyChooseUsSection from "@/components/WhyChooseUsSection";
+import LeadCapturePopup from "@/components/LeadCapturePopup";
 
 // Lazy-loaded sections for performance and stability
 const GallerySection = dynamic(() => import("@/components/GallerySection"), { ssr: false });
@@ -100,6 +101,7 @@ export default function AppContent() {
 
     return (
         <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
+            <LeadCapturePopup />
             <MobileHeroSection />
             <div className="hidden md:block">
                 <InfiniteStripsCTASection />
