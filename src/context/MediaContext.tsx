@@ -106,19 +106,22 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const { error } = await supabase.from('media_slots').upsert(payload);
         if (!error) return;
 
-        const code = (error as unknown as { code?: string }).code;
-        if (code === "42703") {
-            // Column not found (e.g. category_label or order_index missing)
-            let retryPayload = { ...payload };
-            let shouldRetry = false;
+        const code = (error as unknown as { code?: string }).code || "";
+        const message = describeSupabaseError(error);
 
-            if (describeSupabaseError(error).includes("order_index")) {
+        // Postgres: 42703 (undefined column). PostgREST schema cache: PGRST204.
+        if (code === "42703" || code === "PGRST204") {
+            // Column not found (e.g. category_label or order_index missing)
+            let shouldRetry = false;
+            const retryPayload = { ...payload };
+
+            if (message.includes("order_index")) {
                 setDbSupportsOrderIndex(false);
                 delete retryPayload.order_index;
                 shouldRetry = true;
             }
 
-            if (describeSupabaseError(error).includes("category_label")) {
+            if (message.includes("category_label")) {
                 setDbSupportsCategoryLabel(false);
                 delete retryPayload.category_label;
                 shouldRetry = true;
@@ -127,12 +130,12 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (shouldRetry) {
                 const { error: retryError } = await supabase.from('media_slots').upsert(retryPayload);
                 if (!retryError) return;
-                console.error("Update sync error (retry):", describeSupabaseError(retryError));
+                console.warn("Update sync error (retry):", describeSupabaseError(retryError));
                 return;
             }
         }
 
-        console.error("Update sync error:", describeSupabaseError(error));
+        console.warn("Update sync error:", message);
     }, []);
 
     // Initial Data Fetch
@@ -247,8 +250,16 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const checkSchema = async () => {
             try {
                 const { error } = await supabase.from("media_slots").select("category_label").limit(1);
-                if (error && error.code === '42703') { // Column not found
+                if (error && (error.code === '42703' || error.code === "PGRST204")) {
                     setDbSupportsCategoryLabel(false);
+                }
+            } catch {
+                // Ignore
+            }
+            try {
+                const { error } = await supabase.from("media_slots").select("order_index").limit(1);
+                if (error && (error.code === '42703' || error.code === "PGRST204")) {
+                    setDbSupportsOrderIndex(false);
                 }
             } catch {
                 // Ignore
