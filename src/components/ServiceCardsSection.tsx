@@ -41,36 +41,36 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
     };
 
     return (
-        <section className="bg-black py-20 pb-0">
-            {/* Header Row (Arrows Only) */}
-            <div className="w-full px-8 md:px-16 mb-8 flex items-center justify-end">
-                <div className="flex gap-4">
+        <section className="bg-black py-20 pb-0 relative">
+            <div className="relative w-full group/section">
+                {/* Floating Navigation Buttons (Centered Vertically) */}
+                <div className="absolute inset-y-0 left-0 z-10 hidden md:flex items-center pl-4 pointer-events-none">
                     <button
                         onClick={() => scroll('left')}
-                        className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all"
+                        className="w-14 h-14 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/80 hover:bg-white hover:text-black transition-all pointer-events-auto shadow-2xl"
                     >
                         ←
                     </button>
+                </div>
+                <div className="absolute inset-y-0 right-0 z-10 hidden md:flex items-center pr-4 pointer-events-none">
                     <button
                         onClick={() => scroll('right')}
-                        className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all"
+                        className="w-14 h-14 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/80 hover:bg-white hover:text-black transition-all pointer-events-auto shadow-2xl"
                     >
                         →
                     </button>
                 </div>
-            </div>
 
-            <div className="relative w-full">
                 <div
                     ref={scrollRef}
-                    className="flex gap-8 overflow-x-auto no-scrollbar px-8 md:px-16 snap-x pb-24"
+                    className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar px-6 md:px-16 snap-x pb-24"
                 >
                     {cards.map((card) => (
                         <motion.button
                             key={card.id}
                             whileHover={{ y: -10 }}
                             onClick={() => onCardClick(card.category)}
-                            className="flex-shrink-0 w-[260px] md:w-[320px] aspect-[10/14] rounded-[32px] overflow-hidden group relative bg-neutral-900 border border-white/5 snap-start shadow-2xl"
+                            className="flex-shrink-0 w-[85vw] sm:w-[300px] md:w-[350px] aspect-[10/14] rounded-[32px] overflow-hidden group relative bg-neutral-900 border border-white/5 snap-center shadow-2xl transition-all duration-500"
                         >
                             <img
                                 src={card.imgSrc}
@@ -80,7 +80,7 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
                             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
                             <div className="absolute bottom-8 left-8 right-8 text-left">
                                 <span className="text-[10px] font-black tracking-[0.4em] text-white/40 uppercase mb-3 block">EXPLORE</span>
-                                <h3 className="text-xl md:text-2xl font-black tracking-tightest uppercase text-white leading-tight">
+                                <h3 className="text-xl md:text-3xl font-black tracking-tightest uppercase text-white leading-tight">
                                     {card.category}
                                 </h3>
                             </div>
