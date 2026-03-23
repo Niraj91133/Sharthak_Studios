@@ -36,7 +36,7 @@ export default function GalleryManager() {
         setNewCategoryName("");
         setIsAddingCategory(false);
 
-        const id = `gal-dyn-${Date.now()}`;
+        const id = `gal-dyn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         try {
             await addSlot({
                 id,
@@ -54,7 +54,7 @@ export default function GalleryManager() {
     };
 
     const handleAddImage = async (category: string) => {
-        const id = `gal-dyn-${Date.now()}`;
+        const id = `gal-dyn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         try {
             await addSlot({
                 id,
@@ -80,7 +80,7 @@ export default function GalleryManager() {
 
         try {
             for (const file of fileArray) {
-                const id = `gal-dyn-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+                const id = `gal-dyn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
                 // 1. Create the slot first
                 await addSlot({

@@ -166,8 +166,14 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                         return base;
                     });
 
+                    const seenIds = new Set<string>(mergedSlots.map((s) => s.id));
+
                     // Add purely dynamic slots from DB
                     dbSlotMap.forEach((dbSlot, id) => {
+                        // If local cache already has this dynamic slot, prefer DB and drop local copy.
+                        localSlotMap.delete(id);
+                        if (seenIds.has(id)) return;
+                        seenIds.add(id);
                         mergedSlots.push({
                             id,
                             section: inferSectionForSlot(id, dbSlot.section),
@@ -188,6 +194,8 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
                     // Keep any locally-cached dynamic slots that DB doesn't have yet
                     localSlotMap.forEach((local) => {
+                        if (seenIds.has(local.id)) return;
+                        seenIds.add(local.id);
                         mergedSlots.push(local);
                     });
 
@@ -334,7 +342,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     const addSlot = async (slot: MediaSlot) => {
-        setSlots(prev => [...prev, slot]);
+        setSlots(prev => (prev.some((s) => s.id === slot.id) ? prev : [...prev, slot]));
         const payload: Record<string, unknown> = {
             id: slot.id,
             section: slot.section,
