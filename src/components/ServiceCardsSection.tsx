@@ -50,6 +50,15 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
 
     return (
         <section className="bg-black py-6 md:py-16 pb-0 relative">
+            <div className="px-6 md:px-16 mb-4 md:mb-8 flex justify-center">
+                <div className="text-center">
+                    <p className="text-[clamp(12px,1.4vw,16px)] font-black tracking-[0.35em] text-white/70 uppercase">
+                        Pick Service
+                    </p>
+                    <div className="mx-auto mt-3 h-px w-16 md:w-24 bg-white/15" />
+                </div>
+            </div>
+
             <div className="relative w-full group/section">
                 {/* Floating Navigation Buttons (Centered Vertically) */}
                 <div className="absolute inset-y-0 left-0 z-10 hidden md:flex items-center pl-4 pointer-events-none">
