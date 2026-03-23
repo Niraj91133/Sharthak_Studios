@@ -108,7 +108,11 @@ export default function GlobalMediaPanel({ onClose }: GlobalMediaPanelProps) {
                                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col p-4 justify-between">
                                         <div className="flex justify-end">
                                             <button
-                                                onClick={() => deleteFile(m.id)}
+                                                onClick={() => {
+                                                    if (confirm(`Delete "${m.name}"? This will clear the slot "${m.id}".`)) {
+                                                        deleteFile(m.id);
+                                                    }
+                                                }}
                                                 className="p-2 bg-red-500 rounded-full hover:scale-110 transition-transform"
                                             >
                                                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -165,7 +165,9 @@ export default function BlogManager() {
                                 <div className="flex items-center justify-between pt-4 border-t border-white/5">
                                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest">{new Date(blog.date).toLocaleDateString()}</span>
                                     <button
-                                        onClick={() => deleteBlog(blog.id)}
+                                        onClick={() => {
+                                            if (confirm(`Delete journal "${blog.title}"?`)) deleteBlog(blog.id);
+                                        }}
                                         className="text-[10px] text-red-500 font-black uppercase tracking-widest hover:text-red-400 transition-colors"
                                     >Delete</button>
                                 </div>

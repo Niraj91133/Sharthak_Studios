@@ -10,6 +10,7 @@ export default function GalleryManager() {
     const [isAddingCategory, setIsAddingCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState("");
     const [isBatchUploading, setIsBatchUploading] = useState(false);
+    const [isDeletingCategory, setIsDeletingCategory] = useState<string | null>(null);
     const batchInputRef = useRef<HTMLInputElement>(null);
 
     const gallerySlots = useMemo(() =>
@@ -19,8 +20,9 @@ export default function GalleryManager() {
     const categories = useMemo(() => {
         const defaults = ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"];
         const fromSlots = gallerySlots.map(s => s.categoryLabel).filter(Boolean) as string[];
-        const set = new Set<string>([...defaults, ...fromSlots.map((c) => c.toUpperCase())]);
-        return Array.from(set) as string[];
+        const normalized = fromSlots.map((c) => c.toUpperCase());
+        const list = normalized.length > 0 ? normalized : defaults;
+        return Array.from(new Set<string>(list));
     }, [gallerySlots]);
 
     const activeCat = activeCategory || categories[0] || "WEDDING";
@@ -50,6 +52,35 @@ export default function GalleryManager() {
             });
         } catch (e) {
             alert(e instanceof Error ? e.message : "Failed to add category.");
+        }
+    };
+
+    const handleDeleteCategory = async (category: string) => {
+        const cat = category.toUpperCase();
+        const matching = gallerySlots.filter(
+            (s) => (s.categoryLabel || "").toUpperCase() === cat
+        );
+
+        if (matching.length === 0) {
+            alert("No items found in this category.");
+            return;
+        }
+
+        const ok = confirm(`Delete category "${cat}" and all ${matching.length} items inside it?`);
+        if (!ok) return;
+
+        setIsDeletingCategory(cat);
+        try {
+            for (const slot of matching) {
+                // deleting slots is the only way to fully remove a category (tabs are derived from slots)
+                await deleteSlot(slot.id);
+            }
+            setActiveCategory((curr) => (curr && curr.toUpperCase() === cat ? null : curr));
+        } catch (e) {
+            console.error(e);
+            alert(e instanceof Error ? e.message : "Failed to delete category.");
+        } finally {
+            setIsDeletingCategory(null);
         }
     };
 
@@ -111,16 +142,36 @@ export default function GalleryManager() {
             <div className="p-8 border-b border-white/5 flex flex-wrap items-center justify-between gap-6">
                 <div className="flex flex-wrap gap-2">
                     {categories.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setActiveCategory(cat)}
-                            className={`px-4 py-2 rounded-full text-[10px] font-bold tracking-widest transition-all ${activeCat === cat
-                                ? "bg-white text-black"
-                                : "bg-white/5 text-white/40 hover:bg-white/10"
-                                }`}
-                        >
-                            {cat}
-                        </button>
+                        <div key={cat} className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setActiveCategory(cat)}
+                                className={`px-4 py-2 pr-8 rounded-full text-[10px] font-bold tracking-widest transition-all ${activeCat === cat
+                                    ? "bg-white text-black"
+                                    : "bg-white/5 text-white/40 hover:bg-white/10"
+                                    }`}
+                            >
+                                {cat}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (isDeletingCategory) return;
+                                    handleDeleteCategory(cat);
+                                }}
+                                title={`Delete ${cat}`}
+                                aria-label={`Delete ${cat}`}
+                                className={[
+                                    "absolute -right-1 -top-1 w-5 h-5 rounded-full flex items-center justify-center border",
+                                    activeCat === cat ? "bg-black text-white border-black/40" : "bg-red-600/90 text-white border-white/10",
+                                    isDeletingCategory === cat ? "opacity-60 cursor-wait" : "hover:scale-110 transition-transform",
+                                ].join(" ")}
+                                disabled={Boolean(isDeletingCategory)}
+                            >
+                                ×
+                            </button>
+                        </div>
                     ))}
                     {isAddingCategory ? (
                         <div className="flex items-center gap-2">

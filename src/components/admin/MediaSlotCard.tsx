@@ -129,7 +129,9 @@ export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProp
 
                                 <div className="flex gap-2">
                                     <button
-                                        onClick={() => deleteFile(slot.id)}
+                                        onClick={() => {
+                                            if (confirm(`Clear media for "${slot.id}"?`)) deleteFile(slot.id);
+                                        }}
                                         className="px-3 py-1.5 border border-white/10 rounded-md text-[9px] uppercase tracking-widest font-bold hover:bg-white/5 hover:border-white/20 transition-all flex items-center gap-2"
                                     >
                                         <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

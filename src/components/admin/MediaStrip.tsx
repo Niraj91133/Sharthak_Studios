@@ -47,7 +47,9 @@ export default function MediaStrip({ section }: MediaStripProps) {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    deleteFile(slot.id);
+                                    if (confirm(`Delete "${slot.uploadedFile?.name || slot.id}" from this section?`)) {
+                                        deleteFile(slot.id);
+                                    }
                                 }}
                                 className="p-1 bg-red-500 rounded-full hover:scale-110 transition-transform"
                             >
