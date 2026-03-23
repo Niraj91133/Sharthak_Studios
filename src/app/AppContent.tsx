@@ -80,11 +80,10 @@ export default function AppContent() {
                 return bTime - aTime;
             });
 
-        const items: any[] = [];
+        const items: Array<{ seed: string; col: string; row: string; category: string }> = [];
         // Add items for their specific categories
         sorted.forEach((s: MediaSlot) => {
             const item = {
-                id: s.id,
                 seed: s.id,
                 col: "span 2", // Placeholder, masonry ignores this
                 row: "span 2",
@@ -121,9 +120,11 @@ export default function AppContent() {
                 <InfiniteStripsCTASection />
             </div>
 
+            <div className="h-20" />
+
             <ServiceCardsSection slots={slots} onCardClick={handleServiceClick} />
 
-            <div className="h-24 md:h-40" />
+            <div className="h-20" />
 
             <GallerySection
                 tabs={galleryTabs}
@@ -132,19 +133,23 @@ export default function AppContent() {
                 onTabChange={setGalleryTab}
             />
 
-            <div className="h-24" />
+            <div className="h-20" />
 
             <ExpertiseSection />
 
-            <div className="h-24" />
+            <div className="h-20" />
 
             <LatestWorkSection />
 
-            <div className="h-24" />
+            <div className="h-20" />
 
             <AboutMeSection />
 
+            <div className="h-20" />
+
             <WhyChooseUsBookFlipSection />
+
+            <div className="h-20" />
 
             <WhyChooseUsSection />
 

@@ -34,16 +34,11 @@ export default function GallerySection({ tabs, items, activeTabOverride, onTabCh
     if (typeof window === "undefined") return false;
     return !("IntersectionObserver" in window);
   });
-  const [activeTab, setActiveTab] = useState(tabs[0]?.label || "");
-
-  useEffect(() => {
-    if (activeTabOverride && activeTabOverride !== activeTab) {
-      setActiveTab(activeTabOverride);
-    }
-  }, [activeTabOverride]);
+  const [localActiveTab, setLocalActiveTab] = useState(tabs[0]?.label || "");
+  const activeTab = activeTabOverride || localActiveTab;
 
   const handleTabClick = (label: string) => {
-    setActiveTab(label);
+    if (!activeTabOverride) setLocalActiveTab(label);
     setLightboxIndex(null);
     if (onTabChange) onTabChange(label);
   };
@@ -124,7 +119,7 @@ export default function GallerySection({ tabs, items, activeTabOverride, onTabCh
   useEffect(() => {
     if (clampedLightboxIndex === null) return;
     const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.setProperty("overflow", "hidden");
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setLightboxIndex(null);
@@ -134,7 +129,8 @@ export default function GallerySection({ tabs, items, activeTabOverride, onTabCh
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prev;
+      if (prev) document.body.style.setProperty("overflow", prev);
+      else document.body.style.removeProperty("overflow");
     };
   }, [clampedLightboxIndex]);
 

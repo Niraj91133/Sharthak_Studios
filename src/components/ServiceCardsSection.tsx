@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { MediaSlot } from "@/lib/mediaSlots";
 import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
@@ -10,6 +11,8 @@ interface ServiceCardsSectionProps {
 }
 
 export default function ServiceCardsSection({ slots, onCardClick }: ServiceCardsSectionProps) {
+    const scrollRef = useRef<HTMLDivElement>(null);
+
     // 1. Get all unique categories from Gallery that have images
     const gallerySlots = slots.filter(s => s.section.includes("GALLERY") && s.uploadedFile && s.useOnSite);
     const uniqueCategories = Array.from(new Set(gallerySlots.map(s => (s.categoryLabel || "WEDDING").toUpperCase())));
@@ -19,12 +22,8 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
 
     // 3. Map each unique category to a card data object
     const cards = uniqueCategories.map(category => {
-        // Find if there's a specific card for this category
         const specificSlot = serviceCardSlots.find(s => s.categoryLabel?.toUpperCase() === category && s.uploadedFile && s.useOnSite);
-
-        // Inherit first image from gallery if no specific card slot is found
         const fallbackGallerySlot = gallerySlots.find(s => (s.categoryLabel || "WEDDING").toUpperCase() === category);
-
         const previewSlot = specificSlot || fallbackGallerySlot;
         const imgSrc = previewSlot?.uploadedFile ? normalizeMediaUrl(previewSlot.uploadedFile.url) : (previewSlot?.fallbackSrc || "");
 
@@ -33,35 +32,50 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
             imgSrc,
             id: previewSlot?.id || `dynamic-${category}`
         };
-    }).filter(c => c.imgSrc); // Only show categories that have at least one image
+    }).filter(c => c.imgSrc);
+
+    const scroll = (direction: 'left' | 'right') => {
+        if (!scrollRef.current) return;
+        const scrollAmount = direction === 'left' ? -400 : 400;
+        scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    };
 
     return (
-        <section className="bg-black py-20">
-            <div className="w-full px-8 md:px-16 mb-16">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl md:text-4xl font-black tracking-tighter uppercase text-left w-full">
-                        PHOTOGRAPHY / <span className="text-white/30">SERVICES</span>
-                    </h2>
-                    <div className="hidden md:flex gap-3">
-                        <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/40 cursor-default">←</div>
-                        <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/40 cursor-default">→</div>
-                    </div>
+        <section className="bg-black py-20 pb-0">
+            {/* Header Row (Arrows Only) */}
+            <div className="w-full px-8 md:px-16 mb-8 flex items-center justify-end">
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => scroll('left')}
+                        className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all"
+                    >
+                        ←
+                    </button>
+                    <button
+                        onClick={() => scroll('right')}
+                        className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all"
+                    >
+                        →
+                    </button>
                 </div>
             </div>
 
             <div className="relative w-full">
-                <div className="flex gap-6 overflow-x-auto no-scrollbar px-8 md:px-16 snap-x pb-24">
+                <div
+                    ref={scrollRef}
+                    className="flex gap-8 overflow-x-auto no-scrollbar px-8 md:px-16 snap-x pb-24"
+                >
                     {cards.map((card) => (
                         <motion.button
                             key={card.id}
-                            whileHover={{ y: -15, scale: 1.02 }}
+                            whileHover={{ y: -10 }}
                             onClick={() => onCardClick(card.category)}
                             className="flex-shrink-0 w-[260px] md:w-[320px] aspect-[10/14] rounded-[32px] overflow-hidden group relative bg-neutral-900 border border-white/5 snap-start shadow-2xl"
                         >
                             <img
                                 src={card.imgSrc}
                                 alt={card.category}
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                className="absolute inset-0 w-full h-full object-cover grayscale-0 transition-all duration-1000 group-hover:grayscale pointer-events-none"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
                             <div className="absolute bottom-8 left-8 right-8 text-left">
