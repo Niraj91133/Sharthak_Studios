@@ -119,11 +119,11 @@ export default function AppContent() {
                 <InfiniteStripsCTASection />
             </div>
 
-            <div className="h-20" />
+            <div className="h-10 md:h-24" />
 
             <ServiceCardsSection slots={slots} onCardClick={handleServiceClick} />
 
-            <div className="h-20" />
+            <div className="h-10 md:h-24" />
 
             <GallerySection
                 tabs={galleryTabs}
@@ -132,23 +132,23 @@ export default function AppContent() {
                 onTabChange={setGalleryTab}
             />
 
-            <div className="h-20" />
+            <div className="h-10 md:h-24" />
 
             <ExpertiseSection />
 
-            <div className="h-20" />
+            <div className="h-10 md:h-24" />
 
             <LatestWorkSection />
 
-            <div className="h-20" />
+            <div className="h-10 md:h-24" />
 
             <AboutMeSection />
 
-            <div className="h-20" />
+            <div className="h-10 md:h-24" />
 
             <WhyChooseUsBookFlipSection />
 
-            <div className="h-20" />
+            <div className="h-10 md:h-24" />
 
             <WhyChooseUsSection />
 
