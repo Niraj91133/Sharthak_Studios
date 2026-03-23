@@ -48,6 +48,17 @@ export default function AboutMeSection() {
                         <p className="text-sm md:text-lg font-medium leading-relaxed text-white/50">
                             At Sharthak Studio, we focus on capturing real emotions and turning them into timeless memories. With a professional team and our own studio setup, we deliver premium quality work trusted by clients across Gaya Bihar.
                         </p>
+
+                        <div className="pt-4">
+                            <a
+                                href="https://wa.me/917091876067"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex h-12 px-8 items-center bg-white text-black text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                            >
+                                HAVE A PROJECT? Let&apos;s Chat
+                            </a>
+                        </div>
                     </div>
 
                     {/* Simple Bottom Accent */}

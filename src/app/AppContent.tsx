@@ -136,9 +136,11 @@ export default function AppContent() {
                     <h2 className="text-5xl md:text-8xl font-black tracking-tightest leading-none">LET&apos;S CRAFT YOUR STORY</h2>
 
                     <div className="flex flex-wrap justify-center gap-12 md:gap-24">
-                        <div className="space-y-3">
+                        <div className="space-y-3 text-center">
                             <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Email Us</div>
-                            <div className="text-2xl font-bold">hello@sharthak.studio</div>
+                            <a href="mailto:gmediastudio598@gmail.com" className="text-2xl font-bold hover:text-white/60 transition-colors block">
+                                gmediastudio598@gmail.com
+                            </a>
                         </div>
                         <div className="space-y-3 text-center">
                             <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Call or WhatsApp</div>
@@ -146,9 +148,11 @@ export default function AppContent() {
                                 +91 7091876067
                             </a>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-3 text-center">
                             <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Instagram</div>
-                            <div className="text-2xl font-bold">@sharthak_studio</div>
+                            <a href="https://instagram.com/sharthak_studio" target="_blank" rel="noopener noreferrer" className="text-2xl font-bold hover:text-white/60 transition-colors block italic">
+                                @sharthak_studio
+                            </a>
                         </div>
                     </div>
 

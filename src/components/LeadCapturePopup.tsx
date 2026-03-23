@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 
@@ -15,20 +15,41 @@ export default function LeadCapturePopup() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    useEffect(() => {
-        // Show after 3 seconds on first visit
-        const hasSeen = localStorage.getItem("sharthak_lead_popup_v1");
-        if (!hasSeen) {
-            const timer = setTimeout(() => {
-                setIsOpen(true);
-            }, 3000);
-            return () => clearTimeout(timer);
+    const checkAndShow = useCallback(() => {
+        const isSubmittedPrev = localStorage.getItem("sharthak_lead_submitted");
+        if (isSubmittedPrev) return;
+
+        const closedAt = localStorage.getItem("sharthak_lead_closed_at");
+        if (closedAt) {
+            const diff = Date.now() - parseInt(closedAt);
+            if (diff < 120000) { // 2 minutes not passed
+                // Set a timer to show it after the remaining time
+                const remaining = 120000 - diff;
+                setTimeout(() => setIsOpen(true), remaining);
+                return;
+            }
         }
+
+        // Show after 5 seconds if not submitted/recently closed
+        const timer = setTimeout(() => {
+            setIsOpen(true);
+        }, 5000);
+        return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        checkAndShow();
+    }, [checkAndShow]);
 
     const handleClose = () => {
         setIsOpen(false);
-        localStorage.setItem("sharthak_lead_popup_v1", "true");
+        localStorage.setItem("sharthak_lead_closed_at", Date.now().toString());
+
+        // Re-trigger show after 2 mins if they are still on page
+        setTimeout(() => {
+            const isSubmittedPrev = localStorage.getItem("sharthak_lead_submitted");
+            if (!isSubmittedPrev) setIsOpen(true);
+        }, 120000);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -37,6 +58,7 @@ export default function LeadCapturePopup() {
 
         setIsSubmitting(true);
         try {
+            // 1. Supabase Sync
             const { error } = await supabase.from('leads').insert([{
                 name: formData.name,
                 phone: formData.phone,
@@ -46,7 +68,7 @@ export default function LeadCapturePopup() {
 
             if (error) throw error;
 
-            // 2. Trigger Email Notification (Non-blocking)
+            // 2. Email Sync
             fetch('/api/send-lead-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -56,14 +78,14 @@ export default function LeadCapturePopup() {
                     event_name: formData.eventName,
                     event_date: formData.eventDate
                 })
-            }).catch(e => console.error("Email notification failed:", e));
+            }).catch(e => console.error("Email sync failed:", e));
 
             setIsSubmitted(true);
-            localStorage.setItem("sharthak_lead_popup_v1", "true");
+            localStorage.setItem("sharthak_lead_submitted", "true");
             setTimeout(() => setIsOpen(false), 2000);
         } catch (err) {
-            console.error("Lead submission failed:", err);
-            alert("Submission failed. Please try again or WhatsApp us directly.");
+            console.error("Submission failed:", err);
+            alert("Submission failed. Please try again or message us on WhatsApp.");
         } finally {
             setIsSubmitting(false);
         }
@@ -73,7 +95,6 @@ export default function LeadCapturePopup() {
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 sm:p-4">
-                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -82,14 +103,12 @@ export default function LeadCapturePopup() {
                         className="absolute inset-0 bg-black/80 backdrop-blur-md"
                     />
 
-                    {/* Content */}
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
                         className="relative w-full max-w-sm bg-[#111] border border-white/10 rounded-[32px] overflow-hidden shadow-2xl p-8 sm:p-10"
                     >
-                        {/* Close Button */}
                         <button
                             onClick={handleClose}
                             className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors"
@@ -106,51 +125,45 @@ export default function LeadCapturePopup() {
                                         <path d="M20 6L9 17l-5-5" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-black tracking-tight uppercase">Thank You!</h3>
-                                <p className="text-sm text-white/40 font-medium">We&apos;ll get back to you shortly.</p>
+                                <h3 className="text-xl font-black tracking-tight uppercase">Confirmed!</h3>
+                                <p className="text-sm text-white/40 font-medium">We&apos;ll reach out to you soon.</p>
                             </div>
                         ) : (
                             <div className="space-y-8">
                                 <div className="space-y-2">
                                     <h3 className="text-2xl font-black tracking-tighter uppercase leading-none">Book Your Story</h3>
-                                    <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase font-bold">Inquiry Form</p>
+                                    <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase font-bold text-center">Inquiry Form</p>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-5">
-                                    <div className="space-y-4">
-                                        <div className="space-y-1">
-                                            <input
-                                                required
-                                                type="text"
-                                                placeholder="YOUR NAME"
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-xs font-bold tracking-widest text-white placeholder:text-white/20 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all uppercase"
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <input
-                                                required
-                                                type="tel"
-                                                placeholder="MOBILE NUMBER"
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-xs font-bold tracking-widest text-white placeholder:text-white/20 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all uppercase"
-                                                value={formData.phone}
-                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                            />
-                                        </div>
-
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    <div className="space-y-3">
+                                        <input
+                                            required
+                                            type="text"
+                                            placeholder="YOUR NAME"
+                                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-xs font-bold tracking-widest text-white placeholder:text-white/20 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all uppercase"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        />
+                                        <input
+                                            required
+                                            type="tel"
+                                            placeholder="MOBILE NUMBER"
+                                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-xs font-bold tracking-widest text-white placeholder:text-white/20 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all uppercase"
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        />
                                         <div className="grid grid-cols-2 gap-3">
                                             <input
                                                 type="text"
-                                                placeholder="EVENT NAME"
+                                                placeholder="EVENT"
                                                 className="bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-xs font-bold tracking-widest text-white placeholder:text-white/20 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all uppercase"
                                                 value={formData.eventName}
                                                 onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
                                             />
                                             <input
                                                 type="date"
-                                                className="bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-[10px] font-bold tracking-widest text-white/60 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all uppercase appearance-none"
+                                                className="bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-[10px] font-bold tracking-widest text-white/60 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all appearance-none uppercase"
                                                 value={formData.eventDate}
                                                 onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
                                             />
@@ -160,7 +173,7 @@ export default function LeadCapturePopup() {
                                     <button
                                         disabled={isSubmitting}
                                         type="submit"
-                                        className="w-full h-14 bg-white text-black text-[10px] font-black tracking-[0.4em] uppercase rounded-2xl flex items-center justify-center hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                        className="w-full h-14 bg-white text-black text-[10px] font-black tracking-[0.4em] uppercase rounded-2xl flex items-center justify-center hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 mt-4"
                                     >
                                         {isSubmitting ? (
                                             <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
@@ -171,7 +184,7 @@ export default function LeadCapturePopup() {
                                 </form>
 
                                 <p className="text-[9px] text-center text-white/20 font-bold tracking-widest uppercase italic">
-                                    Trusted by 750+ Families
+                                    CINEMATIC WEDDING FILMS • GAYA, BIHAR
                                 </p>
                             </div>
                         )}

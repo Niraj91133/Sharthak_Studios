@@ -189,9 +189,14 @@ export default function LatestWorkSection() {
           </p>
         </div>
 
-        <button className="px-7 py-3 sm:px-8 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl leading-none">
+        <a
+          href="https://instagram.com/sharthak_studio"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-7 py-3 sm:px-8 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl leading-none flex items-center justify-center h-10"
+        >
           FOLLOW US
-        </button>
+        </a>
       </div>
 
       <div className="w-full flex-1 min-h-0 flex flex-col justify-center overflow-hidden relative">
@@ -230,9 +235,8 @@ export default function LatestWorkSection() {
             {reels.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 transition-all duration-500 rounded-full ${
-                  i === index ? "w-8 bg-[#A855F7]" : "w-2 bg-white/20"
-                }`}
+                className={`h-1.5 transition-all duration-500 rounded-full ${i === index ? "w-8 bg-[#A855F7]" : "w-2 bg-white/20"
+                  }`}
               />
             ))}
           </div>
