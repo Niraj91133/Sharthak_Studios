@@ -72,7 +72,7 @@ export default function WhyChooseUsSection() {
         ];
 
   return (
-    <section className="relative w-full overflow-hidden bg-black text-white flex flex-col justify-center items-center px-6 md:px-24 border-y border-white/5" style={{ height: "900px" }}>
+    <section className="relative w-full overflow-hidden bg-black text-white flex flex-col justify-center items-center px-6 md:px-24 border-y border-white/5 h-[694px] max-h-[694px] md:h-[900px] md:max-h-[900px]">
 
       {/* Background Grid Elements */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -81,10 +81,10 @@ export default function WhyChooseUsSection() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_0%,transparent_70%)]" />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto space-y-24">
+      <div className="relative z-10 w-full max-w-6xl mx-auto space-y-12 md:space-y-24">
 
         {/* Header Area */}
-        <div className="text-center space-y-6">
+        <div className="text-center space-y-4 md:space-y-6">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -117,12 +117,12 @@ export default function WhyChooseUsSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: false }}
               transition={{ delay: i * 0.1, duration: 1 }}
-              className={`flex flex-col items-center justify-center p-8 group ${i < metrics.length - 1 ? 'md:border-r border-white/5' : ''}`}
+              className={`flex flex-col items-center justify-center p-5 md:p-8 group ${i < metrics.length - 1 ? 'md:border-r border-white/5' : ''}`}
             >
               <div className="text-5xl md:text-8xl transition-all duration-700 group-hover:text-[#B6FF00]">
                 <FlipNumber value={item.textValue || "0"} />
               </div>
-              <div className="mt-6 text-[9px] md:text-[11px] font-black tracking-[0.4em] text-white/20 uppercase whitespace-nowrap group-hover:text-white/60 transition-colors">
+              <div className="mt-4 md:mt-6 text-[9px] md:text-[11px] font-black tracking-[0.4em] text-white/20 uppercase whitespace-nowrap group-hover:text-white/60 transition-colors">
                 {item.textContent || "DATA"}
               </div>
             </motion.div>
@@ -130,7 +130,7 @@ export default function WhyChooseUsSection() {
         </div>
 
         {/* Footer Concept */}
-        <div className="flex flex-col items-center gap-10 opacity-20">
+        <div className="hidden md:flex flex-col items-center gap-10 opacity-20">
           <div className="w-[1px] h-16 bg-gradient-to-full from-white to-transparent" />
           <p className="text-[10px] font-black tracking-[0.7em] uppercase">BEYOND THE LENS</p>
         </div>

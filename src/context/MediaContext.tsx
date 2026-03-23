@@ -206,7 +206,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const current = slots.find((s) => s.id === id);
         if (current) {
-            const dbUpdates: any = {
+            const dbUpdates: Record<string, unknown> = {
                 id,
                 section: current.section,
                 frame: current.frame,
