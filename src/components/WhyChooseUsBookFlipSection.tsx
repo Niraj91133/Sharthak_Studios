@@ -47,35 +47,42 @@ function Page({
 
   return (
     <div
-      className="h-full w-full bg-white"
+      className="relative h-full w-full bg-[#fafafa]"
       style={{
-        padding: 34,
-        borderTopLeftRadius: rounded === "left" ? 16 : 0,
-        borderBottomLeftRadius: rounded === "left" ? 16 : 0,
-        borderTopRightRadius: rounded === "right" ? 16 : 0,
-        borderBottomRightRadius: rounded === "right" ? 16 : 0,
+        padding: "42px 38px",
+        borderTopLeftRadius: rounded === "left" ? 14 : 0,
+        borderBottomLeftRadius: rounded === "left" ? 14 : 0,
+        borderTopRightRadius: rounded === "right" ? 14 : 0,
+        borderBottomRightRadius: rounded === "right" ? 14 : 0,
+        boxShadow: "inset 0 0 50px rgba(0,0,0,0.03)",
       }}
     >
-      <div className="text-[12px] font-bold tracking-[0.22em] text-black/45">
-        PAGE {data.pageNo}
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] font-black tracking-[0.3em] text-black/30 uppercase">
+          SHARTHAK STUDIO • ALBUM
+        </div>
+        <div className="text-[10px] font-bold tracking-[0.22em] text-black/45">
+          PG. {String(data.pageNo).padStart(2, '0')}
+        </div>
       </div>
 
-      <div className="mt-4 text-[clamp(26px,3.5vw,44px)] font-black leading-[0.98] tracking-[-0.02em] text-black">
+      <div className="mt-8 text-[clamp(24px,3vw,38px)] font-black leading-[1.05] tracking-tighter text-black uppercase italic">
         {data.title}
       </div>
 
-      <div className="mt-6 text-[18px] font-semibold leading-[1.45] text-black/88">
+      <div className="mt-5 text-[15px] font-medium leading-[1.6] text-black/60 max-w-[90%]">
         {data.body}
       </div>
 
-      <div className="mt-8 overflow-hidden rounded-[14px]">
-        <div className="relative h-[220px] w-full overflow-hidden rounded-[14px]">
+      <div className="mt-10 overflow-hidden rounded-[8px]">
+        <div className="relative h-[240px] w-full overflow-hidden rounded-[8px] shadow-sm">
           <Image
             src={heroSrc}
             alt=""
             fill
-            className={heroUploaded ? "object-contain" : "object-cover"}
+            className={heroUploaded ? "object-contain bg-black/5" : "object-cover"}
             sizes="520px"
+            priority={data.pageNo <= 2}
           />
         </div>
       </div>
@@ -187,12 +194,29 @@ export default function WhyChooseUsBookFlipSection() {
   const [direction, setDirection] = useState<1 | -1>(1);
 
   const rightIndex = (leftIndex + 1) % pages.length;
-  const nextIndex = (leftIndex + 2) % pages.length;
 
-  const slideVariants = {
-    enter: (dir: 1 | -1) => ({ x: dir > 0 ? 70 : -70, opacity: 0, scale: 0.985 }),
-    center: { x: 0, opacity: 1, scale: 1 },
-    exit: (dir: 1 | -1) => ({ x: dir > 0 ? -70 : 70, opacity: 0, scale: 0.985 }),
+  const flipVariants = {
+    enter: (dir: 1 | -1) => ({
+      rotateY: dir > 0 ? 15 : -15,
+      x: dir > 0 ? "20%" : "-20%",
+      opacity: 0,
+      filter: "blur(4px)",
+      scale: 0.95,
+    }),
+    center: {
+      rotateY: 0,
+      x: 0,
+      opacity: 1,
+      filter: "blur(0px)",
+      scale: 1,
+    },
+    exit: (dir: 1 | -1) => ({
+      rotateY: dir > 0 ? -15 : 15,
+      x: dir > 0 ? "-20%" : "20%",
+      opacity: 0,
+      filter: "blur(4px)",
+      scale: 0.95,
+    }),
   };
 
   const goNext = (step: 1 | 2) => {
@@ -214,30 +238,40 @@ export default function WhyChooseUsBookFlipSection() {
           >
             {/* Stacked pages behind (album thickness) */}
             <div className="absolute inset-0 hidden md:block" aria-hidden="true">
+              {/* Outer Cover Backing */}
               <div
-                className="absolute left-0 top-0 h-full w-full"
+                className="absolute -inset-2 h-[calc(100%+16px)] w-[calc(100%+16px)] bg-[#111]"
                 style={{
-                  transform: "translate(10px, 10px)",
+                  borderRadius: 20,
+                  transform: "translateZ(-30px)",
+                  boxShadow: "0 50px 100px -20px rgba(0,0,0,0.5)",
+                }}
+              />
+
+              {/* Paper Stack Edge */}
+              <div
+                className="absolute left-0 top-0 h-full w-full bg-[#eee]"
+                style={{
+                  transform: "translate(8px, 8px)",
                   borderRadius: 16,
-                  background: "rgba(0,0,0,0.06)",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
                 }}
               />
               <div
-                className="absolute left-0 top-0 h-full w-full"
+                className="absolute left-0 top-0 h-full w-full bg-[#e5e5e5]"
                 style={{
-                  transform: "translate(6px, 6px)",
+                  transform: "translate(4px, 4px)",
                   borderRadius: 16,
-                  background: "rgba(0,0,0,0.07)",
                 }}
               />
             </div>
 
             <div
-              className="relative mx-auto w-full overflow-hidden bg-white"
+              className="relative mx-auto w-full overflow-hidden bg-[#fafafa]"
               style={{
-                borderRadius: 16,
-                border: "1px solid rgba(0,0,0,0.06)",
-                boxShadow: "0 40px 90px rgba(0,0,0,0.10)",
+                borderRadius: 14,
+                border: "1px solid rgba(0,0,0,0.1)",
+                boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
               }}
             >
               {/* Mobile: slide page */}
@@ -250,11 +284,11 @@ export default function WhyChooseUsBookFlipSection() {
                     aria-label="Next page"
                     className="absolute inset-0 text-left"
                     custom={direction}
-                    variants={slideVariants}
+                    variants={flipVariants}
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <Page data={pages[leftIndex]} rounded="none" />
                   </motion.button>
@@ -271,36 +305,46 @@ export default function WhyChooseUsBookFlipSection() {
                     aria-label="Next spread"
                     className="absolute inset-0 text-left"
                     custom={direction}
-                    variants={slideVariants}
+                    variants={flipVariants}
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <div className="grid min-h-[640px] grid-cols-2">
                       <div className="relative">
                         <Page data={pages[leftIndex]} rounded="left" />
+
+                        {/* Realistic Spine Shadow (Left Side) */}
                         <div
-                          className="pointer-events-none absolute right-0 top-0 h-full w-[18px]"
+                          className="pointer-events-none absolute right-0 top-0 h-full w-[24px]"
                           style={{
                             background:
-                              "linear-gradient(270deg, rgba(0,0,0,0.10), rgba(0,0,0,0))",
-                            opacity: 0.25,
+                              "linear-gradient(270deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 60%, rgba(0,0,0,0) 100%)",
+                            zIndex: 10,
                           }}
                         />
                       </div>
                       <div className="relative">
                         <Page data={pages[rightIndex]} rounded="right" />
+
+                        {/* Central Binding Detail */}
                         <div
-                          className="pointer-events-none absolute left-0 top-0 hidden h-full w-[1px] md:block"
-                          style={{ background: "rgba(0,0,0,0.08)" }}
+                          className="pointer-events-none absolute left-0 top-0 hidden h-full w-[2px] md:block"
+                          style={{
+                            background: "linear-gradient(90deg, rgba(0,0,0,0.15), rgba(255,255,255,0.05))",
+                            boxShadow: "0 0 4px rgba(0,0,0,0.1)",
+                            zIndex: 20
+                          }}
                         />
+
+                        {/* Realistic Spine Shadow (Right Side) */}
                         <div
-                          className="pointer-events-none absolute left-0 top-0 hidden h-full w-[18px] md:block"
+                          className="pointer-events-none absolute left-0 top-0 hidden h-full w-[24px] md:block"
                           style={{
                             background:
-                              "linear-gradient(90deg, rgba(0,0,0,0.10), rgba(0,0,0,0))",
-                            opacity: 0.22,
+                              "linear-gradient(90deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 60%, rgba(0,0,0,0) 100%)",
+                            zIndex: 10,
                           }}
                         />
                       </div>
@@ -310,14 +354,15 @@ export default function WhyChooseUsBookFlipSection() {
               </div>
             </div>
 
-            <div className="mt-5 flex items-center justify-center gap-2">
+            <div className="mt-8 flex items-center justify-center gap-3">
               {pages.map((_, i) => (
                 <div
                   key={i}
-                  className="h-2 w-2 rounded-full"
+                  className="h-1.5 transition-all duration-700 rounded-full"
                   style={{
+                    width: i === leftIndex ? "24px" : "6px",
                     background:
-                      i === leftIndex ? "rgba(0,0,0,0.55)" : "rgba(0,0,0,0.18)",
+                      i === leftIndex ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.15)",
                   }}
                 />
               ))}
