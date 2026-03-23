@@ -86,18 +86,18 @@ function BlogPostContent() {
                 <div className="h-px w-24 bg-black/5 mx-auto mt-16" />
             </section>
 
-            {/* HTML Content Render */}
-            <main className="max-w-3xl mx-auto px-6 py-12">
+            {/* HTML Content Render - Contained in a Frame */}
+            <main className="max-w-[720px] mx-auto px-10 py-16 bg-[#fafafa]/30 border-x border-black/[0.02] shadow-[0_0_100px_rgba(0,0,0,0.02)]">
                 <style jsx global>{`
                     .systematic-rich-text {
-                        font-size: 1.125rem;
-                        line-height: 1.8;
+                        font-size: 1.15rem;
+                        line-height: 1.9;
                         color: #1a1a1a;
                         font-family: inherit;
-                        text-align: left; /* Keep body text left for readability */
+                        text-align: left;
                     }
                     .systematic-rich-text p {
-                        margin-bottom: 2rem;
+                        margin-bottom: 2.5rem;
                         letter-spacing: -0.01em;
                     }
                     .systematic-rich-text h2, 
@@ -106,37 +106,39 @@ function BlogPostContent() {
                         font-weight: 900;
                         text-transform: uppercase;
                         letter-spacing: -0.05em;
-                        margin-top: 4rem;
+                        margin-top: 5rem;
                         margin-bottom: 1.5rem;
-                        text-align: center; /* Center headers */
+                        text-align: center;
                     }
-                    .systematic-rich-text h2 { font-size: 2rem; }
-                    .systematic-rich-text h3 { font-size: 1.5rem; }
+                    .systematic-rich-text h2 { font-size: 2.25rem; }
+                    .systematic-rich-text h3 { font-size: 1.75rem; }
                     .systematic-rich-text img {
                         width: 100%;
                         height: auto;
                         border-radius: 0;
-                        margin: 4rem 0;
-                        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+                        margin: 5rem 0;
+                        box-shadow: 0 40px 100px rgba(0,0,0,0.08);
                     }
                     .systematic-rich-text blockquote {
                         border-left: 0;
-                        padding: 2rem;
-                        background: #fdfdfd;
+                        padding: 3rem;
+                        background: #fff;
                         border: 1px solid #f0f0f0;
                         font-style: italic;
-                        font-size: 1.25rem;
-                        color: #555;
+                        font-size: 1.35rem;
+                        color: #444;
                         text-align: center;
-                        margin: 3rem 0;
+                        margin: 4rem 0;
+                        position: relative;
                     }
                     .systematic-rich-text ul, 
                     .systematic-rich-text ol {
-                        margin-bottom: 2rem;
+                        margin-bottom: 2.5rem;
                         padding-left: 1.5rem;
+                        list-style-type: square;
                     }
                     .systematic-rich-text li {
-                        margin-bottom: 0.5rem;
+                        margin-bottom: 1rem;
                     }
                 `}</style>
                 <div

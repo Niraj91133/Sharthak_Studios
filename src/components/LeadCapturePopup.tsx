@@ -16,10 +16,9 @@ export default function LeadCapturePopup() {
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     const checkAndShow = useCallback(() => {
-        const isSubmittedPrev = localStorage.getItem("sharthak_lead_submitted");
-        if (isSubmittedPrev) return;
+        // We've removed the submission check temporarily to ensure it shows on every refresh for testing
 
-        // Show after 1.5 seconds if not submitted
+        // Show after 1.5 seconds
         const timer = setTimeout(() => {
             setIsOpen(true);
         }, 1500);
