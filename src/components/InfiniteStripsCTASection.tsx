@@ -70,10 +70,12 @@ export default function InfiniteStripsCTASection() {
               <span className="text-sm font-medium tracking-[0.4em] text-white/40 block mt-4 uppercase">Capturing Timeless Moments & Cinematic Stories</span>
             </div>
             <a
-              href="#contact"
+              href="https://wa.me/917091876067"
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-8 inline-flex h-14 w-[320px] items-center justify-center border border-white/65 text-[14px] font-medium tracking-[0.16em] text-white/80 transition-colors duration-200 hover:bg-white hover:text-black"
             >
-              CONTACT US
+              HIRE SHARTHAK STUDIO
             </a>
           </div>
         </div>

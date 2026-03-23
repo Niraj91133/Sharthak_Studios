@@ -222,10 +222,12 @@ export default function MobileHeroSection() {
             </p>
 
             <a
-              href="#contact"
-              className="mt-8 inline-flex h-[46px] w-[320px] items-center justify-center rounded-[4px] border border-white bg-transparent text-[14px] font-medium tracking-[2px] text-white transition-colors duration-200 active:bg-white active:text-black"
+              href="https://wa.me/917091876067"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-flex h-[46px] w-[320px] items-center justify-center rounded-[4px] border border-white bg-transparent text-[14px] font-medium tracking-[2px] text-white transition-colors duration-200 active:bg-white active:text-black hover:bg-white hover:text-black"
             >
-              CONTACT US
+              CONTACT US ON WHATSAPP
             </a>
           </div>
 

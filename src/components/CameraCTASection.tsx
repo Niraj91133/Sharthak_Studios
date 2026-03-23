@@ -38,11 +38,13 @@ export default function CameraCTASection() {
                     viewport={{ once: true }}
                 >
                     <a
-                        href="#contact"
+                        href="https://wa.me/917091876067"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="bg-black text-white px-12 py-3 text-xs md:text-sm font-bold tracking-[0.2em] transition-all hover:bg-white hover:text-black uppercase border border-white/20"
                         style={{ letterSpacing: "4px" }}
                     >
-                        CONTACT US
+                        BOOK YOUR STORY
                     </a>
                 </motion.div>
             </div>
