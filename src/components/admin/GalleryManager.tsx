@@ -17,10 +17,9 @@ export default function GalleryManager() {
         [slots]);
 
     const categories = useMemo(() => {
-        const set = new Set(gallerySlots.map(s => s.categoryLabel).filter(Boolean));
-        if (set.size === 0) {
-            ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"].forEach(c => set.add(c));
-        }
+        const defaults = ["WEDDING", "PRE-WEDDING", "CANDID", "MODEL SHOOT", "MATERNITY", "BABY SHOOT"];
+        const fromSlots = gallerySlots.map(s => s.categoryLabel).filter(Boolean) as string[];
+        const set = new Set<string>([...defaults, ...fromSlots.map((c) => c.toUpperCase())]);
         return Array.from(set) as string[];
     }, [gallerySlots]);
 
@@ -129,6 +128,10 @@ export default function GalleryManager() {
                                 type="text"
                                 value={newCategoryName}
                                 onChange={(e) => setNewCategoryName(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleAddCategory();
+                                    if (e.key === "Escape") setIsAddingCategory(false);
+                                }}
                                 className="bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-[10px] text-white outline-none"
                                 placeholder="CATEGORY NAME..."
                                 autoFocus

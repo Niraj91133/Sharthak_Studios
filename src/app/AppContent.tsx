@@ -60,7 +60,6 @@ export default function AppContent() {
     const galleryTabs = useMemo(() => {
         const gallerySlots = slots.filter((s: MediaSlot) => s.section.includes("GALLERY"));
         const categories = gallerySlots
-            .filter((s: MediaSlot) => Boolean(s.uploadedFile && s.useOnSite))
             .map((s: MediaSlot) => s.categoryLabel)
             .filter(Boolean);
 
