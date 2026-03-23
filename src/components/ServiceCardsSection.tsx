@@ -41,7 +41,7 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
     };
 
     return (
-        <section className="bg-black py-10 md:py-24 pb-0 relative">
+        <section className="bg-black py-6 md:py-16 pb-0 relative">
             <div className="relative w-full group/section">
                 {/* Floating Navigation Buttons (Centered Vertically) */}
                 <div className="absolute inset-y-0 left-0 z-10 hidden md:flex items-center pl-4 pointer-events-none">
@@ -63,14 +63,14 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
 
                 <div
                     ref={scrollRef}
-                    className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar px-10 md:px-16 snap-x pb-24"
+                    className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar px-6 md:px-16 snap-x pb-12"
                 >
                     {cards.map((card) => (
                         <motion.button
                             key={card.id}
                             whileHover={{ y: -10 }}
                             onClick={() => onCardClick(card.category)}
-                            className="flex-shrink-0 w-[65vw] sm:w-[300px] md:w-[350px] aspect-[10/14] rounded-[24px] md:rounded-[32px] overflow-hidden group relative bg-neutral-900 border border-white/5 snap-center shadow-2xl transition-all duration-500"
+                            className="flex-shrink-0 w-[48vw] sm:w-[280px] md:w-[320px] aspect-[10/14] rounded-[24px] md:rounded-[32px] overflow-hidden group relative bg-neutral-900 border border-white/5 snap-center shadow-2xl transition-all duration-500"
                         >
                             <img
                                 src={card.imgSrc}
