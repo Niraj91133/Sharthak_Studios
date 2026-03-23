@@ -22,9 +22,17 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
 
     // 3. Map each unique category to a card data object
     const cards = uniqueCategories.map(category => {
-        const specificSlot = serviceCardSlots.find(s => s.categoryLabel?.toUpperCase() === category && s.uploadedFile && s.useOnSite);
-        const fallbackGallerySlot = gallerySlots.find(s => (s.categoryLabel || "WEDDING").toUpperCase() === category);
-        const previewSlot = specificSlot || fallbackGallerySlot;
+        // Option 1: Seek a manual specific card slot matching this category
+        const manualSlot = serviceCardSlots.find(s =>
+            s.categoryLabel?.toUpperCase() === category && s.uploadedFile && s.useOnSite
+        );
+
+        // Option 2: Fallback to the first available gallery image for that category
+        const catGalleryPhotos = gallerySlots.filter(s =>
+            (s.categoryLabel || "WEDDING").toUpperCase() === category
+        );
+
+        const previewSlot = manualSlot || catGalleryPhotos[0];
         const imgSrc = previewSlot?.uploadedFile ? normalizeMediaUrl(previewSlot.uploadedFile.url) : (previewSlot?.fallbackSrc || "");
 
         return {
@@ -32,7 +40,7 @@ export default function ServiceCardsSection({ slots, onCardClick }: ServiceCards
             imgSrc,
             id: previewSlot?.id || `dynamic-${category}`
         };
-    }).filter(c => c.imgSrc);
+    }).filter(c => c.imgSrc).sort((a, b) => a.category.localeCompare(b.category));
 
     const scroll = (direction: 'left' | 'right') => {
         if (!scrollRef.current) return;
