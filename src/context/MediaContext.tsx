@@ -99,6 +99,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [dbSupportsCategoryLabel, setDbSupportsCategoryLabel] = useState(true);
+    const [dbSupportsOrderIndex, setDbSupportsOrderIndex] = useState(true);
     const [schemaChecked, setSchemaChecked] = useState(false);
 
     const upsertMediaSlot = useCallback(async (payload: Record<string, unknown>) => {
@@ -107,13 +108,26 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const code = (error as unknown as { code?: string }).code;
         if (code === "42703") {
-            // Column not found (e.g. category_label missing) → disable and retry without it.
-            setDbSupportsCategoryLabel(false);
-            if ("category_label" in payload) {
-                const { category_label: _ignored, ...rest } = payload as Record<string, unknown> & { category_label?: unknown };
-                const retry = await supabase.from('media_slots').upsert(rest);
-                if (!retry.error) return;
-                console.error("Update sync error:", describeSupabaseError(retry.error));
+            // Column not found (e.g. category_label or order_index missing)
+            let retryPayload = { ...payload };
+            let shouldRetry = false;
+
+            if (describeSupabaseError(error).includes("order_index")) {
+                setDbSupportsOrderIndex(false);
+                delete retryPayload.order_index;
+                shouldRetry = true;
+            }
+
+            if (describeSupabaseError(error).includes("category_label")) {
+                setDbSupportsCategoryLabel(false);
+                delete retryPayload.category_label;
+                shouldRetry = true;
+            }
+
+            if (shouldRetry) {
+                const { error: retryError } = await supabase.from('media_slots').upsert(retryPayload);
+                if (!retryError) return;
+                console.error("Update sync error (retry):", describeSupabaseError(retryError));
                 return;
             }
         }
@@ -264,7 +278,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 frame: current.frame,
                 type: current.type,
                 use_on_site: current.useOnSite,
-                order_index: current.orderIndex ?? 0
+                ...(dbSupportsOrderIndex ? { order_index: current.orderIndex ?? 0 } : {})
             };
             if (dbSupportsCategoryLabel && current.categoryLabel !== undefined) {
                 dbUpdates.category_label = current.categoryLabel;
@@ -349,7 +363,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             frame: slot.frame,
             type: slot.type,
             use_on_site: slot.useOnSite,
-            order_index: slots.length
+            ...(dbSupportsOrderIndex ? { order_index: slots.length } : {})
         };
         if (dbSupportsCategoryLabel) payload.category_label = slot.categoryLabel;
         await upsertMediaSlot(payload);
