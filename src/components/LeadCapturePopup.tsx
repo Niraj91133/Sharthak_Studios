@@ -46,6 +46,18 @@ export default function LeadCapturePopup() {
 
             if (error) throw error;
 
+            // 2. Trigger Email Notification (Non-blocking)
+            fetch('/api/send-lead-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: formData.name,
+                    phone: formData.phone,
+                    event_name: formData.eventName,
+                    event_date: formData.eventDate
+                })
+            }).catch(e => console.error("Email notification failed:", e));
+
             setIsSubmitted(true);
             localStorage.setItem("sharthak_lead_popup_v1", "true");
             setTimeout(() => setIsOpen(false), 2000);
