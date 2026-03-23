@@ -180,29 +180,39 @@ function AutoStrip({
 }
 
 export default function MobileHeroSection() {
-  const topItems = useMemo(
-    () => [
-      { id: "strip-top-01", fallback: "https://picsum.photos/seed/strip-0/600/600" },
-      { id: "strip-top-02", fallback: "https://picsum.photos/seed/strip-1/600/600" },
-      { id: "strip-top-03", fallback: "https://picsum.photos/seed/strip-2/600/600" },
-      { id: "strip-top-04", fallback: "https://picsum.photos/seed/strip-3/600/600" },
-      { id: "strip-top-05", fallback: "https://picsum.photos/seed/strip-4/600/600" },
-      { id: "strip-top-06", fallback: "https://picsum.photos/seed/strip-5/600/600" },
-    ],
-    [],
-  );
+  const { slots } = useMediaContext();
+  type HeroItem = { id: string; fallback: string };
+  const fallbackTop = [
+    { id: "mobile-hero-top-01", fallback: "https://picsum.photos/seed/m-hero-top-0/600/400" },
+    { id: "mobile-hero-top-02", fallback: "https://picsum.photos/seed/m-hero-top-1/600/400" },
+    { id: "mobile-hero-top-03", fallback: "https://picsum.photos/seed/m-hero-top-2/600/400" },
+  ];
 
-  const bottomItems = useMemo(
-    () => [
-      { id: "strip-bot-01", fallback: "https://picsum.photos/seed/strip-6/600/600" },
-      { id: "strip-bot-02", fallback: "https://picsum.photos/seed/strip-7/600/600" },
-      { id: "strip-bot-03", fallback: "https://picsum.photos/seed/strip-8/600/600" },
-      { id: "strip-bot-04", fallback: "https://picsum.photos/seed/strip-9/600/600" },
-      { id: "strip-bot-05", fallback: "https://picsum.photos/seed/strip-10/600/600" },
-      { id: "strip-bot-06", fallback: "https://picsum.photos/seed/strip-11/600/600" },
-    ],
-    [],
-  );
+  const fallbackBot = [
+    { id: "mobile-hero-bot-01", fallback: "https://picsum.photos/seed/m-hero-bot-0/600/400" },
+    { id: "mobile-hero-bot-02", fallback: "https://picsum.photos/seed/m-hero-bot-1/600/400" },
+    { id: "mobile-hero-bot-03", fallback: "https://picsum.photos/seed/m-hero-bot-2/600/400" },
+  ];
+
+  const { topItems, bottomItems } = useMemo(() => {
+    const sectionSlots = slots.filter(s => s.section === "01. MOBILE HERO SECTION");
+    if (sectionSlots.length === 0) return { topItems: fallbackTop, bottomItems: fallbackBot };
+
+    const top: HeroItem[] = [];
+    const bot: HeroItem[] = [];
+
+    sectionSlots.forEach((s, idx) => {
+      const item = { id: s.id, fallback: s.fallbackSrc };
+      if (s.id.includes("top")) top.push(item);
+      else if (s.id.includes("bot")) bot.push(item);
+      else {
+        if (idx % 2 === 0) top.push(item);
+        else bot.push(item);
+      }
+    });
+
+    return { topItems: top, bottomItems: bot };
+  }, [slots]);
 
   return (
     <section className="w-full bg-black text-white md:hidden">

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
+import { useMediaContext } from "@/context/MediaContext";
 
 function DynamicStripTile({ slotId, fallback, idx }: { slotId: string; fallback: string; idx: number }) {
   const { src } = useMediaAsset(slotId, fallback);
@@ -20,29 +21,47 @@ function DynamicStripTile({ slotId, fallback, idx }: { slotId: string; fallback:
 }
 
 export default function InfiniteStripsCTASection() {
-  const topConfigs = useMemo(
-    () => [
-      { id: "strip-top-01", fallback: "https://picsum.photos/seed/strip-0/600/600" },
-      { id: "strip-top-02", fallback: "https://picsum.photos/seed/strip-1/600/600" },
-      { id: "strip-top-03", fallback: "https://picsum.photos/seed/strip-2/600/600" },
-      { id: "strip-top-04", fallback: "https://picsum.photos/seed/strip-3/600/600" },
-      { id: "strip-top-05", fallback: "https://picsum.photos/seed/strip-4/600/600" },
-      { id: "strip-top-06", fallback: "https://picsum.photos/seed/strip-5/600/600" },
-    ],
-    [],
-  );
+  const { slots } = useMediaContext();
+  type StripConfig = { id: string; fallback: string };
 
-  const botConfigs = useMemo(
-    () => [
-      { id: "strip-bot-01", fallback: "https://picsum.photos/seed/strip-6/600/600" },
-      { id: "strip-bot-02", fallback: "https://picsum.photos/seed/strip-7/600/600" },
-      { id: "strip-bot-03", fallback: "https://picsum.photos/seed/strip-8/600/600" },
-      { id: "strip-bot-04", fallback: "https://picsum.photos/seed/strip-9/600/600" },
-      { id: "strip-bot-05", fallback: "https://picsum.photos/seed/strip-10/600/600" },
-      { id: "strip-bot-06", fallback: "https://picsum.photos/seed/strip-11/600/600" },
-    ],
-    [],
-  );
+  const fallbackTop = [
+    { id: "strip-top-01", fallback: "https://picsum.photos/seed/strip-0/600/600" },
+    { id: "strip-top-02", fallback: "https://picsum.photos/seed/strip-1/600/600" },
+    { id: "strip-top-03", fallback: "https://picsum.photos/seed/strip-2/600/600" },
+    { id: "strip-top-04", fallback: "https://picsum.photos/seed/strip-3/600/600" },
+    { id: "strip-top-05", fallback: "https://picsum.photos/seed/strip-4/600/600" },
+    { id: "strip-top-06", fallback: "https://picsum.photos/seed/strip-5/600/600" },
+  ];
+
+  const fallbackBot = [
+    { id: "strip-bot-01", fallback: "https://picsum.photos/seed/strip-6/600/600" },
+    { id: "strip-bot-02", fallback: "https://picsum.photos/seed/strip-7/600/600" },
+    { id: "strip-bot-03", fallback: "https://picsum.photos/seed/strip-8/600/600" },
+    { id: "strip-bot-04", fallback: "https://picsum.photos/seed/strip-9/600/600" },
+    { id: "strip-bot-05", fallback: "https://picsum.photos/seed/strip-10/600/600" },
+    { id: "strip-bot-06", fallback: "https://picsum.photos/seed/strip-11/600/600" },
+  ];
+
+  const { topConfigs, botConfigs } = useMemo(() => {
+    const sectionSlots = slots.filter(s => s.section === "02. INFINITE STRIPS (DESKTOP)");
+    if (sectionSlots.length === 0) return { topConfigs: fallbackTop, botConfigs: fallbackBot };
+
+    const top: StripConfig[] = [];
+    const bot: StripConfig[] = [];
+
+    sectionSlots.forEach((s, idx) => {
+      const config = { id: s.id, fallback: s.fallbackSrc };
+      if (s.id.includes("-top-")) top.push(config);
+      else if (s.id.includes("-bot-")) bot.push(config);
+      else {
+        // Distribute extras
+        if (idx % 2 === 0) top.push(config);
+        else bot.push(config);
+      }
+    });
+
+    return { topConfigs: top, botConfigs: bot };
+  }, [slots]);
 
   const topLoop = [...topConfigs, ...topConfigs];
   const bottomLoop = [...botConfigs, ...botConfigs];

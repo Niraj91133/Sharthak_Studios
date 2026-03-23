@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useMediaContext } from "@/context/MediaContext";
 import SectionCard from "@/components/admin/SectionCard";
@@ -12,6 +12,71 @@ import BlogManager from "@/components/admin/BlogManager";
 export default function AdminDashboard() {
     const { slots, blogs } = useMediaContext();
     const [showGlobalMedia, setShowGlobalMedia] = useState(false);
+    const [storage, setStorage] = useState<{
+        usedBytes: number | null;
+        limitBytes: number | null;
+        usedPct: number | null;
+        error?: string;
+        loading: boolean;
+    }>({ usedBytes: null, limitBytes: null, usedPct: null, loading: true });
+
+    type UsageResponse =
+        | { ok: true; storage?: { usedBytes?: unknown; limitBytes?: unknown; usedPct?: unknown } }
+        | { ok: false; error?: string }
+        | Record<string, unknown>;
+
+    useEffect(() => {
+        let cancelled = false;
+        const run = async () => {
+            try {
+                const res = await fetch("/api/cloudinary/usage");
+                const data = (await res.json()) as UsageResponse;
+                if (cancelled) return;
+                if (!res.ok || !("ok" in data) || data.ok !== true) {
+                    setStorage({
+                        usedBytes: null,
+                        limitBytes: null,
+                        usedPct: null,
+                        error: ("error" in data && typeof data.error === "string") ? data.error : "Failed to load storage status",
+                        loading: false,
+                    });
+                    return;
+                }
+
+                const usedBytes = typeof data.storage?.usedBytes === "number" ? data.storage.usedBytes : null;
+                const limitBytes = typeof data.storage?.limitBytes === "number" ? data.storage.limitBytes : null;
+                const usedPct = typeof data.storage?.usedPct === "number" ? data.storage.usedPct : null;
+                setStorage({
+                    usedBytes,
+                    limitBytes,
+                    usedPct,
+                    loading: false,
+                });
+            } catch (e) {
+                if (cancelled) return;
+                setStorage({
+                    usedBytes: null,
+                    limitBytes: null,
+                    usedPct: null,
+                    error: e instanceof Error ? e.message : "Failed to load storage status",
+                    loading: false,
+                });
+            }
+        };
+        run();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const formatBytes = (bytes: number | null) => {
+        if (bytes === null) return "--";
+        const gb = 1024 ** 3;
+        const mb = 1024 ** 2;
+        if (bytes >= gb) return `${(bytes / gb).toFixed(2)} GB`;
+        if (bytes >= mb) return `${(bytes / mb).toFixed(1)} MB`;
+        return `${Math.round(bytes / 1024)} KB`;
+    };
 
     const sections = useMemo(() => {
         const grouped = slots.reduce((acc, slot) => {
@@ -121,9 +186,33 @@ export default function AdminDashboard() {
                         <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
                             <p className="text-[10px] font-bold text-white/60 mb-2 uppercase tracking-widest">Storage Status</p>
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full bg-white w-1/4 rounded-full" />
+                                <div
+                                    className="h-full bg-white rounded-full transition-[width] duration-700"
+                                    style={{
+                                        width: storage.usedPct === null ? "20%" : `${Math.round(storage.usedPct * 100)}%`,
+                                        opacity: storage.loading ? 0.35 : 1,
+                                    }}
+                                />
                             </div>
-                            <p className="text-[9px] text-white/20 mt-2">Local Persistence Active</p>
+                            <div className="mt-2 flex items-center justify-between gap-4">
+                                <p className="text-[9px] text-white/30">
+                                    {storage.loading
+                                        ? "Loading Cloudinary usage..."
+                                        : storage.error
+                                            ? "Cloudinary usage unavailable"
+                                            : `Used ${formatBytes(storage.usedBytes)} / ${storage.limitBytes ? formatBytes(storage.limitBytes) : "∞"}`}
+                                </p>
+                                {!storage.loading && !storage.error && storage.usedPct !== null && (
+                                    <p className="text-[9px] text-white/20 tabular-nums">
+                                        {Math.round(storage.usedPct * 100)}%
+                                    </p>
+                                )}
+                            </div>
+                            {storage.error && (
+                                <p className="text-[9px] text-white/20 mt-1 truncate" title={storage.error}>
+                                    {storage.error}
+                                </p>
+                            )}
                         </div>
                     </aside>
 
