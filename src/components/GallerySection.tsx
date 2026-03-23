@@ -217,29 +217,28 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
           </div>
         </div>
 
-        {/* Mobile: Premium "No-Gap" Staggered Grid */}
-        <div className="gallery-stagger w-full flex-shrink-0 sm:hidden px-0 pb-0">
+        {/* Mobile: Premium Masonry Grid (No Cropping) */}
+        <div className="gallery-stagger w-full flex-shrink-0 sm:hidden px-4 pb-12 overflow-y-auto no-scrollbar">
           <div
-            className="grid w-full aspect-[1/2] min-h-[700px] gap-0 border-t border-b border-white/10"
-            style={{
-              gridTemplateAreas: mobileAreas,
-              gridTemplateColumns: "repeat(6, 1fr)",
-              gridTemplateRows: "repeat(12, 1fr)",
-            }}
+            className="columns-2 w-full"
+            style={{ columnGap: 8 }}
           >
             {displayTiles.map((tile, index) => {
               const src = resolveSrc(tile.seed, false);
               const isPlaceholder = !src;
+
+              // Skip placeholders if we have actual images and this is a placeholder
+              if (isPlaceholder && filtered.length > 0) return null;
+
               return (
                 <button
                   key={tile.seed}
                   type="button"
                   disabled={isPlaceholder}
                   className={[
-                    "relative overflow-hidden border-[0.5px] border-white/5 bg-black",
-                    isPlaceholder ? "opacity-60" : "active:scale-[0.98] transition-all",
+                    "group relative w-full mb-2 break-inside-avoid overflow-hidden border border-white/10 bg-black/40 rounded-lg",
+                    isPlaceholder ? "opacity-40" : "active:scale-[0.98] transition-all",
                   ].join(" ")}
-                  style={{ gridArea: mobileAreaNames[index] }}
                   onClick={() => {
                     if (isPlaceholder) return;
                     const realIndex = realTiles.findIndex((t) => t.seed === tile.seed);
@@ -247,26 +246,31 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                   }}
                 >
                   {isPlaceholder ? (
-                    <div className="absolute inset-0 flex items-center justify-center text-[7px] font-black tracking-[0.2em] text-white/20 bg-white/[0.02] uppercase text-center p-2">
+                    <div className="w-full aspect-[3/4] flex items-center justify-center text-[7px] font-black tracking-[0.2em] text-white/20 bg-white/[0.02] uppercase text-center p-2">
                       Upload {index + 1}
                     </div>
                   ) : (
-                    <>
+                    <div className="relative w-full h-auto">
                       <img
                         src={src}
                         alt=""
                         loading="lazy"
                         decoding="async"
                         draggable={false}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-110"
+                        className="w-full h-auto block"
                       />
-                      <div className="pointer-events-none absolute inset-0 bg-black/10 hover:bg-transparent transition-colors" />
-                    </>
+                      <div className="pointer-events-none absolute inset-0 bg-black/5" />
+                    </div>
                   )}
                 </button>
               );
             })}
           </div>
+          {filtered.length === 0 && (
+            <div className="py-20 text-center text-[10px] font-black tracking-widest text-white/20 uppercase">
+              No images in this category
+            </div>
+          )}
         </div>
 
         {/* Desktop/tablet: masonry grid (vertical scroll inside section) */}

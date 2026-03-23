@@ -49,13 +49,15 @@ export default function AppContent() {
 
     const galleryTabs = useMemo(() => {
         const gallerySlots = slots.filter((s: MediaSlot) => s.section.includes("GALLERY"));
-        const set = new Set(
-            gallerySlots
-                .filter((s: MediaSlot) => s.id.startsWith("gal-dyn-") || Boolean(s.uploadedFile))
-                .map((s: MediaSlot) => s.categoryLabel)
-                .filter(Boolean),
-        );
-        return Array.from(set).map((cat) => ({ label: cat as string }));
+        const categories = gallerySlots
+            .filter((s: MediaSlot) => Boolean(s.uploadedFile && s.useOnSite))
+            .map((s: MediaSlot) => s.categoryLabel)
+            .filter(Boolean);
+
+        const set = new Set(categories);
+        const uniqueCats = Array.from(set).map((cat) => ({ label: cat as string }));
+
+        return [{ label: "ALL" }, ...uniqueCats];
     }, [slots]);
 
     const galleryItems = useMemo(() => {
@@ -68,21 +70,23 @@ export default function AppContent() {
                 return bTime - aTime;
             });
 
-        return sorted.map((s: MediaSlot, i: number) => {
-            let col = "span 2";
-            let row = "span 2";
-            if (i % 7 === 0) { col = "span 4"; row = "span 3"; }
-            else if (i % 5 === 0) { col = "span 3"; row = "span 2"; }
-            else if (i % 3 === 0) { col = "span 2"; row = "span 3"; }
-
-            return {
+        const items: any[] = [];
+        // Add items for their specific categories
+        sorted.forEach((s: MediaSlot) => {
+            const item = {
                 id: s.id,
                 seed: s.id,
-                col,
-                row,
+                col: "span 2", // Placeholder, masonry ignores this
+                row: "span 2",
                 category: s.categoryLabel || "WEDDING"
             };
+            items.push(item);
+
+            // Also add a duplicate item for the "ALL" category
+            items.push({ ...item, category: "ALL" });
         });
+
+        return items;
     }, [slots]);
 
     const handleAdminLogin = () => {
