@@ -104,9 +104,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Initial Data Fetch
     useEffect(() => {
         const cached = loadLocalSlots();
-        if (cached && cached.length > 0) {
-            setSlots(cached);
-        }
+        if (cached && cached.length > 0) setSlots(cached);
 
         const fetchData = async () => {
             setIsLoading(true);
@@ -116,11 +114,16 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 if (slotError) {
                     console.warn("Supabase table 'media_slots' error:", describeSupabaseError(slotError));
                 } else if (slotData) {
+                    const localSlots = (cached && cached.length > 0) ? cached : [];
+                    const localSlotMap = new Map(localSlots.map((s) => [s.id, s]));
                     const dbSlotMap = new Map(slotData.map(d => [d.id, d]));
-                    const mergedSlots = initialMediaSlots.map(base => {
+
+                    // Start from initial slots, prefer DB, fallback to local cache when DB is missing.
+                    const mergedSlots = initialMediaSlots.map((base) => {
                         const dbSlot = dbSlotMap.get(base.id);
                         if (dbSlot) {
                             dbSlotMap.delete(base.id);
+                            localSlotMap.delete(base.id);
                             return {
                                 ...base,
                                 useOnSite: dbSlot.use_on_site,
@@ -133,10 +136,17 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                                 } : undefined
                             };
                         }
+
+                        const local = localSlotMap.get(base.id);
+                        if (local) {
+                            localSlotMap.delete(base.id);
+                            return local;
+                        }
+
                         return base;
                     });
 
-                    // Add purely dynamic slots
+                    // Add purely dynamic slots from DB
                     dbSlotMap.forEach((dbSlot, id) => {
                         mergedSlots.push({
                             id,
@@ -155,6 +165,12 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                             } : undefined
                         });
                     });
+
+                    // Keep any locally-cached dynamic slots that DB doesn't have yet
+                    localSlotMap.forEach((local) => {
+                        mergedSlots.push(local);
+                    });
+
                     setSlots(mergedSlots);
                 }
 
@@ -202,26 +218,34 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, []);
 
     const updateSlot = useCallback(async (id: string, updates: Partial<MediaSlot>) => {
-        setSlots((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
+        let slotForDb: MediaSlot | undefined;
+        setSlots((prev) =>
+            prev.map((s) => {
+                if (s.id !== id) return s;
+                const merged = { ...s, ...updates };
+                slotForDb = merged;
+                return merged;
+            })
+        );
 
-        const current = slots.find((s) => s.id === id);
+        const current = slotForDb || slots.find((s) => s.id === id);
         if (current) {
             const dbUpdates: Record<string, unknown> = {
                 id,
                 section: current.section,
                 frame: current.frame,
                 type: current.type,
-                use_on_site: updates.useOnSite ?? current.useOnSite,
+                use_on_site: current.useOnSite,
                 order_index: current.orderIndex ?? 0
             };
-            if (updates.categoryLabel !== undefined && dbSupportsCategoryLabel) {
-                dbUpdates.category_label = updates.categoryLabel;
+            if (dbSupportsCategoryLabel && current.categoryLabel !== undefined) {
+                dbUpdates.category_label = current.categoryLabel;
             }
-            if (updates.uploadedFile !== undefined) {
-                dbUpdates.uploaded_file_url = updates.uploadedFile?.url;
-                dbUpdates.uploaded_file_name = updates.uploadedFile?.name;
-                dbUpdates.uploaded_file_size = updates.uploadedFile?.size;
-                dbUpdates.uploaded_at = updates.uploadedFile?.uploadedAt;
+            if (current.uploadedFile !== undefined) {
+                dbUpdates.uploaded_file_url = current.uploadedFile?.url;
+                dbUpdates.uploaded_file_name = current.uploadedFile?.name;
+                dbUpdates.uploaded_file_size = current.uploadedFile?.size;
+                dbUpdates.uploaded_at = current.uploadedFile?.uploadedAt;
             }
 
             const { error } = await supabase.from('media_slots').upsert(dbUpdates);
@@ -292,15 +316,16 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const addSlot = async (slot: MediaSlot) => {
         setSlots(prev => [...prev, slot]);
-        await supabase.from('media_slots').upsert({
+        const payload: Record<string, unknown> = {
             id: slot.id,
             section: slot.section,
             frame: slot.frame,
             type: slot.type,
             use_on_site: slot.useOnSite,
-            category_label: slot.categoryLabel,
             order_index: slots.length
-        });
+        };
+        if (dbSupportsCategoryLabel) payload.category_label = slot.categoryLabel;
+        await supabase.from('media_slots').upsert(payload);
     };
 
     const deleteSlot = async (id: string) => {
