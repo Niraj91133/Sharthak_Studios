@@ -5,6 +5,8 @@ import { MediaSlot } from "@/lib/mediaSlots";
 import MediaSlotCard from "@/components/admin/MediaSlotCard";
 import MediaStrip from "@/components/admin/MediaStrip";
 
+import { useMediaContext } from "@/context/MediaContext";
+
 interface SectionCardProps {
     title: string;
     slots: MediaSlot[];
@@ -13,7 +15,35 @@ interface SectionCardProps {
 
 export default function SectionCard({ title, slots, accentColor }: SectionCardProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const { addSlot } = useMediaContext();
     const uploadedCount = slots.filter(s => s.uploadedFile).length;
+
+    const dynamicSections = [
+        "01. MOBILE HERO SECTION",
+        "02. INFINITE STRIPS (DESKTOP)",
+        "04. CHOOSE YOUR EXPERTISE",
+        "05. INSTAGRAM FEED (LATEST WORK)",
+    ];
+
+    const isDynamic = dynamicSections.includes(title);
+
+    const handleAddSlot = async () => {
+        const id = `extra-dyn-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
+        try {
+            await addSlot({
+                id,
+                section: title,
+                frame: `Extra ${title.split(' ')[1] || 'Item'}`,
+                type: "image",
+                currentSrc: "",
+                fallbackSrc: "",
+                useOnSite: true,
+                orderIndex: slots.length,
+            });
+        } catch (e) {
+            alert("Failed to add slot");
+        }
+    };
 
     return (
         <div className={`bg-[#0f0f0f] border border-white/[0.04] rounded-2xl overflow-hidden transition-all duration-500 ${isOpen ? "ring-1 ring-white/10" : "hover:border-white/10"}`}>
@@ -59,6 +89,16 @@ export default function SectionCard({ title, slots, accentColor }: SectionCardPr
                             {slots.map((slot) => (
                                 <MediaSlotCard key={slot.id} slot={slot} />
                             ))}
+
+                            {isDynamic && (
+                                <button
+                                    onClick={handleAddSlot}
+                                    className="aspect-[4/3] rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 hover:border-white/30 hover:bg-white/5 transition-all text-white/30 hover:text-white/60"
+                                >
+                                    <span className="text-xl">+</span>
+                                    <span className="text-[10px] uppercase font-black tracking-widest">Add extra item</span>
+                                </button>
+                            )}
                         </div>
 
                         <MediaStrip section={title} />

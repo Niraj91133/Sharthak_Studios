@@ -12,8 +12,10 @@ interface MediaSlotCardProps {
 }
 
 export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProps) {
-    const { uploadFile, deleteFile, updateSlot } = useMediaContext();
+    const { uploadFile, deleteFile, updateSlot, deleteSlot } = useMediaContext();
     const [isUploading, setIsUploading] = useState(false);
+
+    const isDynamic = slot.id.includes("-dyn-") || slot.id.startsWith("gal-dyn-");
 
     const handleUpload = async (file: File) => {
         setIsUploading(true);
@@ -139,6 +141,17 @@ export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProp
                                         </svg>
                                         Clear
                                     </button>
+
+                                    {isDynamic && (
+                                        <button
+                                            onClick={() => {
+                                                if (confirm(`Delete this entire slot "${slot.id}"?`)) deleteSlot(slot.id);
+                                            }}
+                                            className="px-3 py-1.5 border border-red-500/20 bg-red-500/5 text-red-500 rounded-md text-[9px] uppercase tracking-widest font-bold hover:bg-red-500 hover:text-white transition-all flex items-center gap-2"
+                                        >
+                                            Delete
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}
