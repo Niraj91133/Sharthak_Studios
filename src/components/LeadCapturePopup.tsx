@@ -15,16 +15,36 @@ export default function LeadCapturePopup() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const checkAndShow = useCallback(() => {
-        // We've removed the submission check temporarily to ensure it shows on every refresh for testing
+    const [hasSubmitted, setHasSubmitted] = useState(false);
 
-        // Show after 1.5 seconds
-        const timer = setTimeout(() => {
-            setIsOpen(true);
+    useEffect(() => {
+        const submitted = localStorage.getItem("sharthak_lead_submitted") === "true";
+        setHasSubmitted(submitted);
+    }, []);
+
+    const checkAndShow = useCallback(() => {
+        if (hasSubmitted) return;
+
+        // Show initially after 1.5 seconds on mount
+        const initialTimer = setTimeout(() => {
+            if (!localStorage.getItem("sharthak_lead_submitted")) {
+                setIsOpen(true);
+            }
         }, 1500);
 
-        return () => clearTimeout(timer);
-    }, []);
+        // Every 2 minutes (120,000ms), check if we should show it again
+        const interval = setInterval(() => {
+            const alreadySubmitted = localStorage.getItem("sharthak_lead_submitted") === "true";
+            if (!alreadySubmitted) {
+                setIsOpen(true);
+            }
+        }, 120000);
+
+        return () => {
+            clearTimeout(initialTimer);
+            clearInterval(interval);
+        };
+    }, [hasSubmitted]);
 
     useEffect(() => {
         return checkAndShow();
@@ -32,7 +52,6 @@ export default function LeadCapturePopup() {
 
     const handleClose = () => {
         setIsOpen(false);
-        // We removed the closed_at logic to allow it to show on next refresh as requested
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +91,7 @@ export default function LeadCapturePopup() {
 
             setIsSubmitted(true);
             localStorage.setItem("sharthak_lead_submitted", "true");
+            setHasSubmitted(true);
             setTimeout(() => setIsOpen(false), 2000);
         } catch (err) {
             console.error("Submission failed:", err);
@@ -80,6 +100,8 @@ export default function LeadCapturePopup() {
             setIsSubmitting(false);
         }
     };
+
+    if (hasSubmitted) return null;
 
     return (
         <AnimatePresence>
