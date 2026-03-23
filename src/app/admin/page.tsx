@@ -4,12 +4,13 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useMediaContext } from "@/context/MediaContext";
 import SectionCard from "@/components/admin/SectionCard";
+import CollapsibleAdminCard from "@/components/admin/CollapsibleAdminCard";
 import GlobalMediaPanel from "@/components/admin/GlobalMediaPanel";
 import GalleryManager from "@/components/admin/GalleryManager";
 import BlogManager from "@/components/admin/BlogManager";
 
 export default function AdminDashboard() {
-    const { slots } = useMediaContext();
+    const { slots, blogs } = useMediaContext();
     const [showGlobalMedia, setShowGlobalMedia] = useState(false);
 
     const sections = useMemo(() => {
@@ -138,13 +139,15 @@ export default function AdminDashboard() {
                         <div className="space-y-4">
                             {sections.map((section) => (
                                 section.title.includes("(GALLERY)") ? (
-                                    <div key={section.title} className="space-y-4">
-                                        <div className="flex items-center gap-2 px-2">
-                                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: section.accentColor }} />
-                                            <h3 className="text-[11px] font-black tracking-[0.4em] uppercase text-white/40">{section.title}</h3>
-                                        </div>
+                                    <CollapsibleAdminCard
+                                        key={section.title}
+                                        title={section.title}
+                                        accentColor={section.accentColor}
+                                        itemCount={section.slots.length}
+                                        activeCount={section.slots.filter((s) => s.uploadedFile).length}
+                                    >
                                         <GalleryManager />
-                                    </div>
+                                    </CollapsibleAdminCard>
                                 ) : (
                                     <SectionCard
                                         key={section.title}
@@ -155,9 +158,14 @@ export default function AdminDashboard() {
                                 )
                             ))}
 
-                            <div className="pt-12 mt-12 border-t border-white/5">
+                            <CollapsibleAdminCard
+                                title="JOURNALS"
+                                accentColor="#ffffff"
+                                itemCount={blogs.length}
+                                activeCount={blogs.length}
+                            >
                                 <BlogManager />
-                            </div>
+                            </CollapsibleAdminCard>
                         </div>
                     </div>
                 </div>
