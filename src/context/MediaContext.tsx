@@ -309,9 +309,13 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     const addBlog = async (blog: Blog) => {
-        setBlogs(prev => [blog, ...prev]);
         const { error } = await supabase.from('blogs').insert([blog]);
-        if (error) console.error("Error adding blog:", describeSupabaseError(error));
+        if (error) {
+            const msg = describeSupabaseError(error);
+            console.error("Error adding blog:", msg);
+            throw new Error(msg);
+        }
+        setBlogs(prev => [blog, ...prev]);
     };
 
     const deleteBlog = async (id: string) => {

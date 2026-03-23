@@ -36,14 +36,23 @@ export default function BlogManager() {
             alert("Title, Content (HTML), and Featured Image are required.");
             return;
         }
-        const id = newBlog.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
-        await addBlog({
-            ...(newBlog as Blog),
-            id,
-            date: new Date().toISOString()
-        });
-        setIsCreating(false);
-        setNewBlog({ title: "", excerpt: "", category: "TECHNIQUE", image: "", content: "" });
+
+        setIsUploading(true);
+        try {
+            const id = newBlog.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
+            await addBlog({
+                ...(newBlog as Blog),
+                id,
+                date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+            });
+            setIsCreating(false);
+            setNewBlog({ title: "", excerpt: "", category: "TECHNIQUE", image: "", content: "" });
+            alert("Story saved successfully!");
+        } catch (e) {
+            alert("Database Error: " + (e instanceof Error ? e.message : "Failed to persist blog"));
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     return (

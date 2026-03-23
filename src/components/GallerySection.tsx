@@ -133,32 +133,32 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
 
   const revealClass = revealed ? "is-revealed" : "";
   const gap = isMobile ? 8 : 10;
+
+  // Modern "tricky" grid definition for 15 items in 6 cols x 12 rows
   const mobileAreas = useMemo(() => {
-    // 6 cols × 12 rows = 15 tiles (a–o, excluding p)
-    return [
+    const layout = [
       "a a a b b b",
       "a a a b b b",
       "a a a b b b",
-      "a a a b b b",
-      "c c d d e e",
-      "c c d d e e",
-      "c c f g h i",
-      "c c f g h i",
-      "c c j j k k",
-      "c c j j k k",
-      "c c l m n o",
-      "c c l m n o",
-    ].map((row) => `"${row}"`).join(" ");
+      "a a a c c c",
+      "d d d c c c",
+      "d d d c c c",
+      "e e f f g g",
+      "e e f f g g",
+      "h h h i i i",
+      "j j j k k k",
+      "j j j l l l",
+      "m m n n o o"
+    ];
+    return `"${layout.join('" "')}"`;
   }, []);
-  const mobileAreaNames = useMemo(() => {
-    const names = "a b c d e f g h i j k l m n o".split(" ");
-    return names.slice(0, MOBILE_GRID_COUNT);
-  }, []);
+
+  const mobileAreaNames = "abcdefghijklmno".split("");
 
   return (
     <section
       ref={sectionRef}
-      className={`gallery-section w-full bg-black px-0 pt-6 pb-0 ${revealClass} flex flex-col overflow-hidden h-[694px] max-h-[694px] sm:h-[900px] sm:max-h-[900px]`}
+      className={`gallery-section w-full bg-black px-0 pt-6 pb-0 ${revealClass} flex flex-col overflow-hidden h-fit sm:h-[900px] sm:max-h-[900px]`}
     >
       <div className="w-full px-0 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Mobile Tabs */}
@@ -217,14 +217,14 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
           </div>
         </div>
 
-        {/* Mobile: premium grid (10–15 photos visible within the same frame, no scroll) */}
-        <div className="gallery-stagger w-full flex-1 min-h-0 overflow-hidden px-0 pb-0 sm:hidden">
+        {/* Mobile: Premium "No-Gap" Staggered Grid */}
+        <div className="gallery-stagger w-full flex-shrink-0 sm:hidden px-0 pb-0">
           <div
-            className="grid h-full w-full gap-0"
+            className="grid w-full aspect-[1/2] min-h-[700px] gap-0 border-t border-b border-white/10"
             style={{
               gridTemplateAreas: mobileAreas,
-              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-              gridTemplateRows: "repeat(12, minmax(0, 1fr))",
+              gridTemplateColumns: "repeat(6, 1fr)",
+              gridTemplateRows: "repeat(12, 1fr)",
             }}
           >
             {displayTiles.map((tile, index) => {
@@ -236,10 +236,10 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                   type="button"
                   disabled={isPlaceholder}
                   className={[
-                    "relative overflow-hidden rounded-none bg-black",
-                    isPlaceholder ? "opacity-60" : "active:scale-[0.99] transition-transform",
+                    "relative overflow-hidden border-[0.5px] border-white/5 bg-black",
+                    isPlaceholder ? "opacity-60" : "active:scale-[0.98] transition-all",
                   ].join(" ")}
-                  style={{ gridArea: mobileAreaNames[index] || "a" }}
+                  style={{ gridArea: mobileAreaNames[index] }}
                   onClick={() => {
                     if (isPlaceholder) return;
                     const realIndex = realTiles.findIndex((t) => t.seed === tile.seed);
@@ -247,8 +247,8 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                   }}
                 >
                   {isPlaceholder ? (
-                    <div className="absolute inset-0 flex items-center justify-center text-[9px] font-black tracking-[0.28em] text-white/30 bg-white/5 uppercase">
-                      Upload {displayCount}
+                    <div className="absolute inset-0 flex items-center justify-center text-[7px] font-black tracking-[0.2em] text-white/20 bg-white/[0.02] uppercase text-center p-2">
+                      Upload {index + 1}
                     </div>
                   ) : (
                     <>
@@ -258,18 +258,9 @@ export default function GallerySection({ tabs, items }: GallerySectionProps) {
                         loading="lazy"
                         decoding="async"
                         draggable={false}
-                        className="absolute inset-0 h-full w-full object-cover blur-[12px] scale-[1.12] opacity-55"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-110"
                       />
-                      <img
-                        src={src}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        draggable={false}
-                        className="absolute inset-0 h-full w-full object-contain"
-                      />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 opacity-90" />
-                      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)]" />
+                      <div className="pointer-events-none absolute inset-0 bg-black/10 hover:bg-transparent transition-colors" />
                     </>
                   )}
                 </button>
