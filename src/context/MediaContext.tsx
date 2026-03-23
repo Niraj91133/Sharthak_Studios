@@ -101,6 +101,26 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [dbSupportsCategoryLabel, setDbSupportsCategoryLabel] = useState(true);
     const [schemaChecked, setSchemaChecked] = useState(false);
 
+    const upsertMediaSlot = useCallback(async (payload: Record<string, unknown>) => {
+        const { error } = await supabase.from('media_slots').upsert(payload);
+        if (!error) return;
+
+        const code = (error as unknown as { code?: string }).code;
+        if (code === "42703") {
+            // Column not found (e.g. category_label missing) → disable and retry without it.
+            setDbSupportsCategoryLabel(false);
+            if ("category_label" in payload) {
+                const { category_label: _ignored, ...rest } = payload as Record<string, unknown> & { category_label?: unknown };
+                const retry = await supabase.from('media_slots').upsert(rest);
+                if (!retry.error) return;
+                console.error("Update sync error:", describeSupabaseError(retry.error));
+                return;
+            }
+        }
+
+        console.error("Update sync error:", describeSupabaseError(error));
+    }, []);
+
     // Initial Data Fetch
     useEffect(() => {
         const cached = loadLocalSlots();
@@ -248,10 +268,9 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 dbUpdates.uploaded_at = current.uploadedFile?.uploadedAt;
             }
 
-            const { error } = await supabase.from('media_slots').upsert(dbUpdates);
-            if (error) console.error("Update sync error:", describeSupabaseError(error));
+            await upsertMediaSlot(dbUpdates);
         }
-    }, [dbSupportsCategoryLabel, slots]);
+    }, [dbSupportsCategoryLabel, slots, upsertMediaSlot]);
 
     const resetSlot = useCallback(async (id: string) => {
         setSlots((prev) =>
@@ -325,7 +344,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             order_index: slots.length
         };
         if (dbSupportsCategoryLabel) payload.category_label = slot.categoryLabel;
-        await supabase.from('media_slots').upsert(payload);
+        await upsertMediaSlot(payload);
     };
 
     const deleteSlot = async (id: string) => {
