@@ -44,6 +44,7 @@ export const metadata: Metadata = {
 };
 
 import { MediaProvider } from "@/context/MediaContext";
+import ScrollToTopOnLoad from "@/components/ScrollToTopOnLoad";
 
 export default function RootLayout({
   children,
@@ -57,6 +58,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <MediaProvider>
+          <ScrollToTopOnLoad />
           {children}
         </MediaProvider>
       </body>
