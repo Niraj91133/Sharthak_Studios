@@ -89,7 +89,7 @@ function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
       <video
         key={src}
         src={src}
-        className={[safeClass, isUploaded ? "object-contain bg-black" : "object-cover"].join(" ")}
+        className={[safeClass, "object-contain bg-black"].join(" ")}
         autoPlay
         muted
         loop
@@ -102,7 +102,7 @@ function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
     <img
       src={src}
       alt=""
-      className={[safeClass, isUploaded ? "object-contain bg-black" : "object-cover"].join(" ")}
+      className={[safeClass, "object-contain bg-black"].join(" ")}
       loading="lazy"
       decoding="async"
       draggable={false}
@@ -155,7 +155,7 @@ function PhoneMockup({ reel }: { reel: Reel }) {
         <div className="absolute inset-[9px] overflow-hidden rounded-[42px] bg-black">
           {/* Reel viewport: exact Instagram Reel ratio (9:16) inside phone */}
           <div className="absolute inset-x-0 top-1/2 w-full -translate-y-1/2 aspect-[9/16] bg-black">
-            <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-cover" />
+            <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-contain" />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
             <ReelStats reel={reel} />
           </div>
@@ -184,7 +184,7 @@ function SideReel({ reel, side }: { reel: Reel; side: "left" | "right" }) {
       aria-hidden="true"
     >
       <div className="absolute inset-0 overflow-hidden rounded-[28px] bg-white/5 ring-1 ring-white/10">
-        <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-cover" />
+        <ReelMedia reel={reel} className="absolute inset-0 h-full w-full object-contain" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/45" />
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="flex items-center justify-between text-[10px] font-black tracking-[0.25em] text-white/70 uppercase">

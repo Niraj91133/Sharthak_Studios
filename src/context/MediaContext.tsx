@@ -90,6 +90,7 @@ interface MediaContextType {
     allMedia: { id: string; url: string; name: string; section: string; type: string }[];
     blogs: Blog[];
     isLoading: boolean;
+    uploadProgresses: Record<string, number>;
 }
 
 const MediaContext = createContext<MediaContextType | undefined>(undefined);
@@ -98,6 +99,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [slots, setSlots] = useState<MediaSlot[]>(initialMediaSlots);
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [uploadProgresses, setUploadProgresses] = useState<Record<string, number>>({});
     const [dbSupportsCategoryLabel, setDbSupportsCategoryLabel] = useState(true);
     // Default to false so older schemas don't spam errors on first write.
     const [dbSupportsOrderIndex, setDbSupportsOrderIndex] = useState(false);
@@ -412,19 +414,35 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${isVideo ? "video" : "image"}/upload`;
 
-        const res = await fetch(cloudinaryUrl, {
-            method: "POST",
-            body: formData,
+        // Using XMLHttpRequest instead of fetch to track upload progress
+        const data = await new Promise<any>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", cloudinaryUrl);
+
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percent = Math.round((event.loaded / event.total) * 100);
+                    setUploadProgresses(prev => ({ ...prev, [id]: percent }));
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(JSON.parse(xhr.responseText));
+                } else {
+                    try {
+                        const err = JSON.parse(xhr.responseText);
+                        reject(new Error(err?.error?.message || "Direct upload to Cloudinary failed."));
+                    } catch {
+                        reject(new Error("Direct upload to Cloudinary failed (Invalid JSON)."));
+                    }
+                }
+            };
+
+            xhr.onerror = () => reject(new Error("Network error during Cloudinary upload."));
+            xhr.send(formData);
         });
 
-        if (!res.ok) {
-            const errorData = await res.json();
-            // Specifically handle the "Video is too large" error with a more helpful message if it still fails
-            const errorMsg = errorData?.error?.message || "Direct upload to Cloudinary failed.";
-            throw new Error(errorMsg);
-        }
-
-        const data = await res.json();
         const uploadedName = data.original_filename
             ? `${data.original_filename}.${data.format || (fileToSend.name.split(".").pop() || "")}`.replace(/\.$/, "")
             : fileToSend.name;
@@ -443,6 +461,15 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         // 4. Save the result into Supabase via our updateSlot helper
         await updateSlot(id, { uploadedFile, useOnSite: true });
+
+        // Clear progress after short delay
+        setTimeout(() => {
+            setUploadProgresses(prev => {
+                const next = { ...prev };
+                delete next[id];
+                return next;
+            });
+        }, 1200);
     };
 
     const deleteFile = async (id: string) => {
@@ -498,7 +525,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     return (
         <MediaContext.Provider
-            value={{ slots, updateSlot, resetSlot, getSlot, uploadFile, deleteFile, addSlot, deleteSlot, addBlog, deleteBlog, allMedia, blogs, isLoading }}
+            value={{ slots, updateSlot, resetSlot, getSlot, uploadFile, deleteFile, addSlot, deleteSlot, addBlog, deleteBlog, allMedia, blogs, isLoading, uploadProgresses }}
         >
             {children}
         </MediaContext.Provider>

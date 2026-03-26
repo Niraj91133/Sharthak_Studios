@@ -6,9 +6,10 @@ interface UploadZoneProps {
     onUpload: (file: File) => void;
     accept: string;
     isProcessing?: boolean;
+    progress?: number;
 }
 
-export default function UploadZone({ onUpload, accept, isProcessing }: UploadZoneProps) {
+export default function UploadZone({ onUpload, accept, isProcessing, progress }: UploadZoneProps) {
     const [isDragActive, setIsDragActive] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,7 +80,7 @@ export default function UploadZone({ onUpload, accept, isProcessing }: UploadZon
             className={`
         relative border-2 border-dashed rounded-xl p-6 transition-all cursor-pointer text-center
         ${isDragActive ? "border-white bg-white/5" : "border-white/10 hover:border-white/30 hover:bg-white/[0.02]"}
-        ${isProcessing ? "opacity-50 pointer-events-none" : ""}
+        ${isProcessing ? "opacity-90 pointer-events-none" : ""}
       `}
         >
             <input
@@ -90,7 +91,7 @@ export default function UploadZone({ onUpload, accept, isProcessing }: UploadZon
                 className="hidden"
             />
 
-            <div className="space-y-2">
+            <div className={`space-y-2 ${isProcessing ? "opacity-20" : ""}`}>
                 <div className="flex justify-center">
                     <svg className="w-8 h-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -105,8 +106,18 @@ export default function UploadZone({ onUpload, accept, isProcessing }: UploadZon
             </div>
 
             {isProcessing && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                    <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mb-3"></div>
+                    {typeof progress === "number" && (
+                        <div className="space-y-1">
+                            <p className="text-[14px] font-black text-white tabular-nums">
+                                {progress}%
+                            </p>
+                            <p className="text-[8px] text-white/40 uppercase tracking-widest font-bold">
+                                Uploading to Cloud...
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

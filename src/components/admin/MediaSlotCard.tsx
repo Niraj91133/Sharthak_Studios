@@ -12,7 +12,7 @@ interface MediaSlotCardProps {
 }
 
 export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProps) {
-    const { uploadFile, deleteFile, updateSlot, deleteSlot } = useMediaContext();
+    const { uploadFile, deleteFile, updateSlot, deleteSlot, uploadProgresses } = useMediaContext();
     const [isUploading, setIsUploading] = useState(false);
 
     const isDynamic = slot.id.includes("-dyn-") || slot.id.startsWith("gal-dyn-");
@@ -117,6 +117,7 @@ export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProp
                                 accept="image/*,video/*"
                                 onUpload={handleUpload}
                                 isProcessing={isUploading}
+                                progress={uploadProgresses[slot.id]}
                             />
                         ) : (
                             <div className="h-full flex flex-col justify-between">
