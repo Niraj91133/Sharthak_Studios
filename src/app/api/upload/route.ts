@@ -70,26 +70,27 @@ export async function POST(request: Request) {
             uploadOptions = {
                 ...uploadOptions,
                 resource_type: "image",
-                quality: "auto:best",
+                quality: "auto",
                 fetch_format: "auto",
             };
         } else if (isVideo) {
             uploadOptions = {
                 ...uploadOptions,
                 resource_type: "video",
-                // Reduce size while maintaining quality: constrain to 1080x1920, encode to MP4 (H.264/AAC),
-                // and let Cloudinary pick an efficient quality target.
+                // Reduce size while maintaining quality: constrain to 1080p, encode to MP4 (H.264/AAC),
+                // and let Cloudinary's 'auto' quality handle the bit-rate reduction.
                 transformation: [
                     {
-                        crop: "limit",
                         width: 1080,
-                        height: 1920,
+                        crop: "limit",
                         fetch_format: "mp4",
-                        video_codec: "h264",
+                        video_codec: "h264:high",
                         audio_codec: "aac",
-                        quality: "auto:good",
+                        quality: "auto",
                     },
                 ],
+                // For large files (>100MB), chunked upload is recommended.
+                // However, with upload_stream, we are sending the whole buffer.
             };
         }
 

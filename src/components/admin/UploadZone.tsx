@@ -47,9 +47,9 @@ export default function UploadZone({ onUpload, accept, isProcessing }: UploadZon
             alert("Please upload an image file.");
             return;
         }
-        const maxSize = isVideo ? 300 * 1024 * 1024 : 30_485_760; // 300MB for video, ~30.5MB for images
+        const maxSize = 300 * 1024 * 1024; // 300MB for all files
         if (file.size > maxSize) {
-            alert(`File is too large. Max size: ${isVideo ? "300MB" : "30MB"}`);
+            alert("File is too large. Max size: 300MB");
             return;
         }
 
@@ -86,7 +86,7 @@ export default function UploadZone({ onUpload, accept, isProcessing }: UploadZon
                     {isDragActive ? "Drop here" : "Click or drag & drop"}
                 </p>
                 <p className="text-[10px] text-white/30 uppercase tracking-widest">
-                    MAX 300MB (VIDEO) / 30MB (IMAGE)
+                    MAX FILE SIZE: 300MB
                 </p>
             </div>
 

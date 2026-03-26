@@ -13,6 +13,7 @@ type Reel = {
   likes: string;
   views: string;
   fallback: string;
+  type?: string;
 };
 
 const fallbackReels: Reel[] = [
@@ -76,6 +77,24 @@ function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
   const { src, isUploaded } = useMediaAsset(reel.id, reel.fallback);
   const safeClass =
     className?.replace(/\bobject-cover\b/g, "").replace(/\bobject-contain\b/g, "") || "";
+
+  // Robust check for video content
+  const isVideo = src.toLowerCase().match(/\.(mp4|mov|webm|ogg|m4v)$/) || src.includes("video/upload");
+
+  if (isVideo) {
+    return (
+      <video
+        key={src}
+        src={src}
+        className={[safeClass, isUploaded ? "object-contain bg-black" : "object-cover"].join(" ")}
+        autoPlay
+        muted
+        loop
+        playsInline
+      />
+    );
+  }
+
   return (
     <img
       src={src}
@@ -190,6 +209,7 @@ export default function LatestWorkSection() {
       likes: "10K",
       views: "100K",
       fallback: s.fallbackSrc,
+      type: s.type,
     }));
   }, [slots]);
 

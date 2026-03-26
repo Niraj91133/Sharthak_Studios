@@ -100,7 +100,7 @@ export const mediaSlots: MediaSlot[] = [
         id: `reel-${String(i + 1).padStart(2, "0")}`,
         section: "05. INSTAGRAM FEED (LATEST WORK)",
         frame: `Instagram Reel ${i + 1}`,
-        type: "image" as const,
+        type: "video" as const,
         currentSrc: `https://picsum.photos/seed/reel-${i}/800/1000`,
         fallbackSrc: `https://picsum.photos/seed/reel-${i}/800/1000`,
         useOnSite: true,
