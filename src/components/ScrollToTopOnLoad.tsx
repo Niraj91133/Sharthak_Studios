@@ -61,7 +61,7 @@ export default function ScrollToTopOnLoad() {
 
     let raf = 0;
     let tries = 0;
-    const maxTries = 180; // ~3s
+    const maxTries = 600; // ~10s (AppContent is client-only/dynamic)
 
     const attempt = () => {
       tries += 1;
