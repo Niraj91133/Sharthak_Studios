@@ -378,7 +378,9 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             folder,
         };
         if (isVideo) {
-            paramsToSign.transformation = transformationStr;
+            // For large videos, we must use eager_async=true to avoid synchronous processing timeouts/errors
+            paramsToSign.eager = transformationStr;
+            paramsToSign.eager_async = "true";
         } else {
             paramsToSign.quality = "auto";
             paramsToSign.fetch_format = "auto";
@@ -401,7 +403,8 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         formData.append("folder", folder);
 
         if (isVideo) {
-            formData.append("transformation", transformationStr);
+            formData.append("eager", transformationStr);
+            formData.append("eager_async", "true");
         } else {
             formData.append("quality", "auto");
             formData.append("fetch_format", "auto");
@@ -416,7 +419,9 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         if (!res.ok) {
             const errorData = await res.json();
-            throw new Error(errorData?.error?.message || "Direct upload to Cloudinary failed.");
+            // Specifically handle the "Video is too large" error with a more helpful message if it still fails
+            const errorMsg = errorData?.error?.message || "Direct upload to Cloudinary failed.";
+            throw new Error(errorMsg);
         }
 
         const data = await res.json();
@@ -424,9 +429,14 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             ? `${data.original_filename}.${data.format || (fileToSend.name.split(".").pop() || "")}`.replace(/\.$/, "")
             : fileToSend.name;
 
+        // Use the eager (transformed) URL for videos if provided, otherwise fallback to secure_url
+        const finalUrl = (isVideo && data.eager && data.eager.length > 0)
+            ? data.eager[0].secure_url
+            : data.secure_url;
+
         const uploadedFile = {
             name: uploadedName,
-            url: data.secure_url,
+            url: finalUrl,
             size: typeof data?.bytes === "number" ? data.bytes : fileToSend.size,
             uploadedAt: new Date().toISOString(),
         };
