@@ -78,8 +78,11 @@ function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
   const safeClass =
     className?.replace(/\bobject-cover\b/g, "").replace(/\bobject-contain\b/g, "") || "";
 
+  if (!src) return <div className={[safeClass, "bg-white/5"].join(" ")} />;
+
   // Robust check for video content
-  const isVideo = src.toLowerCase().match(/\.(mp4|mov|webm|ogg|m4v)$/) || src.includes("video/upload");
+  const srcLower = src.toLowerCase();
+  const isVideo = srcLower.match(/\.(mp4|mov|webm|ogg|m4v)$/) || srcLower.includes("video/upload");
 
   if (isVideo) {
     return (

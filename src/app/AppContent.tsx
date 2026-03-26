@@ -112,12 +112,12 @@ export default function AppContent() {
     };
 
     return (
-        <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
+            <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
             <LeadCapturePopup />
             <MobileHeroSection />
-            <div className="hidden md:block">
+            <section id="infinite-strips-section" className="hidden md:block">
                 <InfiniteStripsCTASection />
-            </div>
+            </section>
 
             <div className="h-6" />
 
