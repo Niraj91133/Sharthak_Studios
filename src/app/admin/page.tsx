@@ -79,6 +79,11 @@ export default function AdminDashboard() {
         return `${Math.round(bytes / 1024)} KB`;
     };
 
+    const remainingBytes =
+        storage.usedBytes !== null && storage.limitBytes !== null
+            ? Math.max(0, storage.limitBytes - storage.usedBytes)
+            : null;
+
     const sections = useMemo(() => {
         const grouped = slots.reduce((acc, slot) => {
             if (!acc[slot.section]) acc[slot.section] = [];
@@ -201,7 +206,7 @@ export default function AdminDashboard() {
                                         ? "Loading Cloudinary usage..."
                                         : storage.error
                                             ? "Cloudinary usage unavailable"
-                                            : `Used ${formatBytes(storage.usedBytes)} / ${storage.limitBytes ? formatBytes(storage.limitBytes) : "∞"}`}
+                                            : `Used ${formatBytes(storage.usedBytes)} / ${storage.limitBytes ? formatBytes(storage.limitBytes) : "∞"} • Left ${storage.limitBytes ? formatBytes(remainingBytes) : "∞"}`}
                                 </p>
                                 {!storage.loading && !storage.error && storage.usedPct !== null && (
                                     <p className="text-[9px] text-white/20 tabular-nums">

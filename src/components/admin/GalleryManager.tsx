@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useRef } from "react";
 import { useMediaContext } from "@/context/MediaContext";
 import MediaSlotCard from "@/components/admin/MediaSlotCard";
+import { generateSlotId } from "@/lib/generateSlotId";
 
 export default function GalleryManager() {
     const { slots, addSlot, deleteSlot, uploadFile } = useMediaContext();
@@ -38,7 +39,7 @@ export default function GalleryManager() {
         setNewCategoryName("");
         setIsAddingCategory(false);
 
-        const id = `gal-dyn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        const id = generateSlotId("gal-dyn-");
         try {
             await addSlot({
                 id,
@@ -85,7 +86,7 @@ export default function GalleryManager() {
     };
 
     const handleAddImage = async (category: string) => {
-        const id = `gal-dyn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        const id = generateSlotId("gal-dyn-");
         try {
             await addSlot({
                 id,
@@ -111,7 +112,7 @@ export default function GalleryManager() {
 
         try {
             for (const file of fileArray) {
-                const id = `gal-dyn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+                const id = generateSlotId("gal-dyn-");
 
                 // 1. Create the slot first
                 await addSlot({

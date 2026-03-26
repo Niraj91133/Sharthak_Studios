@@ -240,7 +240,7 @@ export default function GallerySection({ tabs, items, activeTabOverride, onTabCh
 
               return (
                 <button
-                  key={tile.seed}
+                  key={`${tile.category}-${tile.seed}`}
                   type="button"
                   disabled={isPlaceholder}
                   className={[
@@ -292,7 +292,7 @@ export default function GallerySection({ tabs, items, activeTabOverride, onTabCh
               const isPlaceholder = !src;
               return (
                 <button
-                  key={tile.seed}
+                  key={`${tile.category}-${tile.seed}`}
                   type="button"
                   disabled={isPlaceholder}
                   className={[

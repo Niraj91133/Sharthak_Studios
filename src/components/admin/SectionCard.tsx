@@ -6,6 +6,7 @@ import MediaSlotCard from "@/components/admin/MediaSlotCard";
 import MediaStrip from "@/components/admin/MediaStrip";
 
 import { useMediaContext } from "@/context/MediaContext";
+import { generateSlotId } from "@/lib/generateSlotId";
 
 interface SectionCardProps {
     title: string;
@@ -28,7 +29,7 @@ export default function SectionCard({ title, slots, accentColor }: SectionCardPr
     const isDynamic = dynamicSections.includes(title);
 
     const handleAddSlot = async () => {
-        const id = `extra-dyn-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
+        const id = generateSlotId("extra-dyn-");
         try {
             await addSlot({
                 id,
@@ -40,7 +41,7 @@ export default function SectionCard({ title, slots, accentColor }: SectionCardPr
                 useOnSite: true,
                 orderIndex: slots.length,
             });
-        } catch (e) {
+        } catch {
             alert("Failed to add slot");
         }
     };
@@ -50,6 +51,7 @@ export default function SectionCard({ title, slots, accentColor }: SectionCardPr
             {/* Header */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
+                aria-expanded={isOpen}
                 className="w-full px-6 py-5 flex items-center justify-between group"
             >
                 <div className="flex items-center gap-4">
@@ -82,7 +84,12 @@ export default function SectionCard({ title, slots, accentColor }: SectionCardPr
             </button>
 
             {/* Content */}
-            <div className={`grid transition-all duration-500 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+            <div
+                className={[
+                    "grid transition-all duration-500 ease-in-out",
+                    isOpen ? "grid-rows-[1fr] opacity-100 pointer-events-auto" : "grid-rows-[0fr] opacity-0 pointer-events-none",
+                ].join(" ")}
+            >
                 <div className="overflow-hidden">
                     <div className="px-6 pb-8 pt-2 space-y-6">
                         <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${title === "Gallery Section" ? "lg:grid-cols-3" : ""}`}>

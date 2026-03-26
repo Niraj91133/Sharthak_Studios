@@ -61,14 +61,18 @@ export default function LeadCapturePopup() {
         setIsSubmitting(true);
         try {
             // 1. Supabase Sync
-            const { error } = await supabase.from('leads').insert([{
-                name: formData.name,
-                phone: formData.phone,
-                event_name: formData.eventName,
-                event_date: formData.eventDate || null
-            }]);
+            if (supabase) {
+                const { error } = await supabase.from('leads').insert([{
+                    name: formData.name,
+                    phone: formData.phone,
+                    event_name: formData.eventName,
+                    event_date: formData.eventDate || null
+                }]);
 
-            if (error) throw error;
+                if (error) throw error;
+            } else {
+                console.warn("Supabase not configured; skipping DB lead insert.");
+            }
 
             // 2. Email Sync
             const emailResponse = await fetch('/api/send-lead-email', {

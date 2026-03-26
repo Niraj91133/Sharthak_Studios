@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiErrorResponse, UploadApiOptions, UploadApiResponse } from "cloudinary";
 
+export const runtime = "nodejs";
+
 cloudinary.config({
     cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
     api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
@@ -35,9 +37,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "No file provided" }, { status: 400 });
         }
 
-        // Server-side size check (101MB to be safe)
-        if (file.size > 101 * 1024 * 1024) {
-            return NextResponse.json({ error: "File too large (>100MB)" }, { status: 413 });
+        // Server-side size check (301MB to be safe)
+        if (file.size > 301 * 1024 * 1024) {
+            return NextResponse.json({ error: "File too large (>300MB)" }, { status: 413 });
         }
 
         const bytes = await file.arrayBuffer();
@@ -53,8 +55,15 @@ export async function POST(request: Request) {
         };
 
         const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
-        const isImage = file.type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heic', 'jpg'].includes(fileExtension);
-        const isVideo = file.type.startsWith("video/") || ['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(fileExtension);
+        const isImage = file.type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heic'].includes(fileExtension);
+        const isVideo =
+            file.type.startsWith("video/") ||
+            [
+                'mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v', 'flv', 'wmv', '3gp', 'ogv',
+                'ts', 'mts', 'm2ts'
+            ].includes(fileExtension) ||
+            // Some browsers send empty type for videos; treat unknown non-images as videos for this endpoint.
+            (!isImage && (!file.type || file.type === "application/octet-stream"));
 
         // Optimized Cloudinary settings for high speed and high quality
         if (isImage) {
@@ -68,10 +77,18 @@ export async function POST(request: Request) {
             uploadOptions = {
                 ...uploadOptions,
                 resource_type: "video",
-                quality: "auto:best",
+                // Reduce size while maintaining quality: constrain to 1080x1920, encode to MP4 (H.264/AAC),
+                // and let Cloudinary pick an efficient quality target.
                 transformation: [
-                    { quality: "auto:best" },
-                    { fetch_format: "auto" }
+                    {
+                        crop: "limit",
+                        width: 1080,
+                        height: 1920,
+                        fetch_format: "mp4",
+                        video_codec: "h264",
+                        audio_codec: "aac",
+                        quality: "auto:good",
+                    },
                 ],
             };
         }

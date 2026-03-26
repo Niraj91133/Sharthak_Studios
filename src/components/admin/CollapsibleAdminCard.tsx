@@ -37,6 +37,7 @@ export default function CollapsibleAdminCard({
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
+        aria-expanded={isOpen}
         className="w-full px-6 py-5 flex items-center justify-between group"
       >
         <div className="flex items-center gap-4">
@@ -76,7 +77,9 @@ export default function CollapsibleAdminCard({
       <div
         className={[
           "grid transition-all duration-500 ease-in-out",
-          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+          isOpen
+            ? "grid-rows-[1fr] opacity-100 pointer-events-auto"
+            : "grid-rows-[0fr] opacity-0 pointer-events-none",
         ].join(" ")}
       >
         <div className="overflow-hidden">
@@ -86,4 +89,3 @@ export default function CollapsibleAdminCard({
     </div>
   );
 }
-

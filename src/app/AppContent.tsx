@@ -170,7 +170,7 @@ export default function AppContent() {
                         <div className="space-y-3 text-center">
                             <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Call or WhatsApp</div>
                             <a href="https://wa.me/917091876067" target="_blank" rel="noopener noreferrer" className="text-2xl font-bold hover:text-white/60 transition-colors block italic">
-                                +91 7091876067
+                                7091876067
                             </a>
                         </div>
                         <div className="space-y-3 text-center">
@@ -209,7 +209,7 @@ export default function AppContent() {
             {/* Floating Contact Icons */}
             <div className="fixed bottom-10 right-6 z-[100] flex flex-col gap-4">
                 <a
-                    href="tel:917091876067"
+                    href="tel:7091876067"
                     className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all group border-2 border-white/20"
                     title="Call Us Now"
                 >

@@ -99,10 +99,12 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [dbSupportsCategoryLabel, setDbSupportsCategoryLabel] = useState(true);
-    const [dbSupportsOrderIndex, setDbSupportsOrderIndex] = useState(true);
+    // Default to false so older schemas don't spam errors on first write.
+    const [dbSupportsOrderIndex, setDbSupportsOrderIndex] = useState(false);
     const [schemaChecked, setSchemaChecked] = useState(false);
 
     const upsertMediaSlot = useCallback(async (payload: Record<string, unknown>) => {
+        if (!supabase) return;
         const { error } = await supabase.from('media_slots').upsert(payload);
         if (!error) return;
 
@@ -146,6 +148,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                if (!supabase) return;
                 // 1. Fetch Slots
                 const { data: slotData, error: slotError } = await supabase.from('media_slots').select('*');
                 if (slotError) {
@@ -187,25 +190,30 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
                     // Add purely dynamic slots from DB
                     dbSlotMap.forEach((dbSlot, id) => {
-                        // If local cache already has this dynamic slot, prefer DB and drop local copy.
+                        // Merge DB + local cache for the same id.
+                        // Important when the DB schema doesn't have optional columns (e.g. category_label),
+                        // but local cache still holds those values.
+                        const local = localSlotMap.get(id);
                         localSlotMap.delete(id);
                         if (seenIds.has(id)) return;
                         seenIds.add(id);
                         mergedSlots.push({
                             id,
-                            section: inferSectionForSlot(id, dbSlot.section),
-                            frame: dbSlot.frame || 'Dynamic',
-                            type: dbSlot.type || 'image',
-                            currentSrc: dbSlot.uploaded_file_url || '',
-                            fallbackSrc: '',
-                            useOnSite: dbSlot.use_on_site,
-                            categoryLabel: dbSlot.category_label,
-                            uploadedFile: dbSlot.uploaded_file_url ? {
-                                name: dbSlot.uploaded_file_name,
-                                url: dbSlot.uploaded_file_url,
-                                size: dbSlot.uploaded_file_size,
-                                uploadedAt: dbSlot.uploaded_at
-                            } : undefined
+                            section: inferSectionForSlot(id, (dbSlot.section ?? local?.section) ?? null),
+                            frame: dbSlot.frame || local?.frame || 'Dynamic',
+                            type: dbSlot.type || local?.type || 'image',
+                            currentSrc: dbSlot.uploaded_file_url || local?.currentSrc || '',
+                            fallbackSrc: local?.fallbackSrc || '',
+                            useOnSite: (dbSlot.use_on_site ?? local?.useOnSite) ?? true,
+                            categoryLabel: dbSlot.category_label ?? local?.categoryLabel,
+                            uploadedFile: dbSlot.uploaded_file_url
+                                ? {
+                                    name: dbSlot.uploaded_file_name,
+                                    url: dbSlot.uploaded_file_url,
+                                    size: dbSlot.uploaded_file_size,
+                                    uploadedAt: dbSlot.uploaded_at
+                                }
+                                : local?.uploadedFile
                         });
                     });
 
@@ -248,10 +256,16 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Schema Check
     useEffect(() => {
         const checkSchema = async () => {
+            if (!supabase) {
+                setSchemaChecked(true);
+                return;
+            }
             try {
                 const { error } = await supabase.from("media_slots").select("category_label").limit(1);
                 if (error && (error.code === '42703' || error.code === "PGRST204")) {
                     setDbSupportsCategoryLabel(false);
+                } else if (!error) {
+                    setDbSupportsCategoryLabel(true);
                 }
             } catch {
                 // Ignore
@@ -260,6 +274,8 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 const { error } = await supabase.from("media_slots").select("order_index").limit(1);
                 if (error && (error.code === '42703' || error.code === "PGRST204")) {
                     setDbSupportsOrderIndex(false);
+                } else if (!error) {
+                    setDbSupportsOrderIndex(true);
                 }
             } catch {
                 // Ignore
@@ -289,7 +305,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 frame: current.frame,
                 type: current.type,
                 use_on_site: current.useOnSite,
-                ...(dbSupportsOrderIndex ? { order_index: current.orderIndex ?? 0 } : {})
+                ...(schemaChecked && dbSupportsOrderIndex ? { order_index: current.orderIndex ?? 0 } : {})
             };
             if (dbSupportsCategoryLabel && current.categoryLabel !== undefined) {
                 dbUpdates.category_label = current.categoryLabel;
@@ -303,7 +319,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
             await upsertMediaSlot(dbUpdates);
         }
-    }, [dbSupportsCategoryLabel, slots, upsertMediaSlot]);
+    }, [dbSupportsCategoryLabel, dbSupportsOrderIndex, schemaChecked, slots, upsertMediaSlot]);
 
     const resetSlot = useCallback(async (id: string) => {
         setSlots((prev) =>
@@ -311,6 +327,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 s.id === id ? { ...s, uploadedFile: undefined, useOnSite: false } : s
             )
         );
+        if (!supabase) return;
         await supabase.from('media_slots').upsert({
             id,
             uploaded_file_url: null,
@@ -334,7 +351,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     targetRatio: 0.65,
                     maxDimension: 2600,
                 });
-            } catch (e) {
+            } catch {
                 console.warn("Compression failed, uploading original.");
             }
         }
@@ -351,10 +368,14 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (!response.ok) throw new Error("Upload failed.");
 
         const data = await response.json();
+        const uploadedName =
+            data && typeof data === "object" && data !== null && typeof (data as { original_filename?: unknown }).original_filename === "string"
+                ? `${(data as { original_filename: string }).original_filename}.${typeof (data as { format?: unknown }).format === "string" ? (data as { format: string }).format : (fileToSend.name.split(".").pop() || "")}`.replace(/\.$/, "")
+                : fileToSend.name;
         const uploadedFile = {
-            name: fileToSend.name,
+            name: uploadedName,
             url: data.secure_url,
-            size: fileToSend.size,
+            size: typeof data?.bytes === "number" ? data.bytes : fileToSend.size,
             uploadedAt: new Date().toISOString(),
         };
 
@@ -374,7 +395,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             frame: slot.frame,
             type: slot.type,
             use_on_site: slot.useOnSite,
-            ...(dbSupportsOrderIndex ? { order_index: slots.length } : {})
+            ...(schemaChecked && dbSupportsOrderIndex ? { order_index: slots.length } : {})
         };
         if (dbSupportsCategoryLabel) payload.category_label = slot.categoryLabel;
         await upsertMediaSlot(payload);
@@ -382,10 +403,12 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const deleteSlot = async (id: string) => {
         setSlots(prev => prev.filter(s => s.id !== id));
+        if (!supabase) return;
         await supabase.from('media_slots').delete().eq('id', id);
     };
 
     const addBlog = async (blog: Blog) => {
+        if (!supabase) throw new Error("Supabase is not configured");
         const { error } = await supabase.from('blogs').insert([blog]);
         if (error) {
             const msg = describeSupabaseError(error);
@@ -397,6 +420,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const deleteBlog = async (id: string) => {
         setBlogs(prev => prev.filter(b => b.id !== id));
+        if (!supabase) return;
         await supabase.from('blogs').delete().eq('id', id);
     };
 
