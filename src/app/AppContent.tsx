@@ -33,6 +33,13 @@ export default function AppContent() {
     };
 
     useEffect(() => {
+        // Ensure page starts at the top on initial load
+        if (typeof window !== "undefined") {
+            window.scrollTo(0, 0);
+        }
+    }, []);
+
+    useEffect(() => {
         const lenis = new Lenis({
             lerp: 0.1,
             duration: 1,
@@ -42,6 +49,9 @@ export default function AppContent() {
             touchMultiplier: 2,
             infinite: false,
         });
+
+        // Force lenis to top as well
+        lenis.scrollTo(0, { immediate: true });
 
         function raf(time: number) {
             lenis.raf(time);
@@ -112,7 +122,7 @@ export default function AppContent() {
     };
 
     return (
-            <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
+        <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
             <LeadCapturePopup />
             <MobileHeroSection />
             <section id="infinite-strips-section" className="hidden md:block">
