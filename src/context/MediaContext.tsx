@@ -344,7 +344,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const uploadFile = async (id: string, file: File) => {
         let fileToSend = file;
 
-        // Compression
+        // 1. Pre-process images locally (compression)
         if (file.type.startsWith("image/")) {
             try {
                 fileToSend = await compressImageFile(file, {
@@ -357,22 +357,73 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }
         }
 
-        // Upload
+        const isVideo = file.type.startsWith("video/");
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+
+        if (!cloudName || !apiKey) {
+            throw new Error("Cloudinary configuration missing in environment.");
+        }
+
+        // 2. Get signature from local server
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const folder = "sharthak_studio";
+
+        // IMPORTANT: Transformation parameter must be a string for signing if there's only one,
+        // matching what will be sent to Cloudinary.
+        const transformationStr = isVideo ? "w_1080,c_limit,f_mp4,vc_h264:high,ac_aac,q_auto" : "";
+
+        const paramsToSign: Record<string, string | number> = {
+            timestamp,
+            folder,
+        };
+        if (isVideo) {
+            paramsToSign.transformation = transformationStr;
+        } else {
+            paramsToSign.quality = "auto";
+            paramsToSign.fetch_format = "auto";
+        }
+
+        const signRes = await fetch("/api/upload/sign", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paramsToSign }),
+        });
+        if (!signRes.ok) throw new Error("Failed to get upload signature.");
+        const { signature } = await signRes.json();
+
+        // 3. Upload directly to Cloudinary (Bypassing Next.js server)
         const formData = new FormData();
         formData.append("file", fileToSend);
+        formData.append("api_key", apiKey);
+        formData.append("timestamp", timestamp.toString());
+        formData.append("signature", signature);
+        formData.append("folder", folder);
 
-        const response = await fetch("/api/upload", {
+        if (isVideo) {
+            formData.append("transformation", transformationStr);
+        } else {
+            formData.append("quality", "auto");
+            formData.append("fetch_format", "auto");
+        }
+
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${isVideo ? "video" : "image"}/upload`;
+
+        const res = await fetch(cloudinaryUrl, {
             method: "POST",
             body: formData,
         });
 
-        if (!response.ok) throw new Error("Upload failed.");
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData?.error?.message || "Direct upload to Cloudinary failed.");
+        }
 
-        const data = await response.json();
-        const uploadedName =
-            data && typeof data === "object" && data !== null && typeof (data as { original_filename?: unknown }).original_filename === "string"
-                ? `${(data as { original_filename: string }).original_filename}.${typeof (data as { format?: unknown }).format === "string" ? (data as { format: string }).format : (fileToSend.name.split(".").pop() || "")}`.replace(/\.$/, "")
-                : fileToSend.name;
+        const data = await res.json();
+        const uploadedName = data.original_filename
+            ? `${data.original_filename}.${data.format || (fileToSend.name.split(".").pop() || "")}`.replace(/\.$/, "")
+            : fileToSend.name;
+
         const uploadedFile = {
             name: uploadedName,
             url: data.secure_url,
@@ -380,7 +431,7 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             uploadedAt: new Date().toISOString(),
         };
 
-        // Sync to DB
+        // 4. Save the result into Supabase via our updateSlot helper
         await updateSlot(id, { uploadedFile, useOnSite: true });
     };
 
