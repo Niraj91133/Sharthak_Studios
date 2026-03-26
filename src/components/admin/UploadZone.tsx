@@ -39,13 +39,27 @@ export default function UploadZone({ onUpload, accept, isProcessing }: UploadZon
         const isVideo = file.type.startsWith("video/") || ['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(fileExtension);
         const isImage = file.type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heic'].includes(fileExtension);
 
-        if (accept.includes("video") && !isVideo) {
-            alert("Please upload a video file.");
+        const canAcceptVideo = accept.includes("video") || accept.includes("*");
+        const canAcceptImage = accept.includes("image") || accept.includes("*");
+
+        if (isVideo && !canAcceptVideo) {
+            alert("This slot only accepts images.");
             return;
         }
-        if (accept.includes("image") && !isImage) {
-            alert("Please upload an image file.");
+        if (isImage && !canAcceptImage) {
+            alert("This slot only accepts videos.");
             return;
+        }
+        if (!isVideo && !isImage && accept !== "*/*") {
+            // Check for file extension matches if it's not a standard mime type
+            const isMatch = accept.split(",").some(pattern => {
+                const pat = pattern.trim().toLowerCase();
+                return file.type.toLowerCase().includes(pat) || file.name.toLowerCase().endsWith(pat);
+            });
+            if (!isMatch && accept !== "image/*,video/*") {
+                alert(`Please upload an acceptable file format (${accept}).`);
+                return;
+            }
         }
         const maxSize = 300 * 1024 * 1024; // 300MB for all files
         if (file.size > maxSize) {

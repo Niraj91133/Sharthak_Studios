@@ -180,7 +180,8 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                         const local = localSlotMap.get(base.id);
                         if (local) {
                             localSlotMap.delete(base.id);
-                            return local;
+                            // Ensure type from code (initialMediaSlots) takes precedence over local cache
+                            return { ...local, type: base.type };
                         }
 
                         return base;

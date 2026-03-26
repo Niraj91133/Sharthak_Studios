@@ -114,7 +114,7 @@ export default function MediaSlotCard({ slot, allCategories }: MediaSlotCardProp
                     <div className="flex-1 min-w-0">
                         {!slot.uploadedFile ? (
                             <UploadZone
-                                accept={slot.type === "image" ? "image/*" : "video/*"}
+                                accept="image/*,video/*"
                                 onUpload={handleUpload}
                                 isProcessing={isUploading}
                             />
