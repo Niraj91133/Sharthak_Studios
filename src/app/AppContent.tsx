@@ -33,8 +33,9 @@ export default function AppContent() {
     };
 
     useEffect(() => {
-        // Ensure page starts at the top on initial load
-        if (typeof window !== "undefined") {
+        // Stop the browser from restoring the previous scroll position automatically
+        if (typeof window !== "undefined" && window.history.scrollRestoration) {
+            window.history.scrollRestoration = 'manual';
             window.scrollTo(0, 0);
         }
     }, []);
@@ -42,7 +43,7 @@ export default function AppContent() {
     useEffect(() => {
         const lenis = new Lenis({
             lerp: 0.1,
-            duration: 1,
+            duration: 1.1,
             smoothWheel: true,
             wheelMultiplier: 1.1,
             gestureOrientation: "vertical",
@@ -50,17 +51,20 @@ export default function AppContent() {
             infinite: false,
         });
 
-        // Force lenis to top as well
-        lenis.scrollTo(0, { immediate: true });
+        // Use a short delay to ensure dynamic layouts have settled before forcing scroll top
+        const tid = setTimeout(() => {
+            lenis.scrollTo(0, { immediate: true });
+            window.scrollTo(0, 0);
+        }, 300);
 
         function raf(time: number) {
             lenis.raf(time);
             requestAnimationFrame(raf);
         }
-
         requestAnimationFrame(raf);
 
         return () => {
+            clearTimeout(tid);
             lenis.destroy();
         };
     }, []);
