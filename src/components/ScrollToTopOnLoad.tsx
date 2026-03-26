@@ -21,6 +21,17 @@ function getNavigationType(): string {
   return "navigate";
 }
 
+function isElementScrollableTarget(el: HTMLElement): boolean {
+  try {
+    const style = window.getComputedStyle(el);
+    if (style.display === "none" || style.visibility === "hidden") return false;
+  } catch {
+    // ignore
+  }
+  const rect = el.getBoundingClientRect();
+  return rect.height > 0;
+}
+
 export default function ScrollToTopOnLoad() {
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
@@ -37,13 +48,36 @@ export default function ScrollToTopOnLoad() {
       // ignore
     }
 
+    // Reset first, then (for home) jump to the desired section.
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+
+    const isHome = window.location.pathname === "/" || window.location.pathname === "";
+    const targetId = isHome ? "infinite-strips-section" : null;
+    if (!targetId) return;
+
     const navType = getNavigationType();
-    if (navType === "reload" || navType === "back_forward") {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    } else {
-      // For a normal first load, still guarantee the top section.
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    }
+    const shouldApply = navType === "reload" || navType === "back_forward" || navType === "navigate";
+    if (!shouldApply) return;
+
+    let raf = 0;
+    let tries = 0;
+    const maxTries = 180; // ~3s
+
+    const attempt = () => {
+      tries += 1;
+      const el = document.getElementById(targetId) as HTMLElement | null;
+      if (el && isElementScrollableTarget(el)) {
+        el.scrollIntoView({ behavior: "auto", block: "start" });
+        return;
+      }
+      if (tries >= maxTries) return;
+      raf = window.requestAnimationFrame(attempt);
+    };
+
+    raf = window.requestAnimationFrame(attempt);
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+    };
   }, []);
 
   return null;
