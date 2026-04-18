@@ -18,7 +18,7 @@ type Reel = {
 
 const fallbackReels: Reel[] = [
   {
-    id: "latest-work-01",
+    id: "reel-01",
     title: "Eternal Vows",
     time: "0:45",
     likes: "12.4K",
@@ -27,7 +27,7 @@ const fallbackReels: Reel[] = [
       "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=1200",
   },
   {
-    id: "latest-work-02",
+    id: "reel-02",
     title: "City Lights",
     time: "0:30",
     likes: "8.1K",
@@ -36,7 +36,7 @@ const fallbackReels: Reel[] = [
       "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=1200",
   },
   {
-    id: "latest-work-03",
+    id: "reel-03",
     title: "Golden Hour",
     time: "0:55",
     likes: "18.9K",
@@ -45,31 +45,13 @@ const fallbackReels: Reel[] = [
       "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200",
   },
   {
-    id: "latest-work-04",
+    id: "reel-04",
     title: "Midnight Sun",
     time: "0:15",
     likes: "6.7K",
     views: "98K",
     fallback:
       "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=1200",
-  },
-  {
-    id: "latest-work-05",
-    title: "Soft Focus",
-    time: "0:38",
-    likes: "10.2K",
-    views: "176K",
-    fallback:
-      "https://images.unsplash.com/photo-1523437237164-d442d57cc3c9?auto=format&fit=crop&q=80&w=1200",
-  },
-  {
-    id: "latest-work-06",
-    title: "Afterglow",
-    time: "0:22",
-    likes: "7.9K",
-    views: "121K",
-    fallback:
-      "https://images.unsplash.com/photo-1529634897861-1fe71c0421d2?auto=format&fit=crop&q=80&w=1200",
   },
 ];
 
@@ -230,9 +212,6 @@ export default function LatestWorkSection() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tightest uppercase italic leading-none">
             INSTAGRAM FEED
           </h2>
-          <p className="text-[10px] md:text-xs font-black opacity-30 tracking-[0.4em] uppercase">
-            (CONNECTING TO SHARTHAK_STUDIO)
-          </p>
         </div>
 
         <a

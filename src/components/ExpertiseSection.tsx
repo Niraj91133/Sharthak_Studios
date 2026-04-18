@@ -92,7 +92,7 @@ export default function ExpertiseSection() {
 
     return sectionSlots.map(s => ({
       id: s.id,
-      title: s.categoryLabel || s.frame.toUpperCase(),
+      title: s.categoryLabel || fallbackSlides.find(f => f.id === s.id)?.title || s.frame.toUpperCase(),
       fallback: s.fallbackSrc,
       slot: s
     }));
