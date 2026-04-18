@@ -2,12 +2,19 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
-        const res = await fetch("http://localhost:3001/qr", {
-            cache: 'no-store'
+        // Use 127.0.0.1 instead of localhost to avoid IPv6 issues in Node 18+
+        const res = await fetch("http://127.0.0.1:3001/qr", {
+            cache: 'no-store',
+            signal: AbortSignal.timeout(5000) // 5 second timeout
         });
         const data = await res.json();
         return NextResponse.json(data);
     } catch (error) {
-        return NextResponse.json({ status: "disconnected", error: "WhatsApp Server Offline" }, { status: 502 });
+        console.error("WhatsApp Status Proxy Error:", error);
+        return NextResponse.json({
+            status: "disconnected",
+            error: "WhatsApp Server Offline",
+            details: error instanceof Error ? error.message : "Connection failed"
+        }, { status: 502 });
     }
 }

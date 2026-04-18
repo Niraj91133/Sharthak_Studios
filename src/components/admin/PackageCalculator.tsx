@@ -257,7 +257,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                 let targetNumber = clientPhone ? clientPhone.replace(/\D/g, '') : "917091876067";
                 if (targetNumber.length === 10) targetNumber = "91" + targetNumber;
 
-                await fetch("http://localhost:3001/send", {
+                await fetch("/api/admin/whatsapp-send", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
