@@ -68,7 +68,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
 
     const [isSending, setIsSending] = useState(false);
     const [status, setStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
-    const [waStatus, setWaStatus] = useState<"loading" | "qr" | "ready">("loading");
+    const [waStatus, setWaStatus] = useState<"loading" | "qr" | "ready" | "disconnected">("loading");
     const [qrCode, setQrCode] = useState("");
     const pdfExportRef = useRef<HTMLDivElement>(null);
 
@@ -76,12 +76,12 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
     React.useEffect(() => {
         const checkStatus = async () => {
             try {
-                const res = await fetch("http://localhost:3001/qr");
+                const res = await fetch("/api/admin/whatsapp-status");
                 const data = await res.json();
                 setWaStatus(data.status);
                 if (data.status === "qr") setQrCode(data.qr);
             } catch {
-                setWaStatus("loading");
+                setWaStatus("disconnected");
             }
         };
         const timer = setInterval(checkStatus, 3000);
@@ -402,124 +402,129 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
             <motion.div
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
-                className="bg-[#0a0a0a] border border-white/10 w-full max-w-4xl max-h-[90vh] rounded-[40px] overflow-hidden flex flex-col shadow-2xl"
+                className="bg-[#0a0a0a] border border-white/10 w-full max-w-4xl max-h-[96vh] md:max-h-[90vh] rounded-[24px] md:rounded-[40px] overflow-hidden flex flex-col shadow-2xl"
             >
                 {/* Header */}
-                <div className="px-10 py-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                    <div className="flex items-center gap-5">
-                        <div className="w-14 h-14 bg-white text-black rounded-[20px] shadow-xl flex items-center justify-center">
-                            <Calculator className="w-7 h-7" />
+                <div className="px-6 py-6 md:px-10 md:py-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                    <div className="flex items-center gap-4 md:gap-5">
+                        <div className="w-10 h-10 md:w-14 md:h-14 bg-white text-black rounded-[12px] md:rounded-[20px] shadow-xl flex items-center justify-center">
+                            <Calculator className="w-5 h-5 md:w-7 md:h-7" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black tracking-tight uppercase italic">Package Calculator</h2>
-                            <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase mt-1 font-bold">Premium Quote Engine</p>
+                            <h2 className="text-lg md:text-2xl font-black tracking-tight uppercase italic">Quote Builder</h2>
+                            <p className="text-[8px] md:text-[10px] tracking-[0.3em] text-white/30 uppercase mt-0.5 font-bold">Premium Studio Engine</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 hover:border-white/20 transition-all active:scale-95"
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 hover:border-white/20 transition-all active:scale-95"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5 md:w-6 md:h-6" />
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-10 space-y-12">
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 md:space-y-12">
                     {/* WhatsApp Connection Banner */}
                     {waStatus !== "ready" && (
-                        <div className="p-8 bg-green-500/10 border border-green-500/20 rounded-[32px] flex flex-col md:flex-row items-center gap-8">
-                            <div className="flex-1 space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                    <h3 className="text-lg font-black uppercase text-green-500 italic">Connect WhatsApp</h3>
+                        <div className={`p-6 md:p-8 border rounded-[24px] md:rounded-[32px] flex flex-col md:flex-row items-center gap-6 md:gap-8 ${waStatus === 'disconnected' ? 'bg-red-500/10 border-red-500/20' : 'bg-green-500/10 border-green-500/20'}`}>
+                            <div className="flex-1 space-y-2 text-center md:text-left">
+                                <div className="flex items-center justify-center md:justify-start gap-2">
+                                    <div className={`w-2 h-2 rounded-full animate-pulse ${waStatus === 'disconnected' ? 'bg-red-500' : 'bg-green-500'}`} />
+                                    <h3 className={`text-base md:text-lg font-black uppercase italic ${waStatus === 'disconnected' ? 'text-red-500' : 'text-green-500'}`}>
+                                        {waStatus === 'disconnected' ? 'WhatsApp Server Offline' : 'Connect WhatsApp'}
+                                    </h3>
                                 </div>
-                                <p className="text-xs text-green-500/60 leading-relaxed font-bold uppercase tracking-wider">
-                                    Background messages bhejane ke liye ek baar QR code scan karein.
+                                <p className={`text-[10px] leading-relaxed font-bold uppercase tracking-wider ${waStatus === 'disconnected' ? 'text-red-500/60' : 'text-green-500/60'}`}>
+                                    {waStatus === 'disconnected'
+                                        ? "Background service band hai. Please server check karein."
+                                        : "Direct messages bhejane ke liye QR code scan karein."}
                                 </p>
                             </div>
                             {waStatus === "qr" && qrCode ? (
-                                <div className="bg-white p-3 rounded-2xl shadow-2xl scale-110">
-                                    <img src={qrCode} alt="WhatsApp QR" className="w-32 h-32" />
+                                <div className="bg-white p-2 rounded-xl shadow-2xl">
+                                    <img src={qrCode} alt="WhatsApp QR" className="w-24 h-24 md:w-32 md:h-32" />
                                 </div>
-                            ) : (
+                            ) : waStatus === "loading" ? (
                                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-green-500 opacity-40">
                                     Generating QR...
                                 </div>
-                            )}
+                            ) : null}
                         </div>
                     )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black tracking-[0.4em] text-white/30 uppercase ml-1">Client Name</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                        <div className="space-y-3 md:space-y-4">
+                            <label className="text-[9px] md:text-[10px] font-black tracking-[0.4em] text-white/30 uppercase ml-1">Client Name</label>
                             <input
                                 type="text"
                                 value={clientName}
                                 onChange={(e) => setClientName(e.target.value)}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-7 py-6 text-xl font-bold focus:outline-none focus:border-white/40 focus:bg-white/[0.05] transition-all placeholder:text-white/10"
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl md:rounded-2xl px-5 md:px-7 py-4 md:py-6 text-base md:text-xl font-bold focus:outline-none focus:border-white/40 focus:bg-white/[0.05] transition-all placeholder:text-white/10"
                                 placeholder="e.g. Rahul & Priya"
                             />
                         </div>
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black tracking-[0.4em] text-white/30 uppercase ml-1">WhatsApp No. (Optional)</label>
+                        <div className="space-y-3 md:space-y-4">
+                            <label className="text-[9px] md:text-[10px] font-black tracking-[0.4em] text-white/30 uppercase ml-1">WhatsApp No. (Optional)</label>
                             <input
                                 type="text"
+                                inputMode="tel"
                                 value={clientPhone}
                                 onChange={(e) => setClientPhone(e.target.value)}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-7 py-6 text-xl font-bold focus:outline-none focus:border-white/40 focus:bg-white/[0.05] transition-all placeholder:text-white/10"
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl md:rounded-2xl px-5 md:px-7 py-4 md:py-6 text-base md:text-xl font-bold focus:outline-none focus:border-white/40 focus:bg-white/[0.05] transition-all placeholder:text-white/10"
                                 placeholder="91XXXXXXXXXX"
                             />
                         </div>
                     </div>
 
 
-                    <div className="space-y-8">
+                    <div className="space-y-6 md:space-y-8">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-[10px] font-black tracking-[0.4em] text-white/40 uppercase">Itinerary Setup</h3>
+                            <h3 className="text-[9px] md:text-[10px] font-black tracking-[0.4em] text-white/40 uppercase">Itinerary Setup</h3>
                             <button
                                 onClick={addDay}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-white text-black hover:bg-white/90 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                                className="flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 bg-white text-black hover:bg-white/90 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
                             >
-                                <Plus className="w-3.5 h-3.5" /> Add New Day
+                                <Plus className="w-3 md:w-3.5 h-3 md:h-3.5" /> <span className="hidden md:inline">Add New</span> Day
                             </button>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4 md:space-y-6">
                             {days.map((day) => (
-                                <div key={day.id} className="p-8 bg-white/[0.02] border border-white/5 rounded-[32px] space-y-8 relative group hover:border-white/10 transition-colors shadow-sm">
+                                <div key={day.id} className="p-5 md:p-8 bg-white/[0.02] border border-white/5 rounded-[24px] md:rounded-[32px] space-y-6 md:space-y-8 relative group hover:border-white/10 transition-colors shadow-sm">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <span className="px-3 py-1.5 rounded-lg bg-white/10 flex items-center justify-center text-[10px] font-black italic text-white/80">DAY {day.id}</span>
+                                        <div className="flex items-center gap-2 md:gap-4">
+                                            <span className="px-2 py-1 md:px-3 md:py-1.5 rounded-lg bg-white/10 flex items-center justify-center text-[9px] md:text-[10px] font-black italic text-white/80">DAY {day.id}</span>
                                             <button
                                                 onClick={() => openConfig(day.id)}
-                                                className="px-4 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all shadow-lg active:scale-95"
+                                                className="px-3 py-1 md:px-4 md:py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all shadow-lg active:scale-95"
                                             >
-                                                Configure Deliveries
+                                                Configure
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             {days.length > 1 && (
                                                 <button
                                                     onClick={() => removeDay(day.id)}
-                                                    className="w-10 h-10 rounded-xl border border-red-500/20 flex items-center justify-center text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                                                    className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl border border-red-500/20 flex items-center justify-center text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all md:opacity-0 group-hover:opacity-100"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                                 </button>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap gap-2.5">
+                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
                                         {AVAILABLE_SERVICES.map((service) => {
                                             const active = day.services.includes(service.id);
                                             return (
                                                 <button
                                                     key={service.id}
                                                     onClick={() => toggleService(day.id, service.id)}
-                                                    className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${active
+                                                    className={`px-3 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl text-[8px] md:text-[10px] font-black uppercase tracking-widest border transition-all ${active
                                                         ? "bg-white text-black border-white shadow-xl scale-[1.02]"
                                                         : "bg-white/5 text-white/40 border-white/5 hover:border-white/30 hover:bg-white/[0.08]"
                                                         }`}
                                                 >
-                                                    {service.label} • ₹{(service.price / 1000).toFixed(0)}k
+                                                    {service.label} <span className="block opacity-50 text-[7px] mt-0.5">₹{(service.price / 1000).toFixed(0)}k</span>
                                                 </button>
                                             );
                                         })}
@@ -529,46 +534,47 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                         </div>
                     </div>
 
-                    <div className="p-10 bg-white text-black rounded-[40px] space-y-10 shadow-2xl relative overflow-hidden group">
+                    <div className="p-6 md:p-10 bg-white text-black rounded-[24px] md:rounded-[40px] space-y-6 md:space-y-10 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-black/[0.02] rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110" />
 
                         <div className="flex items-center justify-between relative z-10">
-                            <h3 className="text-xs font-black tracking-[0.3em] uppercase opacity-30 italic">Grand Summary</h3>
-                            <div className="text-[10px] font-black tracking-[0.4em] uppercase opacity-30">PREMIUM PACKAGE</div>
+                            <h3 className="text-[10px] md:text-xs font-black tracking-[0.3em] uppercase opacity-30 italic">Grand Summary</h3>
+                            <div className="text-[8px] md:text-[10px] font-black tracking-[0.4em] uppercase opacity-30">PREMIUM PACKAGE</div>
                         </div>
 
-                        <div className="space-y-5 relative z-10">
+                        <div className="space-y-4 md:space-y-5 relative z-10">
                             {totals.dayBreakdown.map((d) => (
                                 d.items.length > 0 && (
-                                    <div key={d.dayId} className="flex justify-between items-center py-6 border-b border-black/[0.08]">
-                                        <div className="max-w-[70%]">
-                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Day {d.dayId} Overview</div>
-                                            <div className="text-xs font-black uppercase tracking-widest text-black/80 truncate">
+                                    <div key={d.dayId} className="flex justify-between items-center py-4 md:py-6 border-b border-black/[0.08]">
+                                        <div className="max-w-[65%]">
+                                            <div className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Day {d.dayId}</div>
+                                            <div className="text-[10px] md:text-xs font-black uppercase tracking-widest text-black/80 truncate">
                                                 {d.items.map(i => i.label).join(", ")}
                                             </div>
                                         </div>
-                                        <div className="text-2xl font-black tabular-nums italic">₹{d.dayTotal.toLocaleString()}</div>
+                                        <div className="text-xl md:text-2xl font-black tabular-nums italic">₹{d.dayTotal.toLocaleString()}</div>
                                     </div>
                                 )
                             ))}
                         </div>
 
-                        <div className="pt-8 flex justify-between items-center text-4xl font-black italic relative z-10">
+                        <div className="pt-6 md:pt-8 flex justify-between items-center text-2xl md:text-4xl font-black italic relative z-10">
                             <div className="flex flex-col">
-                                <span className="uppercase tracking-tightest opacity-20">Total Estimated</span>
-                                <span className="text-[8px] uppercase tracking-widest opacity-30 mt-1 font-black not-italic">Click Price to Edit</span>
+                                <span className="uppercase tracking-tightest opacity-20 text-xs md:text-xl">Total Investment</span>
+                                <span className="text-[7px] md:text-[8px] uppercase tracking-widest opacity-30 mt-1 font-black not-italic">Directly Editable</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="opacity-40">₹</span>
                                 <input
                                     type="number"
+                                    inputMode="numeric"
                                     value={totals.total}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         const baseTotal = totals.total - (customAdjustment || 0);
                                         setCustomAdjustment(val - baseTotal);
                                     }}
-                                    className="bg-transparent border-none outline-none w-56 text-right font-black tabular-nums focus:text-blue-600 transition-colors"
+                                    className="bg-transparent border-none outline-none w-32 md:w-56 text-right font-black tabular-nums focus:text-blue-600 transition-colors"
                                 />
                             </div>
                         </div>

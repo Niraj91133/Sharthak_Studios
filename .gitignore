@@ -44,3 +44,7 @@ next-env.d.ts
 
 # local
 .local/
+
+.wwebjs_auth/
+.wwebjs_cache/
+whatsapp.log
