@@ -21,6 +21,7 @@ export default function AdminDashboard() {
 
     const [showGlobalMedia, setShowGlobalMedia] = useState(false);
     const [showCalculator, setShowCalculator] = useState(false);
+    const [showTools, setShowTools] = useState(false);
     const [storage, setStorage] = useState<{
         usedBytes: number | null;
         limitBytes: number | null;
@@ -31,6 +32,7 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         const auth = localStorage.getItem("sharthak_admin_auth");
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (auth === "true") {
             setIsAuthenticated(true);
         }
@@ -234,21 +236,41 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="relative group">
+                        <div className="relative">
                             <button
-                                className="px-4 py-2 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 transition-all flex items-center gap-2"
+                                onClick={() => setShowTools(!showTools)}
+                                className={`px-4 py-2 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${showTools ? 'bg-white text-black' : 'bg-white/5 text-white hover:bg-white/10'}`}
                             >
-                                Tools <ChevronDown className="w-3 h-3 opacity-40" />
+                                Tools <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${showTools ? 'rotate-180' : 'opacity-40'}`} />
                             </button>
-                            <div className="absolute top-full right-0 mt-2 w-48 bg-[#111] border border-white/10 rounded-2xl p-2 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                                <button
-                                    onClick={() => setShowCalculator(true)}
-                                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-3"
-                                >
-                                    <Calculator className="w-3 h-3 text-white/40" />
-                                    Package Calculator
-                                </button>
-                            </div>
+
+                            <AnimatePresence>
+                                {showTools && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-40 bg-transparent"
+                                            onClick={() => setShowTools(false)}
+                                        />
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute top-full right-0 mt-2 w-48 bg-[#111] border border-white/10 rounded-2xl p-2 shadow-2xl z-50"
+                                        >
+                                            <button
+                                                onClick={() => {
+                                                    setShowCalculator(true);
+                                                    setShowTools(false);
+                                                }}
+                                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 transition-colors"
+                                            >
+                                                <Calculator className="w-3 h-3 text-white/40" />
+                                                Package Calculator
+                                            </button>
+                                        </motion.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
                         </div>
 
                         <button
