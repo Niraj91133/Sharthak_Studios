@@ -76,6 +76,6 @@ app.post('/send', async (req, res) => {
 
 client.initialize();
 
-app.listen(port, () => {
-    console.log(`🚀 WhatsApp API Gateway running at http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`🚀 WhatsApp API Gateway running at http://0.0.0.0:${port}`);
 });
