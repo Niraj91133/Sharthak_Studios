@@ -68,7 +68,11 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
 
     const [isSending, setIsSending] = useState(false);
     const [status, setStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
-    const [waStatus, setWaStatus] = useState<"loading" | "qr" | "ready" | "disconnected">("loading");
+    const [waStatus, setWaStatus] = useState<{
+        status: "loading" | "qr" | "ready" | "disconnected";
+        debug?: string;
+        timestamp?: string;
+    }>({ status: "loading" });
     const [qrCode, setQrCode] = useState("");
     const pdfExportRef = useRef<HTMLDivElement>(null);
 
@@ -78,15 +82,27 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
             try {
                 const res = await fetch("/api/admin/whatsapp-status");
                 const data = await res.json();
-                setWaStatus(data.status);
+                setWaStatus(data);
                 if (data.status === "qr") setQrCode(data.qr);
             } catch {
-                setWaStatus("disconnected");
+                setWaStatus({ status: "disconnected", debug: "Network request failed" });
             }
         };
         const timer = setInterval(checkStatus, 3000);
+        checkStatus(); // Initial check
         return () => clearInterval(timer);
     }, []);
+
+    const forceCheck = async () => {
+        setWaStatus({ status: "loading" });
+        try {
+            const res = await fetch("/api/admin/whatsapp-status");
+            const data = await res.json();
+            setWaStatus(data);
+        } catch (e) {
+            setWaStatus({ status: "disconnected", debug: e instanceof Error ? e.message : "Manual check failed" });
+        }
+    };
 
     const addDay = () => {
         const nextId = days.length + 1;
@@ -425,26 +441,34 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
 
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 md:space-y-12">
                     {/* WhatsApp Connection Banner */}
-                    {waStatus !== "ready" && (
-                        <div className={`p-6 md:p-8 border rounded-[24px] md:rounded-[32px] flex flex-col md:flex-row items-center gap-6 md:gap-8 ${waStatus === 'disconnected' ? 'bg-red-500/10 border-red-500/20' : 'bg-green-500/10 border-green-500/20'}`}>
+                    {waStatus.status !== "ready" && (
+                        <div className={`p-6 md:p-8 border rounded-[24px] md:rounded-[32px] flex flex-col md:flex-row items-center gap-6 md:gap-8 ${waStatus.status === 'disconnected' ? 'bg-red-500/10 border-red-500/20' : 'bg-green-500/10 border-green-500/20'}`}>
                             <div className="flex-1 space-y-2 text-center md:text-left">
                                 <div className="flex items-center justify-center md:justify-start gap-2">
-                                    <div className={`w-2 h-2 rounded-full animate-pulse ${waStatus === 'disconnected' ? 'bg-red-500' : 'bg-green-500'}`} />
-                                    <h3 className={`text-base md:text-lg font-black uppercase italic ${waStatus === 'disconnected' ? 'text-red-500' : 'text-green-500'}`}>
-                                        {waStatus === 'disconnected' ? 'WhatsApp Server Offline' : 'Connect WhatsApp'}
+                                    <div className={`w-2 h-2 rounded-full animate-pulse ${waStatus.status === 'disconnected' ? 'bg-red-500' : 'bg-green-500'}`} />
+                                    <h3 className={`text-base md:text-lg font-black uppercase italic ${waStatus.status === 'disconnected' ? 'text-red-500' : 'text-green-500'}`}>
+                                        {waStatus.status === 'disconnected' ? 'WhatsApp Server Offline' : 'Connect WhatsApp'}
                                     </h3>
                                 </div>
-                                <p className={`text-[10px] leading-relaxed font-bold uppercase tracking-wider ${waStatus === 'disconnected' ? 'text-red-500/60' : 'text-green-500/60'}`}>
-                                    {waStatus === 'disconnected'
-                                        ? "Background service band hai. Please server check karein."
+                                <p className={`text-[10px] leading-relaxed font-bold uppercase tracking-wider ${waStatus.status === 'disconnected' ? 'text-red-500/60' : 'text-green-500/60'}`}>
+                                    {waStatus.status === 'disconnected'
+                                        ? waStatus.debug || "Background service band hai. Please server check karein."
                                         : "Direct messages bhejane ke liye QR code scan karein."}
                                 </p>
+                                {waStatus.status === 'disconnected' && (
+                                    <button
+                                        onClick={forceCheck}
+                                        className="mt-2 px-3 py-1 bg-red-500/20 text-red-500 rounded-md text-[8px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
+                                    >
+                                        Try Again
+                                    </button>
+                                )}
                             </div>
-                            {waStatus === "qr" && qrCode ? (
+                            {waStatus.status === "qr" && qrCode ? (
                                 <div className="bg-white p-2 rounded-xl shadow-2xl">
                                     <img src={qrCode} alt="WhatsApp QR" className="w-24 h-24 md:w-32 md:h-32" />
                                 </div>
-                            ) : waStatus === "loading" ? (
+                            ) : waStatus.status === "loading" ? (
                                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-green-500 opacity-40">
                                     Generating QR...
                                 </div>
