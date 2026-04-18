@@ -163,9 +163,21 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     // Start from initial slots, prefer DB, fallback to local cache when DB is missing.
                     const mergedSlots = initialMediaSlots.map((base) => {
                         const dbSlot = dbSlotMap.get(base.id);
+                        const local = localSlotMap.get(base.id);
+
                         if (dbSlot) {
                             dbSlotMap.delete(base.id);
                             localSlotMap.delete(base.id);
+
+                            // Strategy: If DB is empty for this slot but we have a file in local cache,
+                            // keep the local version. This prevents "loss on refresh" if DB sync fails.
+                            const hasDbFile = !!dbSlot.uploaded_file_url;
+                            const hasLocalFile = !!local?.uploadedFile;
+
+                            if (!hasDbFile && hasLocalFile) {
+                                return { ...local, type: base.type };
+                            }
+
                             return {
                                 ...base,
                                 useOnSite: dbSlot.use_on_site,
@@ -179,10 +191,8 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                             };
                         }
 
-                        const local = localSlotMap.get(base.id);
                         if (local) {
                             localSlotMap.delete(base.id);
-                            // Ensure type from code (initialMediaSlots) takes precedence over local cache
                             return { ...local, type: base.type };
                         }
 
@@ -359,7 +369,10 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }
         }
 
-        const isVideo = file.type.startsWith("video/");
+        const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+        const isVideo =
+            file.type.startsWith("video/") ||
+            ["mp4", "mov", "avi", "mkv", "webm", "ogg", "m4v"].includes(fileExtension);
         const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
         const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
 
@@ -373,14 +386,14 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         // IMPORTANT: Transformation parameter must be a string for signing if there's only one,
         // matching what will be sent to Cloudinary.
-        const transformationStr = isVideo ? "w_1080,c_limit,f_mp4,vc_h264:high,ac_aac,q_auto" : "";
+        // Use a more robust video transformation for web compatibility (Instagram style)
+        const transformationStr = isVideo ? "w_1080,c_limit,f_mp4,q_auto" : "";
 
         const paramsToSign: Record<string, string | number> = {
             timestamp,
             folder,
         };
         if (isVideo) {
-            // For large videos, we must use eager_async=true to avoid synchronous processing timeouts/errors
             paramsToSign.eager = transformationStr;
             paramsToSign.eager_async = "true";
         } else {
@@ -393,8 +406,16 @@ export const MediaProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ paramsToSign }),
         });
-        if (!signRes.ok) throw new Error("Failed to get upload signature.");
-        const { signature } = await signRes.json();
+        const signJson = await signRes.json().catch(() => ({}));
+        if (!signRes.ok) {
+            throw new Error(
+                typeof signJson?.error === "string" && signJson.error
+                    ? signJson.error
+                    : "Failed to get upload signature."
+            );
+        }
+        const { signature } = signJson;
+        if (!signature) throw new Error("Upload signature missing from server response.");
 
         // 3. Upload directly to Cloudinary (Bypassing Next.js server)
         const formData = new FormData();

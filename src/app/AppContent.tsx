@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMediaContext } from "@/context/MediaContext";
 import { MediaSlot } from "@/lib/mediaSlots";
+import Link from "next/link";
 
 import MobileHeroSection from "@/components/MobileHeroSection";
 import WhyChooseUsSection from "@/components/WhyChooseUsSection";
@@ -111,20 +112,6 @@ export default function AppContent() {
         return items;
     }, [slots]);
 
-    const handleAdminLogin = () => {
-        const id = window.prompt("Enter Admin ID:");
-        if (id === "Sonu Sharthak") {
-            const pass = window.prompt("Enter Password:");
-            if (pass === "0000") {
-                router.push("/admin");
-            } else {
-                alert("Incorrect Password!");
-            }
-        } else if (id !== null) {
-            alert("Incorrect ID!");
-        }
-    };
-
     return (
         <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
             <LeadCapturePopup />
@@ -207,12 +194,12 @@ export default function AppContent() {
                     </div>
 
                     <div className="pt-24 space-y-6">
-                        <button
-                            onClick={handleAdminLogin}
+                        <Link
+                            href="/admin"
                             className="text-[10px] tracking-[0.6em] text-white/20 uppercase font-medium hover:text-white/60 transition-colors"
                         >
                             ADMIN LOGIN
-                        </button>
+                        </Link>
                         <div className="text-[10px] tracking-[0.6em] text-white/10 uppercase font-medium">
                             © 2026 SHARTHAK STUDIO. ALL RIGHTS RESERVED.
                         </div>

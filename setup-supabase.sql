@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.media_slots (
   frame TEXT NOT NULL,
   type TEXT NOT NULL,
   use_on_site BOOLEAN DEFAULT false,
+  order_index INTEGER DEFAULT 0,
   category_label TEXT,
   uploaded_file_name TEXT,
   uploaded_file_url TEXT,
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS public.media_slots (
 
 -- If the table already existed from an older version, ensure newer columns exist.
 ALTER TABLE public.media_slots ADD COLUMN IF NOT EXISTS category_label TEXT;
+ALTER TABLE public.media_slots ADD COLUMN IF NOT EXISTS order_index INTEGER DEFAULT 0;
 
 -- 3. OPEN TABLE PERMISSIONS
 GRANT ALL ON TABLE public.media_slots TO anon, authenticated, service_role;

@@ -9,6 +9,13 @@ cloudinary.config({
 
 export async function POST(request: Request) {
     try {
+        if (!process.env.CLOUDINARY_API_SECRET) {
+            return NextResponse.json(
+                { error: "Server misconfigured: CLOUDINARY_API_SECRET is missing." },
+                { status: 500 }
+            );
+        }
+
         const body = await request.json();
         const { paramsToSign } = body;
 
@@ -16,10 +23,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "No params to sign" }, { status: 400 });
         }
 
-        const signature = cloudinary.utils.api_sign_request(
-            paramsToSign,
-            process.env.CLOUDINARY_API_SECRET!
-        );
+        const signature = cloudinary.utils.api_sign_request(paramsToSign, process.env.CLOUDINARY_API_SECRET);
 
         return NextResponse.json({ signature });
     } catch (error) {

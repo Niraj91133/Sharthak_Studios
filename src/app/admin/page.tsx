@@ -8,9 +8,15 @@ import CollapsibleAdminCard from "@/components/admin/CollapsibleAdminCard";
 import GlobalMediaPanel from "@/components/admin/GlobalMediaPanel";
 import GalleryManager from "@/components/admin/GalleryManager";
 import BlogManager from "@/components/admin/BlogManager";
+import { motion } from "framer-motion";
 
 export default function AdminDashboard() {
     const { slots, blogs } = useMediaContext();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [loginForm, setLoginForm] = useState({ id: "", pass: "" });
+    const [loginError, setLoginError] = useState("");
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
     const [showGlobalMedia, setShowGlobalMedia] = useState(false);
     const [storage, setStorage] = useState<{
         usedBytes: number | null;
@@ -19,6 +25,30 @@ export default function AdminDashboard() {
         error?: string;
         loading: boolean;
     }>({ usedBytes: null, limitBytes: null, usedPct: null, loading: true });
+
+    useEffect(() => {
+        const auth = localStorage.getItem("sharthak_admin_auth");
+        if (auth === "true") {
+            setIsAuthenticated(true);
+        }
+        setIsCheckingAuth(false);
+    }, []);
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (loginForm.id === "Sonu Sharthak" && loginForm.pass === "0000") {
+            setIsAuthenticated(true);
+            localStorage.setItem("sharthak_admin_auth", "true");
+            setLoginError("");
+        } else {
+            setLoginError("Invalid Admin ID or Password");
+        }
+    };
+
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+        localStorage.removeItem("sharthak_admin_auth");
+    };
 
     const isRecord = (v: unknown): v is Record<string, unknown> =>
         typeof v === "object" && v !== null && !Array.isArray(v);
@@ -124,8 +154,70 @@ export default function AdminDashboard() {
         }));
     }, [slots]);
 
+    if (isCheckingAuth) return <div className="min-h-screen bg-black" />;
+
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6 text-white font-sans">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full max-w-md space-y-8"
+                >
+                    <div className="text-center space-y-4">
+                        <img src="/logo-white.png" alt="Sharthak Studio" className="w-16 h-16 mx-auto object-contain" />
+                        <h1 className="text-2xl font-black tracking-widest uppercase">ADMIN ACCESS</h1>
+                        <p className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Authorized Personnel Only</p>
+                    </div>
+
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black tracking-widest text-white/40 uppercase ml-1">Admin ID</label>
+                            <input
+                                type="text"
+                                value={loginForm.id}
+                                onChange={(e) => setLoginForm({ ...loginForm, id: e.target.value })}
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:border-white/30 transition-all"
+                                placeholder="Enter ID"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black tracking-widest text-white/40 uppercase ml-1">Password</label>
+                            <input
+                                type="password"
+                                value={loginForm.pass}
+                                onChange={(e) => setLoginForm({ ...loginForm, pass: e.target.value })}
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:border-white/30 transition-all"
+                                placeholder="••••"
+                                required
+                            />
+                        </div>
+
+                        {loginError && (
+                            <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest text-center mt-2">{loginError}</p>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="w-full bg-white text-black rounded-2xl py-5 text-xs font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl"
+                        >
+                            Log In
+                        </button>
+                    </form>
+
+                    <div className="pt-8 text-center">
+                        <Link href="/" className="text-[9px] font-bold text-white/20 hover:text-white transition-colors uppercase tracking-[0.4em]">
+                            ← Back to Website
+                        </Link>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen text-white font-sans pb-24 md:pb-12">
+        <div className="min-h-screen text-white font-sans pb-24 md:pb-12 bg-black">
             {/* Top Bar */}
             <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/[0.05] px-6 py-4">
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between">
@@ -149,13 +241,12 @@ export default function AdminDashboard() {
                             Library
                         </button>
 
-                        <Link
-                            href="/blog"
-                            target="_blank"
-                            className="px-6 py-2 border border-white/20 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all text-white/60 hover:text-white"
+                        <button
+                            onClick={handleLogout}
+                            className="px-6 py-2 border border-red-500/30 text-red-500/60 hover:bg-red-500 hover:text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
-                            Journal Page
-                        </Link>
+                            Logout
+                        </button>
 
                         <Link
                             href="/"

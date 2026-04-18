@@ -152,15 +152,15 @@ function AutoStrip({
       >
         {loop.map((it, idx) => {
           const asset = loopAssets[idx] || { src: it.fallback, isUploaded: false };
-          const src = asset.src || it.fallback;
+          const src = asset.src || it.fallback || null;
           const priority = idx < 2;
           return (
             <div
               key={`${it.id}-${idx}`}
               className="imgmarquee__tile bg-black"
-              style={ready ? { flex: `0 0 ${widthFor(src)}px` } : undefined}
+              style={ready ? { flex: `0 0 ${widthFor(src || "")}px` } : undefined}
             >
-              {ready ? (
+              {ready && src ? (
                 <img
                   src={src}
                   alt=""
