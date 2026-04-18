@@ -8,7 +8,9 @@ import CollapsibleAdminCard from "@/components/admin/CollapsibleAdminCard";
 import GlobalMediaPanel from "@/components/admin/GlobalMediaPanel";
 import GalleryManager from "@/components/admin/GalleryManager";
 import BlogManager from "@/components/admin/BlogManager";
-import { motion } from "framer-motion";
+import PackageCalculator from "@/components/admin/PackageCalculator";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Calculator } from "lucide-react";
 
 export default function AdminDashboard() {
     const { slots, blogs } = useMediaContext();
@@ -18,6 +20,7 @@ export default function AdminDashboard() {
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
     const [showGlobalMedia, setShowGlobalMedia] = useState(false);
+    const [showCalculator, setShowCalculator] = useState(false);
     const [storage, setStorage] = useState<{
         usedBytes: number | null;
         limitBytes: number | null;
@@ -231,6 +234,23 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <div className="relative group">
+                            <button
+                                className="px-4 py-2 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 transition-all flex items-center gap-2"
+                            >
+                                Tools <ChevronDown className="w-3 h-3 opacity-40" />
+                            </button>
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-[#111] border border-white/10 rounded-2xl p-2 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                                <button
+                                    onClick={() => setShowCalculator(true)}
+                                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-3"
+                                >
+                                    <Calculator className="w-3 h-3 text-white/40" />
+                                    Package Calculator
+                                </button>
+                            </div>
+                        </div>
+
                         <button
                             onClick={() => setShowGlobalMedia(true)}
                             className="px-4 py-2 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 transition-all hidden md:flex items-center gap-2"
@@ -373,6 +393,13 @@ export default function AdminDashboard() {
             {showGlobalMedia && (
                 <GlobalMediaPanel onClose={() => setShowGlobalMedia(false)} />
             )}
+
+            {/* Package Calculator Modal */}
+            <AnimatePresence>
+                {showCalculator && (
+                    <PackageCalculator onClose={() => setShowCalculator(false)} />
+                )}
+            </AnimatePresence>
         </div>
     );
 }
