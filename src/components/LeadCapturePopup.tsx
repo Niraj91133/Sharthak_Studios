@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import { X, Check, Calendar } from "lucide-react";
 
 export default function LeadCapturePopup() {
     const [isOpen, setIsOpen] = useState(false);
@@ -177,12 +178,15 @@ export default function LeadCapturePopup() {
                                                 value={formData.eventName}
                                                 onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
                                             />
-                                            <input
-                                                type="date"
-                                                className="bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-[10px] font-bold tracking-widest text-white/60 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all appearance-none uppercase"
-                                                value={formData.eventDate}
-                                                onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    type="date"
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl pl-10 pr-4 py-4 text-[10px] font-bold tracking-widest text-white/60 outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all uppercase"
+                                                    value={formData.eventDate}
+                                                    onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                                                />
+                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20 group-focus-within:text-white/60 transition-colors pointer-events-none" />
+                                            </div>
                                         </div>
                                     </div>
 

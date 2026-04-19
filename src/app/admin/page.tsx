@@ -399,8 +399,14 @@ export default function AdminDashboard() {
                 </div>
             </main>
 
-            {/* Mobile Floating Action Button */}
-            <div className="fixed bottom-6 right-6 md:hidden z-50">
+            {/* Mobile Floating Action Buttons */}
+            <div className="fixed bottom-6 right-6 md:hidden z-50 flex flex-col gap-4">
+                <button
+                    onClick={() => setShowCalculator(true)}
+                    className="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl scale-110 active:scale-95 transition-all"
+                >
+                    <Calculator className="w-6 h-6" />
+                </button>
                 <button
                     onClick={() => setShowGlobalMedia(true)}
                     className="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-2xl scale-110 active:scale-95 transition-all"
