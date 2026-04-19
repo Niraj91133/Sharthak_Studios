@@ -153,14 +153,12 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
     }, [days, customAdjustment]);
 
 
-    const generatePDFBase64 = async () => {
+    const generatePDF = async (shouldDownload: boolean = false) => {
         if (!pdfExportRef.current) return null;
-
-        // Ensure the element is fully captured even if long
         const element = pdfExportRef.current;
 
         const canvas = await html2canvas(element, {
-            scale: 2, // High resolution
+            scale: 2,
             backgroundColor: "#ffffff",
             useCORS: true,
             logging: false,
@@ -170,8 +168,6 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
         });
 
         const imgData = canvas.toDataURL("image/jpeg", 0.8);
-
-        // Calculate dynamic height for PDF
         const imgWidth = 210;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
@@ -183,11 +179,16 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
 
         pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
 
-        // Add clickable regions for Social & Contact Links
         pdf.link(15, imgHeight - 25, 40, 15, { url: 'tel:+917091876067' });
         pdf.link(55, imgHeight - 25, 45, 15, { url: 'mailto:sharthakstudio@gmail.com' });
         pdf.link(100, imgHeight - 25, 50, 20, { url: 'https://www.sharthakstudio.com/' });
         pdf.link(155, imgHeight - 25, 50, 20, { url: 'https://www.instagram.com/sharthak_studio' });
+
+        const filename = `Quote_${clientName.replace(/\s+/g, '_')}.pdf`;
+
+        if (shouldDownload) {
+            pdf.save(filename);
+        }
 
         return pdf.output("datauristring").split(",")[1];
     };
@@ -201,11 +202,11 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
         setStatus(null);
 
         try {
-            // 1. Generate PDF
-            const pdfBase64 = await generatePDFBase64();
+            // 1. Generate & Download PDF Locally
+            const pdfBase64 = await generatePDF(true);
             if (!pdfBase64) throw new Error("PDF generation failed");
 
-            // 2. Prepare WhatsApp Message
+            // 2. Prepare WhatsApp Message (Cleaned)
             const deliveryItems: string[] = [];
             const dConfig = totals.deliverables;
             if (dConfig.cinematicMixing) deliveryItems.push("Full Cinematic Mixing");
@@ -231,8 +232,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                 `*TOTAL ESTIMATE: ₹${totals.total.toLocaleString()}*\n\n` +
                 `*Thank you for choosing Sharthak Studio!*\n` +
                 `*Visit:* www.sharthakstudio.com\n` +
-                `*Instagram:* @sharthak_studio\n\n` +
-                `_PDF is also sent to your email._`;
+                `*Instagram:* @sharthak_studio`;
 
             // 3. Send Email (Automatic)
             const emailRes = await fetch("/api/admin/send-quote", {
@@ -246,15 +246,17 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                 }),
             });
 
-            // 4. Open WhatsApp Redirect (Manual Send)
+            // 4. Redirect to WhatsApp (Direct App)
             let targetNumber = clientPhone ? clientPhone.replace(/\D/g, '') : "";
             if (targetNumber.length === 10) targetNumber = "91" + targetNumber;
 
-            const waUrl = `https://wa.me/${targetNumber}?text=${encodeURIComponent(rawMessage)}`;
-            window.open(waUrl, '_blank');
+            if (targetNumber) {
+                const waAppUrl = `whatsapp://send?phone=${targetNumber}&text=${encodeURIComponent(rawMessage)}`;
+                window.location.href = waAppUrl;
+            }
 
             if (emailRes.ok) {
-                setStatus({ type: "success", msg: "Email Sent! WhatsApp app opening..." });
+                setStatus({ type: "success", msg: "PDF Downloaded & Email Sent!" });
             } else {
                 const data = await emailRes.json();
                 setStatus({ type: "error", msg: `Email Failed: ${data.error || "Server error"}` });
