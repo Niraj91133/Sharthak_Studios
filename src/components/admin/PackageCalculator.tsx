@@ -206,7 +206,10 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
             const pdfBase64 = await generatePDF(true);
             if (!pdfBase64) throw new Error("PDF generation failed");
 
-            // 2. Prepare WhatsApp Message (Cleaned)
+            // 2. Wait a brief moment for the download to trigger on mobile
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // 3. Prepare WhatsApp Message (Cleaned)
             const deliveryItems: string[] = [];
             const dConfig = totals.deliverables;
             if (dConfig.cinematicMixing) deliveryItems.push("Full Cinematic Mixing");
@@ -234,7 +237,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                 `*Visit:* www.sharthakstudio.com\n` +
                 `*Instagram:* @sharthak_studio`;
 
-            // 3. Send Email (Automatic)
+            // 4. Send Email (Automatic)
             const emailRes = await fetch("/api/admin/send-quote", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -246,7 +249,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                 }),
             });
 
-            // 4. Redirect to WhatsApp (Direct App)
+            // 5. Redirect to WhatsApp (Direct App)
             let targetNumber = clientPhone ? clientPhone.replace(/\D/g, '') : "";
             if (targetNumber.length === 10) targetNumber = "91" + targetNumber;
 
