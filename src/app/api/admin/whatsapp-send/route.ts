@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
     try {
         const body = await req.json();
+        const baseUrl = process.env.WHATSAPP_SERVER_URL || "http://127.0.0.1:3001";
+        const targetUrl = `${baseUrl.replace(/\/$/, '')}/send`;
 
-        const res = await fetch("http://127.0.0.1:3001/send", {
+        const res = await fetch(targetUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),

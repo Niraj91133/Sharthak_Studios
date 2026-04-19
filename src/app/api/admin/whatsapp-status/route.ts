@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    // Try multiple local addresses to find where the express server is listening
-    const targets = [
-        "http://127.0.0.1:3001/qr",
-        "http://localhost:3001/qr",
-        "http://[::1]:3001/qr"
-    ];
+    const baseUrl = process.env.WHATSAPP_SERVER_URL || "http://127.0.0.1:3001";
+
+    // Try multiple local addresses if baseUrl is the default, otherwise use baseUrl
+    const targets = baseUrl === "http://127.0.0.1:3001"
+        ? ["http://127.0.0.1:3001/qr", "http://localhost:3001/qr", "http://[::1]:3001/qr"]
+        : [`${baseUrl.replace(/\/$/, '')}/qr`];
 
     let lastError: any = null;
 
