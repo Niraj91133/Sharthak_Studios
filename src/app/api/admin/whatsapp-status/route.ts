@@ -1,7 +1,24 @@
 import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 export async function GET() {
-    const baseUrl = process.env.WHATSAPP_SERVER_URL || "http://127.0.0.1:3001";
+    let baseUrl = process.env.WHATSAPP_SERVER_URL;
+
+    // If no ENV var (common on Vercel if user didn't set it), try Supabase
+    if (!baseUrl || baseUrl === "http://127.0.0.1:3001") {
+        try {
+            const { data } = await supabase!
+                .from('studio_config')
+                .select('value')
+                .eq('id', 'whatsapp_url')
+                .single();
+            if (data?.value) baseUrl = data.value;
+        } catch (e) {
+            console.error("Supabase config fetch failed:", e);
+        }
+    }
+
+    if (!baseUrl) baseUrl = "http://127.0.0.1:3001";
 
     // Try multiple local addresses if baseUrl is the default, otherwise use baseUrl
     const targets = baseUrl === "http://127.0.0.1:3001"

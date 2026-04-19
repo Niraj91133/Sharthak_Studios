@@ -1,0 +1,38 @@
+
+> sharthak-studio-next@0.1.0 dev
+> next dev --webpack -H 127.0.0.1 -p 3002 -p 3000
+
+▲ Next.js 16.1.6 (webpack)
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+- Environments: .env.local
+- Experiments (use with caution):
+  · serverActions
+
+✓ Starting...
+✓ Ready in 3.4s
+○ Compiling /admin ...
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ GET /admin 200 in 7.7s (compile: 7.2s, render: 504ms)
+ GET /admin 200 in 7.7s (compile: 7.2s, render: 517ms)
+ GET /api/admin/whatsapp-status 200 in 8.1s (compile: 7.3s, render: 733ms)
+○ Compiling /api/cloudinary/usage ...
+ GET /api/cloudinary/usage 200 in 6.0s (compile: 3.8s, render: 2.2s)
+ GET /api/cloudinary/usage 200 in 7.2s (compile: 5.0s, render: 2.2s)
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ GET /admin 200 in 222ms (compile: 127ms, render: 95ms)
+ GET /admin 200 in 240ms (compile: 139ms, render: 101ms)
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ GET /admin 200 in 220ms (compile: 125ms, render: 95ms)
+ GET /admin 200 in 223ms (compile: 126ms, render: 98ms)
+ GET /admin 200 in 81ms (compile: 23ms, render: 58ms)
+ GET /admin 200 in 88ms (compile: 25ms, render: 62ms)
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ GET /admin 200 in 260ms (compile: 153ms, render: 107ms)
+ GET /admin 200 in 273ms (compile: 163ms, render: 110ms)
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ GET /admin 200 in 66ms (compile: 41ms, render: 25ms)
+ GET /admin 200 in 61ms (compile: 36ms, render: 25ms)
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ GET /admin 200 in 79ms (compile: 37ms, render: 42ms)
+ GET /admin 200 in 85ms (compile: 41ms, render: 44ms)
