@@ -29,17 +29,17 @@ export const metadata: Metadata = {
     siteName: "Sharthak Studio",
     images: [
       {
-        url: "/logo-white.png",
-        width: 800,
-        height: 600,
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
       },
     ],
     locale: "en_IN",
     type: "website",
   },
   icons: {
-    icon: "/logo-white.png",
-    apple: "/logo-white.png",
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
   },
 };
 
