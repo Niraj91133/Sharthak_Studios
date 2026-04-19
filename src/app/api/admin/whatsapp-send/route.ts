@@ -8,7 +8,10 @@ export async function POST(req: Request) {
 
         const res = await fetch(targetUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Bypass-Tunnel-Reminder': 'true'
+            },
             body: JSON.stringify(body),
             signal: AbortSignal.timeout(30000) // 30 second timeout for PDF sending
         });
