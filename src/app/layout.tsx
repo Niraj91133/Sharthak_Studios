@@ -5,6 +5,7 @@ import "./globals.css";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/site";
 import JsonLd from "@/components/JsonLd";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import FloatingContactIcons from "@/components/FloatingContactIcons";
 import { MediaProvider } from "@/context/MediaContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import ScrollToTopOnLoad from "@/components/ScrollToTopOnLoad";
@@ -106,6 +107,7 @@ export default async function RootLayout({
         <SiteSettingsProvider initialSettings={publicSettings}>
           <MediaProvider>
             <ScrollToTopOnLoad />
+            <FloatingContactIcons />
             {children}
           </MediaProvider>
         </SiteSettingsProvider>
