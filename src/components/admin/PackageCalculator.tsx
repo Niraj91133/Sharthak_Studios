@@ -47,6 +47,7 @@ const DEFAULT_DELIVERABLES: Deliverables = {
 
 interface DaySelection {
     id: number;
+    date?: string;
     services: string[];
     deliverables?: Deliverables;
 }
@@ -60,7 +61,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
     const [clientName, setClientName] = useState("");
     const [clientPhone, setClientPhone] = useState("");
     const [customAdjustment, setCustomAdjustment] = useState<number>(0);
-    const [days, setDays] = useState<DaySelection[]>([{ id: 1, services: [], deliverables: { ...DEFAULT_DELIVERABLES } }]);
+    const [days, setDays] = useState<DaySelection[]>([{ id: 1, date: "", services: [], deliverables: { ...DEFAULT_DELIVERABLES } }]);
 
     // Delivery Config UI State
     const [configDayId, setConfigDayId] = useState<number | null>(null);
@@ -76,6 +77,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
         const nextId = days.length + 1;
         setDays([...days, {
             id: nextId,
+            date: "",
             services: [],
             deliverables: globalDeliverables ? { ...globalDeliverables } : { ...DEFAULT_DELIVERABLES }
         }]);
@@ -227,7 +229,9 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                 `*Client:* ${clientName}\n\n` +
                 totals.dayBreakdown.map((d) => {
                     if (d.items.length === 0) return "";
-                    return `*Day ${d.dayId} Overview*\n` +
+                    const originalDay = days.find(day => day.id === d.dayId);
+                    const dateStr = originalDay?.date ? new Date(originalDay.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : "";
+                    return `*Day ${d.dayId}${dateStr ? ` (${dateStr})` : ""} Overview*\n` +
                         d.items.map(i => `• ${i.label}`).join("\n") +
                         `\n\n`;
                 }).join("") +
@@ -308,7 +312,10 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                             {totals.dayBreakdown.map((day) => (
                                 day.items.length > 0 && (
                                     <div key={day.dayId} style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '12px' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: '900', color: '#bbbbbb', marginBottom: '5px' }}>DAY {day.dayId.toString().padStart(2, '0')}</div>
+                                        <div style={{ fontSize: '11px', fontWeight: '900', color: '#bbbbbb', marginBottom: '5px' }}>
+                                            DAY {day.dayId.toString().padStart(2, '0')}
+                                            {days.find(d => d.id === day.dayId)?.date && ` • ${new Date(days.find(d => d.id === day.dayId)!.date!).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}`}
+                                        </div>
                                         <div style={{ fontSize: '15px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '-0.2px', color: '#1a1a1a' }}>
                                             {day.items.map(i => i.label).join(" + ")}
                                         </div>
@@ -441,8 +448,17 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                             {days.map((day) => (
                                 <div key={day.id} className="p-5 md:p-8 bg-white/[0.02] border border-white/5 rounded-[24px] md:rounded-[32px] space-y-6 md:space-y-8 relative group hover:border-white/10 transition-colors shadow-sm">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 md:gap-4">
+                                        <div className="flex items-center gap-2 md:gap-4 flex-wrap">
                                             <span className="px-2 py-1 md:px-3 md:py-1.5 rounded-lg bg-white/10 flex items-center justify-center text-[9px] md:text-[10px] font-black italic text-white/80">DAY {day.id}</span>
+                                            <input
+                                                type="date"
+                                                value={day.date}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setDays(days.map(d => d.id === day.id ? { ...d, date: val } : d));
+                                                }}
+                                                className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] font-bold text-white focus:outline-none focus:border-white/40 transition-all"
+                                            />
                                             <button
                                                 onClick={() => openConfig(day.id)}
                                                 className="px-3 py-1 md:px-4 md:py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all shadow-lg active:scale-95"
