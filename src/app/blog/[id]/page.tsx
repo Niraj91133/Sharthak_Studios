@@ -26,13 +26,13 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   }
 
   return {
-    title: blog.title,
+    title: `${blog.title} | Sharthak Studio`,
     description: blog.excerpt,
     alternates: {
       canonical: `/blog/${blog.id}`,
     },
     openGraph: {
-      title: blog.title,
+      title: `${blog.title} | Sharthak Studio`,
       description: blog.excerpt,
       url: `${SITE_URL}/blog/${blog.id}`,
       images: blog.image ? [blog.image] : ["/opengraph-image.png"],

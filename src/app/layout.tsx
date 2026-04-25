@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/site";
+import JsonLd from "@/components/JsonLd";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { MediaProvider } from "@/context/MediaContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import ScrollToTopOnLoad from "@/components/ScrollToTopOnLoad";
@@ -67,6 +70,25 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const publicSettings = await getPublicSiteSettings();
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: publicSettings.name,
+    url: SITE_URL,
+    email: publicSettings.email,
+    telephone: publicSettings.phoneDisplay,
+    sameAs: [publicSettings.instagramUrl].concat(
+      publicSettings.googleBusinessProfileUrl ? [publicSettings.googleBusinessProfileUrl] : [],
+    ),
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: publicSettings.addressLine1,
+      addressLocality: publicSettings.city,
+      addressRegion: publicSettings.state,
+      postalCode: publicSettings.postalCode,
+      addressCountry: publicSettings.country,
+    },
+  };
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -74,6 +96,13 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
         suppressHydrationWarning
       >
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
+        <JsonLd data={organizationSchema} />
+        <Suspense fallback={null}>
+          <GoogleAnalytics />
+        </Suspense>
         <SiteSettingsProvider initialSettings={publicSettings}>
           <MediaProvider>
             <ScrollToTopOnLoad />

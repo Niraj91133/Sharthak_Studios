@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: ServiceCityPageProps): Promis
     return { title: "Page Not Found" };
   }
 
-  const title = `${service.titlePrefix} in ${city.name}, ${city.region}`;
+  const title = `${service.titlePrefix} in ${city.name}, ${city.region} | Sharthak Studio`;
   const description = `${service.summary} Dedicated ${service.shortName.toLowerCase()} coverage in ${city.name}, ${city.region} with local planning, polished delivery, and strong storytelling.`;
 
   return {

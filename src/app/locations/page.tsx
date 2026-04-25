@@ -5,7 +5,7 @@ import { SEO_CITIES, buildBreadcrumbSchema, buildCityPath } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Locations We Serve",
+  title: "Locations We Serve | Sharthak Studio",
   description:
     "Discover the city-specific photography and cinematography pages Sharthak Studio serves across Gaya, Patna, Muzaffarpur, Bodh Gaya, Deoghar, Rajgir, and nearby regions.",
   alternates: {

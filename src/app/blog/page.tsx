@@ -3,7 +3,7 @@ import BlogListingClient from "@/components/blog/BlogListingClient";
 import { getAllBlogs } from "@/lib/server/publicSiteData";
 
 export const metadata: Metadata = {
-  title: "Journal",
+  title: "Wedding Photography Journal | Sharthak Studio",
   description:
     "Wedding photography tips, cinematic stories, locations, and shoot ideas from Sharthak Studio in Gaya, Bihar.",
   alternates: {

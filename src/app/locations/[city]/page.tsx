@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
   }
 
   return {
-    title: `Photographer in ${city.name}, ${city.region}`,
+    title: `Photographer in ${city.name}, ${city.region} | Sharthak Studio`,
     description: `${city.summary} Explore wedding photography, cinematography, pre-wedding, maternity, baby, event, and reels coverage in ${city.name}.`,
     alternates: {
       canonical: buildCityPath(city.slug),

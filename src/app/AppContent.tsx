@@ -114,7 +114,7 @@ export default function AppContent() {
     }, [slots]);
 
     return (
-        <div className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
+        <main id="main-content" className="min-h-screen w-full overflow-x-hidden bg-black text-white selection:bg-white selection:text-black">
             <LeadCapturePopup />
             <MobileHeroSection />
             <section id="infinite-strips-section" className="hidden md:block">
@@ -259,6 +259,6 @@ export default function AppContent() {
                     </svg>
                 </a>
             </div>
-        </div>
+        </main>
     );
 }

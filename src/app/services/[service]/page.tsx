@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
   }
 
   return {
-    title: `${service.name} in Bihar`,
+    title: `${service.titlePrefix} in Bihar | Sharthak Studio`,
     description: `${service.summary} Explore ${service.name.toLowerCase()} by Sharthak Studio across Gaya, Patna, Muzaffarpur, Deoghar, Rajgir, and nearby areas.`,
     alternates: {
       canonical: buildServicePath(service.slug),

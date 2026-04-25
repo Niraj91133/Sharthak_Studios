@@ -77,7 +77,7 @@ export function withDerivedSiteFields(settings: PublicSiteSettings) {
 export const BUSINESS_DETAILS = withDerivedSiteFields(DEFAULT_PUBLIC_SITE_SETTINGS);
 
 export const DEFAULT_TITLE =
-  "Sharthak Studio | Wedding Photographer & Cinematographer in Gaya, Bihar";
+  "Wedding photographer in gaya, Bihar | Sharthak Studio";
 
 export const DEFAULT_DESCRIPTION =
   "Sharthak Studio is a wedding photographer and cinematographer in Gaya, Bihar for weddings, pre-wedding shoots, maternity, baby shoots, and event coverage across Bihar.";

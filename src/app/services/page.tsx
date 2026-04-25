@@ -5,7 +5,7 @@ import { SEO_SERVICES, buildBreadcrumbSchema, buildServicePath } from "@/lib/seo
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Photography & Cinematography Services",
+  title: "Photography & Cinematography Services | Sharthak Studio",
   description:
     "Explore Sharthak Studio services for wedding photography, cinematography, pre-wedding shoots, baby shoots, maternity portraits, event coverage, and reels across Bihar.",
   alternates: {

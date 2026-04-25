@@ -234,6 +234,17 @@ export default function AdminDashboardClient({ initialUsername }: { initialUsern
               </div>
               {storage.error ? <p className="text-[9px] text-white/20 mt-1 truncate">{storage.error}</p> : null}
             </div>
+
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3">
+              <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest">SEO Ops Checklist</p>
+              <ul className="space-y-3 text-[11px] leading-5 text-white/50">
+                <li>Publish 2 fresh journal posts every month for local and service keywords.</li>
+                <li>Verify Search Console and resubmit sitemap after major content updates.</li>
+                <li>Add Google Business Profile URL in site settings after profile verification.</li>
+                <li>Review homepage and service-page media so only real portfolio work is shown.</li>
+                <li>Run Lighthouse or PageSpeed Insights monthly for performance audits.</li>
+              </ul>
+            </div>
           </aside>
 
           <div className="space-y-6">
