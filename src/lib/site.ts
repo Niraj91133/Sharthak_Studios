@@ -80,6 +80,6 @@ export const DEFAULT_TITLE =
   "Wedding photographer in gaya, Bihar | Sharthak Studio";
 
 export const DEFAULT_DESCRIPTION =
-  "Sharthak Studio is a wedding photographer and cinematographer in Gaya, Bihar for weddings, pre-wedding shoots, maternity, baby shoots, and event coverage across Bihar.";
+  "Best Wedding photographer & cinematographer in Gaya, Bihar. Sharthak Studio specializes in cinematic wedding films, pre-wedding shoots, maternity, and baby photography in Gaya, Patna, Muzaffarpur, and across Bihar.";
 
 export const DEFAULT_PRICE_RANGE = "$$";

@@ -228,9 +228,9 @@ export default function MobileHeroSection() {
           <div className="h-[99px]" />
 
           <div className="flex w-full flex-col items-center px-6 text-center">
-            <h1 className="text-[28px] font-bold tracking-[4px] text-white">
+            <div className="text-[28px] font-bold tracking-[4px] text-white">
               SHARTHAK STUDIO
-            </h1>
+            </div>
 
             <p className="mt-3 max-w-[280px] text-[14px] font-normal leading-[1.6] tracking-[3px] text-[#A1A1A1]">
               WEDDING PHOTOGRAPHER &amp; CINEMATOGRAPHER IN GAYA, BIHAR
