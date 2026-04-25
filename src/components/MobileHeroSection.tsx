@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useMediaContext } from "@/context/MediaContext";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { normalizeMediaUrl } from "@/lib/normalizeMediaUrl";
 
 function resolveAsset(
@@ -137,6 +138,9 @@ function AutoStrip({
     return Math.max(72, Math.min(520, w));
   };
 
+  const altFor = (slotId: string) =>
+    `Wedding photography showcase frame from Sharthak Studio portfolio (${slotId.replace(/-/g, " ")})`;
+
   return (
     <div
       aria-hidden="true"
@@ -163,7 +167,7 @@ function AutoStrip({
               {ready && src ? (
                 <img
                   src={src}
-                  alt=""
+                  alt={altFor(it.id)}
                   loading={priority ? "eager" : "lazy"}
                   decoding="async"
                   className="pointer-events-none h-full w-full select-none object-contain bg-black"
@@ -181,6 +185,7 @@ function AutoStrip({
 
 export default function MobileHeroSection() {
   const { slots } = useMediaContext();
+  const { settings } = useSiteSettings();
   type HeroItem = { id: string; fallback: string };
   const fallbackTop = [
     { id: "mobile-hero-top-01", fallback: "https://picsum.photos/seed/m-hero-top-0/600/400" },
@@ -228,16 +233,16 @@ export default function MobileHeroSection() {
             </h1>
 
             <p className="mt-3 max-w-[280px] text-[14px] font-normal leading-[1.6] tracking-[3px] text-[#A1A1A1]">
-              CAPTURING TIMELESS MOMENTS &amp; CINEMATIC STORIES
+              WEDDING PHOTOGRAPHER &amp; CINEMATOGRAPHER IN GAYA, BIHAR
             </p>
 
             <a
-              href="https://wa.me/917091876067"
+              href={settings.whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-8 inline-flex h-[46px] w-[320px] items-center justify-center rounded-[4px] border border-white bg-transparent text-[14px] font-medium tracking-[2px] text-white transition-colors duration-200 active:bg-white active:text-black hover:bg-white hover:text-black"
             >
-              CONTACT US ON WHATSAPP
+              CHECK AVAILABILITY ON WHATSAPP
             </a>
           </div>
 

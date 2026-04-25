@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { requireAdminRequest } from "@/lib/server/adminRequest";
+import { getPublicSiteSettings } from "@/lib/server/siteSettings";
 
 export async function POST(req: Request) {
+    const unauthorized = requireAdminRequest(req);
+    if (unauthorized) return unauthorized;
+
     try {
         const { clientName, breakdown, total, pdfBase64 } = await req.json();
 
@@ -16,11 +21,12 @@ export async function POST(req: Request) {
                 pass: process.env.EMAIL_PASS,
             },
         });
+        const siteSettings = await getPublicSiteSettings();
 
         // Email to Admin
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: process.env.EMAIL_USER, // Sending to yourself
+            to: siteSettings.email || process.env.EMAIL_USER,
             subject: `✨ Sharthak Studio Quote: ${clientName}`,
             text: `Wedding Package Quote for ${clientName}\nTotal Estimate: ₹${total.toLocaleString()}`,
             html: `

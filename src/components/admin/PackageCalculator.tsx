@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, Mail, Calculator, Download, Instagram, Globe } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 interface Service {
     id: string;
@@ -55,6 +56,7 @@ interface PackageCalculatorProps {
 }
 
 export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
+    const { settings } = useSiteSettings();
     const [clientName, setClientName] = useState("");
     const [clientPhone, setClientPhone] = useState("");
     const [customAdjustment, setCustomAdjustment] = useState<number>(0);
@@ -179,10 +181,10 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
 
         pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
 
-        pdf.link(15, imgHeight - 25, 40, 15, { url: 'tel:+917091876067' });
-        pdf.link(55, imgHeight - 25, 45, 15, { url: 'mailto:sharthakstudio@gmail.com' });
+        pdf.link(15, imgHeight - 25, 40, 15, { url: settings.phoneHref });
+        pdf.link(55, imgHeight - 25, 45, 15, { url: settings.emailHref });
         pdf.link(100, imgHeight - 25, 50, 20, { url: 'https://www.sharthakstudio.com/' });
-        pdf.link(155, imgHeight - 25, 50, 20, { url: 'https://www.instagram.com/sharthak_studio' });
+        pdf.link(155, imgHeight - 25, 50, 20, { url: settings.instagramUrl });
 
         const filename = `Quote_${clientName.replace(/\s+/g, '_')}.pdf`;
 
@@ -235,7 +237,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                 `*TOTAL ESTIMATE: ₹${totals.total.toLocaleString()}*\n\n` +
                 `*Thank you for choosing Sharthak Studio!*\n` +
                 `*Visit:* www.sharthakstudio.com\n` +
-                `*Instagram:* @sharthak_studio`;
+                `*Instagram:* ${settings.instagramHandle}`;
 
             // 4. Send Email (Automatic)
             const emailRes = await fetch("/api/admin/send-quote", {
@@ -353,7 +355,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                     <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: '20px' }}>
                         <div style={{ fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', color: '#888888', letterSpacing: '1px', lineHeight: '1.8' }}>
                             Gaya, Bihar, India<br />
-                            +91 70918 76067 | sharthakstudio@gmail.com
+                            {settings.phoneDisplay} | {settings.email}
                         </div>
 
                         <div style={{ textAlign: 'right' }}>
@@ -362,7 +364,7 @@ export default function PackageCalculator({ onClose }: PackageCalculatorProps) {
                                     🌐 SHARTHAKSTUDIO.COM
                                 </div>
                                 <div style={{ fontSize: '8px', fontWeight: '900', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px', letterSpacing: '0.5px' }}>
-                                    📸 @SHARTHAK_STUDIO
+                                    📸 {settings.instagramHandle.toUpperCase()}
                                 </div>
                             </div>
                             <div style={{ fontSize: '7px', color: '#dddddd', textTransform: 'uppercase', letterSpacing: '1px' }}>

@@ -3,6 +3,10 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Admin Dashboard | Sharthak Studio",
     description: "Manage your website content.",
+    robots: {
+        index: false,
+        follow: false,
+    },
 };
 
 export default function AdminLayout({

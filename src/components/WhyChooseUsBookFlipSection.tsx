@@ -22,7 +22,7 @@ function InlinePhoto({
         borderRadius: 6,
       }}
     >
-      <Image src={src} alt="" fill className="object-cover" sizes="220px" />
+      <Image src={src} alt="Highlight frame from Sharthak Studio portfolio" fill className="object-cover" sizes="220px" />
     </span>
   );
 }
@@ -78,7 +78,7 @@ function Page({
         <div className="relative h-[240px] w-full overflow-hidden rounded-[8px] shadow-sm">
           <Image
             src={heroSrc}
-            alt=""
+            alt={`Album highlight page ${data.pageNo} from Sharthak Studio portfolio`}
             fill
             className={heroUploaded ? "object-contain bg-black/5" : "object-cover"}
             sizes="520px"
@@ -102,7 +102,7 @@ function Tile({ slotId, fallback }: { slotId: string; fallback: string }) {
     <div className="relative aspect-[4/3] overflow-hidden rounded-[12px]">
       <Image
         src={src}
-        alt=""
+        alt={`Portfolio tile from Sharthak Studio album (${slotId.replace(/-/g, " ")})`}
         fill
         className={isUploaded ? "object-contain" : "object-cover"}
         sizes="180px"
@@ -137,7 +137,7 @@ export default function WhyChooseUsBookFlipSection() {
         title: (
           <>
             WE CREATE{" "}
-            <InlinePhoto src="https://images.unsplash.com/photo-1520975958225-78317a29958d?auto=format&fit=crop&w=1200&q=80" widthEm={3.2} />{" "}
+            <InlinePhoto src="https://picsum.photos/seed/why-inline-story/1200/800" widthEm={3.2} />{" "}
             STORIES.
           </>
         ),

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
 import { useMediaContext } from "@/context/MediaContext";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 function DynamicStripTile({ slotId, fallback, idx }: { slotId: string; fallback: string; idx: number }) {
   const { src } = useMediaAsset(slotId, fallback);
@@ -10,7 +11,7 @@ function DynamicStripTile({ slotId, fallback, idx }: { slotId: string; fallback:
     <div className="imgmarquee__tile bg-black" style={{ flex: "0 0 auto" }}>
       <img
         src={src}
-        alt=""
+        alt={`Cinematic wedding portfolio image by Sharthak Studio (${slotId.replace(/-/g, " ")})`}
         loading={idx < 3 ? "eager" : "lazy"}
         decoding="async"
         className="h-full w-auto object-contain bg-black block"
@@ -22,6 +23,7 @@ function DynamicStripTile({ slotId, fallback, idx }: { slotId: string; fallback:
 
 export default function InfiniteStripsCTASection() {
   const { slots } = useMediaContext();
+  const { settings } = useSiteSettings();
   type StripConfig = { id: string; fallback: string };
 
   const fallbackTop = [
@@ -84,17 +86,17 @@ export default function InfiniteStripsCTASection() {
 
         <div className="flex min-h-[380px] w-full items-center justify-center px-6 py-20">
           <div className="text-center">
-            <div className="text-[clamp(28px,4.2vw,56px)] font-black tracking-[0.15em] text-white/95 leading-tight">
+            <h1 className="text-[clamp(28px,4.2vw,56px)] font-black tracking-[0.15em] text-white/95 leading-tight">
               SHARTHAK STUDIO<br />
-              <span className="text-sm font-medium tracking-[0.4em] text-white/40 block mt-4 uppercase">Capturing Timeless Moments & Cinematic Stories</span>
-            </div>
+              <span className="text-sm font-medium tracking-[0.4em] text-white/40 block mt-4 uppercase">Wedding Photographer & Cinematographer in Gaya, Bihar</span>
+            </h1>
             <a
-              href="https://wa.me/917091876067"
+              href={settings.whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-8 inline-flex h-14 w-[320px] items-center justify-center border border-white/65 text-[14px] font-medium tracking-[0.16em] text-white/80 transition-colors duration-200 hover:bg-white hover:text-black"
             >
-              HIRE SHARTHAK STUDIO
+              CHECK AVAILABILITY
             </a>
           </div>
         </div>

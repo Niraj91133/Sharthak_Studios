@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiErrorResponse, UploadApiOptions, UploadApiResponse } from "cloudinary";
+import { requireAdminRequest } from "@/lib/server/adminRequest";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,9 @@ function safePublicId(fileName: string) {
 // Use 'nextConfig.experimental.serverActions.bodySizeLimit' or similar next.config settings instead.
 
 export async function POST(request: Request) {
+    const unauthorized = requireAdminRequest(request);
+    if (unauthorized) return unauthorized;
+
     try {
         if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
             return NextResponse.json({ error: "Cloudinary env vars missing. Check .env.local" }, { status: 500 });

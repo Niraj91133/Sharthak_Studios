@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdminRequest } from "@/lib/server/adminRequest";
 
-export async function GET() {
+export async function GET(request: Request) {
+    const unauthorized = requireAdminRequest(request);
+    if (unauthorized) return unauthorized;
+
     let baseUrl = process.env.WHATSAPP_SERVER_URL;
 
     // If no ENV var (common on Vercel if user didn't set it), try Supabase

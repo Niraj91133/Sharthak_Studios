@@ -1,12 +1,10 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const disableImageOptimization = process.env.NEXT_PUBLIC_DISABLE_IMAGE_OPTIMIZATION === "true";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    // Ensure root is correctly resolved in any environment
-    root: process.cwd(),
-  },
+  outputFileTracingRoot: path.join(__dirname),
   images: {
     // If you deploy to static-only hosting (no Node Next server), `/_next/image` will 404.
     // Set `NEXT_PUBLIC_DISABLE_IMAGE_OPTIMIZATION=true` to make <Image /> render unoptimized URLs.

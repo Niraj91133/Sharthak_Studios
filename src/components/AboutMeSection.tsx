@@ -1,8 +1,10 @@
 "use client";
 
 import { useMediaAsset } from "@/hooks/useMediaAsset";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function AboutMeSection() {
+    const { settings } = useSiteSettings();
     const { src, isUploaded } = useMediaAsset(
         "about-me-photo",
         "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=2000",
@@ -38,7 +40,7 @@ export default function AboutMeSection() {
 
                     <div className="space-y-8 max-w-xl text-left">
                         <p className="text-xl md:text-2xl font-bold leading-tight text-white/90">
-                            Hi, I&apos;m <span className="text-white font-black underline decoration-white/20 underline-offset-8">Sonu Sharthak</span> — founder of Sharthak Studio, based in Gaya, Bihar.
+                            Hi, I&apos;m <span className="text-white font-black underline decoration-white/20 underline-offset-8">{settings.founder}</span> — founder of {settings.name}, based in {settings.city}, {settings.state}.
                         </p>
 
                         <p className="text-sm md:text-lg font-medium leading-relaxed text-white/50">
@@ -51,7 +53,7 @@ export default function AboutMeSection() {
 
                         <div className="pt-4">
                             <a
-                                href="https://wa.me/917091876067"
+                                href={settings.whatsappHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex h-12 px-8 items-center bg-white text-black text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
@@ -64,7 +66,7 @@ export default function AboutMeSection() {
                     {/* Simple Bottom Accent */}
                     <div className="flex items-center gap-4 opacity-20">
                         <div className="w-12 h-px bg-white" />
-                        <span className="text-[10px] font-black tracking-[0.5em] uppercase">Sharthak Studio</span>
+                        <span className="text-[10px] font-black tracking-[0.5em] uppercase">{settings.name}</span>
                     </div>
                 </div>
 

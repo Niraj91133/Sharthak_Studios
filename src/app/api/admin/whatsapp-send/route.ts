@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdminRequest } from "@/lib/server/adminRequest";
 
 export async function POST(req: Request) {
+    const unauthorized = requireAdminRequest(req);
+    if (unauthorized) return unauthorized;
+
     try {
         const body = await req.json();
         let baseUrl = process.env.WHATSAPP_SERVER_URL;

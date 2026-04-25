@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function CameraCTASection() {
+    const { settings } = useSiteSettings();
     const { src: bgImage, isUploaded } = useMediaAsset(
         "camera-cta-bg",
         "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=2000",
@@ -38,7 +40,7 @@ export default function CameraCTASection() {
                     viewport={{ once: true }}
                 >
                     <a
-                        href="https://wa.me/917091876067"
+                        href={settings.whatsappHref}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-black text-white px-12 py-3 text-xs md:text-sm font-bold tracking-[0.2em] transition-all hover:bg-white hover:text-black uppercase border border-white/20"

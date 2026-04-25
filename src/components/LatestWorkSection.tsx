@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Heart } from "lucide-react";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
 import { useMediaContext } from "@/context/MediaContext";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 type Reel = {
   id: string;
@@ -83,7 +84,7 @@ function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
   return (
     <img
       src={src}
-      alt=""
+      alt={`${reel.title} reel showcase by Sharthak Studio`}
       className={[safeClass, "object-contain bg-black"].join(" ")}
       loading="lazy"
       decoding="async"
@@ -181,6 +182,7 @@ function SideReel({ reel, side }: { reel: Reel; side: "left" | "right" }) {
 
 export default function LatestWorkSection() {
   const { slots } = useMediaContext();
+  const { settings } = useSiteSettings();
   const [index, setIndex] = useState(0);
 
   const reels = useMemo(() => {
@@ -215,7 +217,7 @@ export default function LatestWorkSection() {
         </div>
 
         <a
-          href="https://instagram.com/sharthak_studio"
+          href={settings.instagramUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="px-7 py-3 sm:px-8 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl leading-none flex items-center justify-center h-10"

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
+import { requireAdminRequest } from "@/lib/server/adminRequest";
 
 cloudinary.config({
     cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -8,6 +9,9 @@ cloudinary.config({
 });
 
 export async function POST(request: Request) {
+    const unauthorized = requireAdminRequest(request);
+    if (unauthorized) return unauthorized;
+
     try {
         if (!process.env.CLOUDINARY_API_SECRET) {
             return NextResponse.json(

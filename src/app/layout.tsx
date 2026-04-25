@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/site";
+import { MediaProvider } from "@/context/MediaContext";
+import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
+import ScrollToTopOnLoad from "@/components/ScrollToTopOnLoad";
+import { getPublicSiteSettings } from "@/lib/server/siteSettings";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +18,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SHARTHAK STUDIO | BEST WEDDING PHOTOGRAPHER & CINEMATOGRAPHER | PRE-WEDDING, BABY SHOOT, MATERNITY & EVENT",
-  description: "Top-rated cinematic wedding photographer & filmmaker in Bihar. Specializing in luxury weddings, pre-weddings, maternity shoots, and events across Gaya, Patna, Muzaffarpur, and Deoghar. Timeless emotions captured with premium quality.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: DEFAULT_TITLE,
+    template: "%s | Sharthak Studio",
+  },
+  description: DEFAULT_DESCRIPTION,
   keywords: [
     "sharthak studio", "best wedding photographer in Bihar", "top cinematographer in Gaya",
     "wedding photography Patna", "pre-wedding shoot Muzaffarpur", "maternity shoot Deoghar",
@@ -22,10 +31,13 @@ export const metadata: Metadata = {
     "sharthakstudio.com", "sharthak.studio", "cinematic wedding films India"
   ],
   authors: [{ name: "Sharthak Studio" }],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "SHARTHAK STUDIO | Best Wedding Photographer & Cinematographer in Bihar",
-    description: "Capturing cinematic stories across Bihar, Gaya, and Patna. Specialized in Weddings, Pre-Weddings, & Events.",
-    url: "https://sharthakstudio.com",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    url: SITE_URL,
     siteName: "Sharthak Studio",
     images: [
       {
@@ -37,30 +49,37 @@ export const metadata: Metadata = {
     locale: "en_IN",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: ["/opengraph-image.png"],
+  },
   icons: {
     icon: "/icon.png",
     apple: "/apple-icon.png",
   },
 };
 
-import { MediaProvider } from "@/context/MediaContext";
-import ScrollToTopOnLoad from "@/components/ScrollToTopOnLoad";
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const publicSettings = await getPublicSiteSettings();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
         suppressHydrationWarning
       >
-        <MediaProvider>
-          <ScrollToTopOnLoad />
-          {children}
-        </MediaProvider>
+        <SiteSettingsProvider initialSettings={publicSettings}>
+          <MediaProvider>
+            <ScrollToTopOnLoad />
+            {children}
+          </MediaProvider>
+        </SiteSettingsProvider>
       </body>
     </html>
   );

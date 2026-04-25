@@ -48,3 +48,4 @@ next-env.d.ts
 .wwebjs_auth/
 .wwebjs_cache/
 whatsapp.log
+data/site-settings.json

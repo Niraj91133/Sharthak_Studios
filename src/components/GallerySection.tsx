@@ -19,6 +19,8 @@ function clamp(n: number, min: number, max: number) {
 
 export default function GallerySection({ tabs, items, activeTabOverride, onTabChange }: GallerySectionProps) {
   const { getSlot } = useMediaContext();
+  const altFor = (seed: string, category: string) =>
+    `${category.toLowerCase()} photography showcase by Sharthak Studio in Bihar (${seed.replace(/-/g, " ")})`;
 
   const DESKTOP_DISPLAY_COUNT = 50;
   const MOBILE_GRID_COUNT = 15;
@@ -261,7 +263,7 @@ export default function GallerySection({ tabs, items, activeTabOverride, onTabCh
                     <div className="relative w-full h-auto">
                       <img
                         src={src}
-                        alt=""
+                        alt={altFor(tile.seed, tile.category)}
                         loading="lazy"
                         decoding="async"
                         draggable={false}
@@ -316,7 +318,7 @@ export default function GallerySection({ tabs, items, activeTabOverride, onTabCh
                     <div className="relative w-full">
                       <img
                         src={src}
-                        alt=""
+                        alt={altFor(tile.seed, tile.category)}
                         loading="lazy"
                         decoding="async"
                         draggable={false}
@@ -365,7 +367,7 @@ export default function GallerySection({ tabs, items, activeTabOverride, onTabCh
               <img
                 src={resolveSrc(realTiles[clampedLightboxIndex]?.seed || "", true)}
                 className="max-w-full max-h-full object-contain shadow-2xl bg-black"
-                alt=""
+                alt={altFor(realTiles[clampedLightboxIndex]?.seed || "gallery-image", activeTab || "portfolio")}
                 draggable={false}
               />
             </div>

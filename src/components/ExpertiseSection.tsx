@@ -4,6 +4,7 @@ import Image from "next/image";
 import { type ComponentProps, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 function clampIndex(i: number, len: number) {
   return ((i % len) + len) % len;
@@ -83,6 +84,7 @@ const fallbackSlides = [
 
 export default function ExpertiseSection() {
   const { slots } = useMediaContext();
+  const { settings } = useSiteSettings();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -157,7 +159,11 @@ export default function ExpertiseSection() {
                 exit={{ opacity: 0 }}
                 className="absolute z-0 w-[260px] h-[190px] sm:w-[360px] sm:h-[260px] md:w-[500px] md:h-[350px] overflow-hidden grayscale pointer-events-none"
               >
-                <img src={dynamicSlides[(activeIndex - 1 + dynamicSlides.length) % dynamicSlides.length].fallback} className="w-full h-full object-cover" alt="" />
+                <img
+                  src={dynamicSlides[(activeIndex - 1 + dynamicSlides.length) % dynamicSlides.length].fallback}
+                  className="w-full h-full object-cover"
+                  alt={`Previous expertise showcase for ${dynamicSlides[(activeIndex - 1 + dynamicSlides.length) % dynamicSlides.length].title}`}
+                />
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent" />
               </motion.div>
 
@@ -192,7 +198,11 @@ export default function ExpertiseSection() {
                 exit={{ opacity: 0 }}
                 className="absolute z-0 w-[260px] h-[190px] sm:w-[360px] sm:h-[260px] md:w-[500px] md:h-[350px] overflow-hidden grayscale pointer-events-none"
               >
-                <img src={dynamicSlides[(activeIndex + 1) % dynamicSlides.length].fallback} className="w-full h-full object-cover" alt="" />
+                <img
+                  src={dynamicSlides[(activeIndex + 1) % dynamicSlides.length].fallback}
+                  className="w-full h-full object-cover"
+                  alt={`Next expertise showcase for ${dynamicSlides[(activeIndex + 1) % dynamicSlides.length].title}`}
+                />
                 <div className="absolute inset-0 bg-gradient-to-l from-black via-transparent to-transparent" />
               </motion.div>
 
@@ -208,7 +218,7 @@ export default function ExpertiseSection() {
       {/* Footer CTA */}
       <div className="z-20 pb-12 mt-4">
         <a
-          href="https://wa.me/917091876067"
+          href={settings.whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
           className="group flex items-center gap-4 px-9 py-3 md:px-12 md:py-4 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white hover:text-black transition-all duration-500 shadow-xl"
