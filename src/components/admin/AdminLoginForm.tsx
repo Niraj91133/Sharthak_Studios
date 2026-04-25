@@ -48,8 +48,8 @@ export default function AdminLoginForm() {
             type="text"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
-            placeholder="USERNAME"
-            className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm font-bold tracking-widest uppercase outline-none focus:border-white/30"
+            placeholder="Username"
+            className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm font-bold tracking-widest outline-none focus:border-white/30"
             autoComplete="username"
             required
           />
@@ -57,8 +57,8 @@ export default function AdminLoginForm() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="PASSWORD"
-            className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm font-bold tracking-widest uppercase outline-none focus:border-white/30"
+            placeholder="Password"
+            className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm font-bold tracking-widest outline-none focus:border-white/30"
             autoComplete="current-password"
             required
           />
