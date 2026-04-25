@@ -21,6 +21,7 @@ export default function SiteSettingsPanel({ initialUsername }: { initialUsername
     email: settings.email,
     instagramUrl: settings.instagramUrl,
     instagramHandle: settings.instagramHandle,
+    googleBusinessProfileUrl: settings.googleBusinessProfileUrl,
     addressLine1: settings.addressLine1,
     city: settings.city,
     state: settings.state,
@@ -94,6 +95,7 @@ export default function SiteSettingsPanel({ initialUsername }: { initialUsername
         <input value={form.whatsappNumber} onChange={(e) => updateField("whatsappNumber", e.target.value)} placeholder="WhatsApp Number" className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 outline-none focus:border-white/30" />
         <input value={form.instagramHandle} onChange={(e) => updateField("instagramHandle", e.target.value)} placeholder="Instagram Handle" className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 outline-none focus:border-white/30" />
         <input value={form.instagramUrl} onChange={(e) => updateField("instagramUrl", e.target.value)} placeholder="Instagram URL" className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 outline-none focus:border-white/30 md:col-span-2" />
+        <input value={form.googleBusinessProfileUrl} onChange={(e) => updateField("googleBusinessProfileUrl", e.target.value)} placeholder="Google Business Profile URL" className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 outline-none focus:border-white/30 md:col-span-2" />
         <input value={form.addressLine1} onChange={(e) => updateField("addressLine1", e.target.value)} placeholder="Address" className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 outline-none focus:border-white/30 md:col-span-2" />
         <input value={form.city} onChange={(e) => updateField("city", e.target.value)} placeholder="City" className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 outline-none focus:border-white/30" />
         <input value={form.state} onChange={(e) => updateField("state", e.target.value)} placeholder="State" className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 outline-none focus:border-white/30" />

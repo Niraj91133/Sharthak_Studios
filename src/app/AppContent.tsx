@@ -185,6 +185,14 @@ export default function AppContent() {
                                 {settings.instagramHandle}
                             </a>
                         </div>
+                        {settings.googleBusinessProfileUrl ? (
+                            <div className="space-y-3 text-center">
+                                <div className="text-[10px] tracking-[0.4em] text-white/30 uppercase">Google Business</div>
+                                <a href={settings.googleBusinessProfileUrl} target="_blank" rel="noopener noreferrer" className="text-2xl font-bold hover:text-white/60 transition-colors block italic">
+                                    View Profile
+                                </a>
+                            </div>
+                        ) : null}
                     </div>
 
                     <div className="text-[10px] tracking-[0.4em] text-white/20 uppercase font-black max-w-2xl mx-auto leading-relaxed space-y-4">

@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, Heart } from "lucide-react";
 import { useMediaAsset } from "@/hooks/useMediaAsset";
 import { useMediaContext } from "@/context/MediaContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
@@ -10,9 +9,8 @@ import { useSiteSettings } from "@/context/SiteSettingsContext";
 type Reel = {
   id: string;
   title: string;
-  time: string;
-  likes: string;
-  views: string;
+  label: string;
+  detail: string;
   fallback: string;
   type?: string;
 };
@@ -21,43 +19,39 @@ const fallbackReels: Reel[] = [
   {
     id: "reel-01",
     title: "Eternal Vows",
-    time: "0:45",
-    likes: "12.4K",
-    views: "210K",
+    label: "Recent Highlight",
+    detail: "Wedding film preview",
     fallback:
       "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: "reel-02",
     title: "City Lights",
-    time: "0:30",
-    likes: "8.1K",
-    views: "142K",
+    label: "Latest Edit",
+    detail: "Portrait-driven sequence",
     fallback:
       "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: "reel-03",
     title: "Golden Hour",
-    time: "0:55",
-    likes: "18.9K",
-    views: "310K",
+    label: "Featured Story",
+    detail: "Cinematic couple frames",
     fallback:
       "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: "reel-04",
     title: "Midnight Sun",
-    time: "0:15",
-    likes: "6.7K",
-    views: "98K",
+    label: "Studio Selection",
+    detail: "Short-form social preview",
     fallback:
       "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=1200",
   },
 ];
 
 function ReelMedia({ reel, className }: { reel: Reel; className?: string }) {
-  const { src, isUploaded } = useMediaAsset(reel.id, reel.fallback);
+  const { src } = useMediaAsset(reel.id, reel.fallback);
   const safeClass =
     className?.replace(/\bobject-cover\b/g, "").replace(/\bobject-contain\b/g, "") || "";
 
@@ -98,23 +92,19 @@ function ReelStats({ reel }: { reel: Reel }) {
     <div className="absolute inset-x-0 bottom-0 p-4">
       <div className="flex items-end justify-between gap-4">
         <div className="space-y-2">
-          <div className="text-[11px] font-black tracking-[0.3em] text-white/70 uppercase">
+          <div className="text-[10px] font-black tracking-[0.34em] text-white/55 uppercase">
+            {reel.label}
+          </div>
+          <div className="text-[11px] font-black tracking-[0.3em] text-white/85 uppercase">
             {reel.title}
           </div>
-          <div className="flex items-center gap-4 text-[12px] font-black text-white/85">
-            <span className="inline-flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              {reel.likes}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              {reel.views}
-            </span>
+          <div className="text-[12px] font-medium text-white/65">
+            {reel.detail}
           </div>
         </div>
 
         <div className="shrink-0 rounded-full bg-black/40 px-3 py-1 text-[10px] font-black tracking-[0.2em] text-white/80 backdrop-blur">
-          {reel.time}
+          LIVE
         </div>
       </div>
     </div>
@@ -171,8 +161,8 @@ function SideReel({ reel, side }: { reel: Reel; side: "left" | "right" }) {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/45" />
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="flex items-center justify-between text-[10px] font-black tracking-[0.25em] text-white/70 uppercase">
-            <span>{reel.likes}</span>
-            <span>{reel.views}</span>
+            <span>{reel.label}</span>
+            <span>Studio Edit</span>
           </div>
         </div>
       </div>
@@ -192,9 +182,8 @@ export default function LatestWorkSection() {
     return sectionSlots.map(s => ({
       id: s.id,
       title: s.categoryLabel || s.frame.toUpperCase(),
-      time: "0:30",
-      likes: "10K",
-      views: "100K",
+      label: "Recent Post",
+      detail: s.type === "video" ? "Uploaded reel preview" : "Portfolio story frame",
       fallback: s.fallbackSrc,
       type: s.type,
     }));
@@ -212,8 +201,11 @@ export default function LatestWorkSection() {
       <div className="w-full max-w-7xl px-6 sm:px-8 flex flex-col md:flex-row justify-between items-center mb-5 sm:mb-10 gap-6 sm:gap-8 z-10 text-center md:text-left flex-shrink-0">
         <div className="space-y-2">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tightest uppercase italic leading-none">
-            INSTAGRAM FEED
+            LATEST SOCIAL WORK
           </h2>
+          <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">
+            Real uploads when available. No fake likes or views.
+          </p>
         </div>
 
         <a

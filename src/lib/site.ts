@@ -10,6 +10,7 @@ export type PublicSiteSettings = {
   email: string;
   instagramUrl: string;
   instagramHandle: string;
+  googleBusinessProfileUrl: string;
   addressLine1: string;
   city: string;
   state: string;
@@ -28,6 +29,7 @@ export const DEFAULT_PUBLIC_SITE_SETTINGS: PublicSiteSettings = {
   email: "gmediastudio598@gmail.com",
   instagramUrl: "https://instagram.com/sharthak_studio",
   instagramHandle: "@sharthak_studio",
+  googleBusinessProfileUrl: "",
   addressLine1: "Mirza Galib College, Dr. Q.H. Khan's Compound Building",
   city: "Gaya",
   state: "Bihar",
@@ -65,6 +67,7 @@ export function withDerivedSiteFields(settings: PublicSiteSettings) {
     whatsappNumber,
     instagramHandle,
     instagramUrl,
+    googleBusinessProfileUrl: settings.googleBusinessProfileUrl?.trim() || "",
     phoneHref: phoneDigits ? `tel:+${phoneDigits}` : "tel:",
     whatsappHref: whatsappNumber ? `https://wa.me/${whatsappNumber}` : "https://wa.me/",
     emailHref: settings.email ? `mailto:${settings.email}` : "mailto:",
@@ -78,3 +81,5 @@ export const DEFAULT_TITLE =
 
 export const DEFAULT_DESCRIPTION =
   "Sharthak Studio is a wedding photographer and cinematographer in Gaya, Bihar for weddings, pre-wedding shoots, maternity, baby shoots, and event coverage across Bihar.";
+
+export const DEFAULT_PRICE_RANGE = "$$";

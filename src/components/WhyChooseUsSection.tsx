@@ -25,17 +25,13 @@ function Digit({ digit }: { digit: string }) {
 function FlipNumber({ value }: { value: string }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { margin: "-50px" });
-  const [displayValue, setDisplayValue] = useState("0");
+  const [displayValue, setDisplayValue] = useState(value);
 
   useEffect(() => {
     if (isInView) {
       // Small delay for cinematic effect
       const timer = setTimeout(() => setDisplayValue(value), 200);
       return () => clearTimeout(timer);
-    } else {
-      // Reset when out of view to re-animate next time (async to avoid cascading renders)
-      const raf = requestAnimationFrame(() => setDisplayValue("0"));
-      return () => cancelAnimationFrame(raf);
     }
   }, [isInView, value]);
 

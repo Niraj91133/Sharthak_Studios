@@ -62,6 +62,7 @@ function sanitizePublicSettings(input: Partial<PublicSiteSettings>): PublicSiteS
     email: String(next.email || DEFAULT_PUBLIC_SITE_SETTINGS.email).trim().slice(0, 120),
     instagramUrl: buildInstagramUrl(String(next.instagramUrl || DEFAULT_PUBLIC_SITE_SETTINGS.instagramUrl).trim()),
     instagramHandle: ensureInstagramHandle(String(next.instagramHandle || DEFAULT_PUBLIC_SITE_SETTINGS.instagramHandle).trim()),
+    googleBusinessProfileUrl: String(next.googleBusinessProfileUrl || DEFAULT_PUBLIC_SITE_SETTINGS.googleBusinessProfileUrl).trim().slice(0, 300),
     addressLine1: String(next.addressLine1 || DEFAULT_PUBLIC_SITE_SETTINGS.addressLine1).trim().slice(0, 200),
     city: String(next.city || DEFAULT_PUBLIC_SITE_SETTINGS.city).trim().slice(0, 120),
     state: String(next.state || DEFAULT_PUBLIC_SITE_SETTINGS.state).trim().slice(0, 120),

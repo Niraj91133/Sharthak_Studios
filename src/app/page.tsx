@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import AppContent from "./AppContent";
 import JsonLd from "@/components/JsonLd";
-import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/site";
+import { DEFAULT_DESCRIPTION, DEFAULT_PRICE_RANGE, DEFAULT_TITLE, SITE_URL } from "@/lib/site";
 import { getPublicSiteSettings } from "@/lib/server/siteSettings";
 import { SEO_CITIES, SEO_SERVICES } from "@/lib/seo";
 
@@ -37,8 +37,10 @@ export default async function Home() {
       addressCountry: businessDetails.country,
     },
     areaServed: businessDetails.serviceAreas,
-    sameAs: [businessDetails.instagramUrl],
-    priceRange: "$$",
+    sameAs: [businessDetails.instagramUrl].concat(
+      businessDetails.googleBusinessProfileUrl ? [businessDetails.googleBusinessProfileUrl] : [],
+    ),
+    priceRange: DEFAULT_PRICE_RANGE,
     founder: businessDetails.founder,
     openingHoursSpecification: [
       {
@@ -91,6 +93,16 @@ export default async function Home() {
         acceptedAnswer: {
           "@type": "Answer",
           text: `We offer ${SEO_SERVICES.map((service) => service.name).join(", ")} with planning support and polished final delivery.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: "How can I find Sharthak Studio on Google Business Profile?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: businessDetails.googleBusinessProfileUrl
+            ? `You can view the Google Business Profile here: ${businessDetails.googleBusinessProfileUrl}`
+            : "A Google Business Profile link can be added from the admin settings once the profile is verified.",
         },
       },
     ],
